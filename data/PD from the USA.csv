@@ -1,0 +1,81 @@
+country,country3,country_map,pd,continent
+Andorra,AND,AD,0.108475222,Europe
+Armenia,ARM,AM,0.175327646,Asia
+Argentina,ARG,AR,0.072219592,South America
+Australia,AUS,AU,0.032507236,Oceania
+Azerbaijan,AZE,AZ,0.204601511,Asia
+Burkina Faso,BFA,BF,0.145995149,Africa
+Bulgaria,BGR,BG,0.107764765,Europe
+Bahrain,BHR,BH,0.179812202,Asia
+Brazil,BRA,BR,0.069820436,South America
+Belarus,BLY,BY,0.065940367,Europe
+Canada,CAN,CA,0.02499037,North America
+Switzerland,CHE,CH,0.063654675,Europe
+Chile,CHL,CL,0.080063975,South America
+China,CHN,CN,0.170316011,Asia
+Colombia,COL,CO,0.112158842,South America
+Cyprus,CYP,CY,0.058138245,Asia
+Germany,DEU,DE,0.078955132,Europe
+Algeria,DZA,DZ,0.154644329,Africa
+Ecuador,ECU,EC,0.125616976,South America
+Estonia,EST,EE,0.125269306,Europe
+Egypt,EGY,EG,0.239588973,Africa
+Spain,ESP,ES,0.078203673,Europe
+Ethiopia,ETH,ET,0.140520264,Africa
+Finland,FIN,FI,0.07400763,Europe
+France,FRA,FR,0.083557952,Europe
+Great Britain,GBR,GB,0.055737162,Europe
+Georgia,GEO,GE,0.154086443,Asia
+Ghana,GHA,GH,0.17384106,Africa
+Guatemala,GTM,GT,0.140357183,North America
+Hong Kong,HKG,HK,0.097923965,Asia
+Hungary,HUN,HU,0.10836349,Europe
+Indonesia,IDN,ID,0.190264348,Asia
+India,IND,IN,0.086871236,Asia
+Iraq,IRQ,IQ,0.176397603,Asia
+Iran,IRN,IR,0.149245388,Asia
+Italy,ITA,IT,0.061725644,Europe
+Jordan,JOR,JO,0.20390964,Asia
+Japan,JPN,JP,0.118450743,Asia
+Kyrgyzstan,KGZ,KG,0.136988391,Asia
+South Korea,KOR,KR,0.077824607,Asia
+Kuwait,KWT,KW,0.137172119,Asia
+Kazakhstan,KAZ,KZ,0.116208611,Asia
+Lebanon,LBN,LB,0.106670631,Asia
+Libya,LBY,LY,0.155426778,Africa
+Morocco,MAR,MA,0.153627449,Africa
+Moldova,MDA,MD,0.104459193,Europe
+Mali,MLI,ML,0.150330369,Africa
+Mexico,MEX,MX,0.075224771,North America
+Malaysia,MYS,MY,0.128576476,Asia
+Nigeria,NGA,NG,0.153912549,Africa
+Netherlands,NLD,NL,0.082237238,Europe
+Norway,NOR,NO,0.120088349,Europe
+New Zealand,NZL,NZ,0.054167333,Oceania
+Peru,PER,PE,0.095736985,South America
+Philippines,PHL,PH,0.156740781,Asia
+Pakistan,PAK,PK,0.19163298,Asia
+Poland,POL,PL,0.079066821,Europe
+Palestine,PSE,PS,0.151907552,Asia
+Qatar,QAT,QA,0.181360256,Asia
+Romania,ROU,RO,0.109972291,Europe
+Serbia and Montenegro,SRB,RS,0.071412214,Europe
+Russia,RUS,RU,0.091965227,Europe
+Rwanda,RWA,RW,0.164235999,Africa
+South Africa,SAU,SA,0.077523976,Asia
+Sweden,SWE,SE,0.108898944,Europe
+Singapore,SGP,SG,0.033100734,Asia
+Slovenia,SVN,SI,0.078236667,Europe
+Thailand,THA,TH,0.139297405,Asia
+Tunisia,TUN,TN,0.178998906,Africa
+Turkey,TUR,TR,0.127044426,Asia
+Trinidad and Tobago,TTO,TT,0.09931086,North America
+Taiwan,TWN,TW,0.104485799,Asia
+Ukraine,UKR,UA,0.085430971,Europe
+United States,USA,US,0,North America
+Uruguay,URY,UY,0.087651089,South America
+Uzbekistan,UZB,UZ,0.158066596,Asia
+Viet Nam,VNM,VN,0.174486771,Asia
+Yemen,YEW,YE,0.228542965,Asia
+Zambia,ZMB,ZM,0.090896019,Africa
+Zimbabwe,ZWE,ZW,0.132420373,Africa

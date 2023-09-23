@@ -1,0 +1,2397 @@
+---
+title: "Notebook_Data_Analysis_BTS_Sample_Stage1_RR"
+author: "grit"
+date: "2023-08-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Libraries
+
+```{r}
+library(extrafont)
+library(ggplot2)
+library(rio)
+library(countrycode)
+library(maps)
+library(tidyverse)
+library(treemapify)
+library(lubridate)
+library(MOTE)
+library(patchwork)
+library(ggrepel)#用来给气泡图的点加入标签
+library(grid)
+library(cowplot)
+library(ggforce)#ggforce用来画画中画
+library(boot)
+library(bootES)
+```
+
+## Import Data
+
+```{r}
+df <- import("psa001_ind.csv")
+df
+```
+
+```{r}
+df_PSA001 <- df %>%
+  mutate(country_map = case_when(
+    country == "AFG"~"AF", 
+    country == "UAE"~"AE", 
+    country == "ALA"~"AX",
+    country == "ALB" ~ "AL", 
+    country == "DZA" ~ "DZ", 
+    country == "ASM" ~ "AS",   
+    country == "AND" ~ "AD", 
+    country == "AGO" ~ "AO",
+    country ==  "AIA" ~ "AI",  
+    country == "ATA" ~ "AQ",
+    country ==  "ATG" ~ "AG",
+    country == "ARG" ~ "AR", 
+    country ==  "ARM" ~ "AM", 
+    country == "ABW" ~ "AW", 
+    country == "AUS" ~ "AU",
+    country =="AUT" ~ "AT", 
+    country ==  "AZE" ~ "AZ", 
+    country == "BHS" ~ "BS", 
+    country == "BHR" ~ "BH", 
+    country =="BGD" ~"BD", 
+    country == "BRB" ~ "BB", 
+    country == "BLR" ~ "BY", 
+    country == "BEL" ~ "BE", 
+    country ==  "BLZ" ~ "BZ", 
+    country == "BEN" ~ "BJ",
+    country ==  "BMU" ~ "BM", 
+    country == "BTN" ~ "BT", 
+    country == "BOL" ~ "BO", 
+    country == "BES" ~ "BQ",
+    country == "BIH" ~ "BA",
+    country == "BWA" ~ "BW",  
+    country == "BVT" ~ "BV", 
+    country == "BRA" ~ "BR",
+    country == "IOT" ~ "IO",
+    country == "BRN" ~ "BN",  
+    country == "BGR" ~ "BG",
+    country == "BFA" ~ "BF",
+    country == "BDI" ~ "BI",
+    country == "CPV" ~ "CV",  
+    country == "KHM" ~ "KH",  
+    country ==  "CMR" ~ "CM",
+    country == "CAN" ~ "CA",  
+    country == "CYM" ~ "KY",
+    country == "CAF" ~ "CF", 
+    country == "TCD" ~ "TD", 
+    country == "CHI" ~ "CL", 
+    country == "CHN" ~ "CN",
+    country == "SUI" ~ "CH",
+    country == "CXR" ~ "CX", 
+    country == "CCK" ~ "CC",  
+    country == "COL" ~ "CO",
+    country == "COM" ~ "KM",
+    country == "COG" ~ "CG", 
+    country == "COD" ~ "CD",  
+    country == "COK" ~ "CK", 
+    country == "CRI" ~ "CR", 
+    country == "CIV" ~ "CI",
+    country == "HRV" ~ "HR",
+    country == "CUB" ~ "CU", 
+    country == "CUW" ~ "CW",
+    country == "CYP" ~ "CY",   
+    country == "CZE" ~ "CZ",
+    country ==  "DNK" ~ "DK", 
+    country ==  "DJI" ~ "DJ",
+    country == "DMA" ~ "DM",
+    country == "DOM" ~ "DO", 
+    country == "ECU" ~ "EC",  
+    country == "EGY" ~ "EG", 
+    country == "SLV" ~ "SV", 
+    country == "GNQ" ~ "GQ", 
+    country == "ERI" ~ "ER", 
+    country == "EST" ~ "EE",
+    country == "ESP" ~ "ES",
+    country == "ETH" ~ "ET",  
+    country == "FLK" ~ "FK", 
+    country == "FRO" ~ "FO", 
+    country == "FJI" ~ "FJ",  
+    country == "FIN" ~ "FI",
+    country == "FRA" ~ "FR",  
+    country == "GUF" ~ "GF",
+    country == "PYF" ~ "PF", 
+    country == "ATF" ~ "TF", 
+    country ==  "GAB" ~ "GA", 
+    country ==  "GER" ~ "DE",
+    country ==  "GMB" ~ "GM",
+    country ==  "GEO" ~ "GE",
+    country ==  "DEU" ~ "DE", 
+    country == "GHA" ~ "GH",
+    country == "GIB" ~ "GI",
+    country ==  "GRC" ~ "GR",
+    country ==  "GRE" ~ "GR",
+    country == "GRL" ~ "GL", 
+    country == "GRD" ~ "GD",
+    country == "GLP" ~ "GP",  
+    country == "GUM" ~ "GU", 
+    country == "GTM" ~ "GT", 
+    country == "GGY" ~ "GG",
+    country == "UK" ~ "GB",
+    country == "GIN" ~ "GN", 
+    country == "GNB" ~ "GW",
+    country == "GUY" ~ "GY",  
+    country == "HTI" ~ "HT", 
+    country == "HMD" ~ "HM", 
+    country == "VAT" ~ "VA",
+    country =="HND" ~ "HN",
+    country == "HKG" ~ "HK",  
+    country == "HUN" ~ "HU", 
+    country == "ISL" ~ "IS",
+    country == "IND" ~ "IN",
+    country == "IDN" ~ "ID",   
+    country == "IRN" ~ "IR",
+    country == "IRI" ~ "IR",
+    country == "IRQ" ~ "IQ",
+    country == "IRL" ~ "IE",  
+    country == "IMN" ~ "IM", 
+    country == "ISR" ~ "IL",  
+    country == "ITA" ~ "IT", 
+    country == "JAM" ~ "JM", 
+    country == "JPN" ~ "JP",
+    country == "JOR" ~ "JO",  
+    country == "KAZ" ~ "KZ", 
+    country == "KEN" ~ "KE", 
+    country ==  "KGZ" ~ "KG",
+    country == "KHM" ~ "KH", 
+    country == "KIR" ~ "KI",
+    country == "KNA" ~ "KN",  
+    country ==  "KOR" ~ "KR",
+    country == "KWT" ~ "KW", 
+    country == "LAO" ~ "LA",  
+    country == "LBN" ~ "LB",
+    country == "LBR" ~ "LR", 
+    country == "LBY" ~ "LY",  
+    country == "LCA" ~ "LC", 
+    country == "LIE" ~ "LI",
+    country == "LKA" ~ "LK",  
+    country == "LSO" ~ "LS", 
+    country == "LTU" ~ "LT", 
+    country == "LUX" ~ "LU",  
+    country == "LVA" ~ "LV",
+    country == "MAC"~"MO",  
+    country == "MAF"~"MF", 
+    country == "MAR"~"MA", 
+    country == "MCO"~"MC", 
+    country =="MDA"~"MD",  
+    country == "MDG"~"MG", 
+    country == "MDV"~"MV", 
+    country == "MEX"~"MX", 
+    country == "MHL"~"MH", 
+    country == "MKD"~"MK",  
+    country == "MLI"~"ML",
+    country == "MLT"~"MT",  
+    country == "MMR"~"MM", 
+    country == "MNE"~"ME", 
+    country == "MNG"~"MN",
+    country == "MNP"~"MP",  
+    country == "MOZ"~"MZ", 
+    country == "MRT"~"MR", 
+    country == "MSR"~"MS",
+    country == "MTQ"~"MQ", 
+    country == "MUS"~"MU",  
+    country == "MWI"~"MW",
+    country == "MYS"~"MY", 
+    country == "MAS"~"MY", 
+    country == "MYT"~"YT", 
+    country == "NAM"~"NA", 
+    country == "NCL"~"NC",
+    country == "NER"~"NE",  
+    country == "NFK"~"NF", 
+    country == "NGA"~"NG", 
+    country == "NIC"~"NI", 
+    country == "NIU"~"NU", 
+    country == "NLD"~"NL",
+    country == "NED"~"NL",
+    country == "NOR"~"NO",
+    country == "NPL"~"NP",  
+    country == "NRU"~"NR", 
+    country == "NZL"~"NZ", 
+    country == "OMN"~"OM",
+    country == "PAK"~"PK",  
+    country == "PAN"~"PA", 
+    country == "PCN"~"PN", 
+    country == "PER"~"PE", 
+    country == "PHL"~"PH", 
+    country == "PLW"~"PW",  
+    country == "PNG"~"PG",
+    country == "POL"~"PL",  
+    country == "PRI"~"PR", 
+    country == "POR"~"PR",
+    country == "PRK"~"KP",
+    country == "PRT"~"PT", 
+    country == "PRY"~"PY", 
+    country ==  "PSE"~"PS",
+    country == "PYF"~"PF", 
+    country == "QAT"~"QA", 
+    country == "REU"~"RE", 
+    country == "ROU"~"RO",  
+    country == "RUS"~"RU",
+    country == "RWA"~"RW",  
+    country == "SAU"~"SA", 
+    country == "SDN"~"SD", 
+    country == "SEN"~"SN",
+    country == "SGP"~"SG",  
+    country == "SGS"~"GS", 
+    country == "SHN"~"SH", 
+    country == "SJM"~"SJ", 
+    country == "SLB"~"SB", 
+    country == "SLE"~"SL",  
+    country == "SLV"~"SV",
+    country == "SMR"~"SM",  
+    country == "SOM"~"SO", 
+    country == "SPM"~"PM", 
+    country == "SRB"~"RS",
+    country == "SSD"~"SS",  
+    country == "STP"~"ST", 
+    country == "SUR"~"SR", 
+    country == "SVK"~"SK", 
+    country == "SVN"~"SI", 
+    country == "SWE"~"SE",  
+    country == "SWZ"~"SZ",
+    country == "SXM"~"SX",  
+    country == "SYC"~"SC", 
+    country == "SYR"~"SY", 
+    country == "TCA"~"TC",
+    country == "TCD"~"TD",  
+    country == "TGO"~"TG", 
+    country == "THA"~"TH",
+    country == "TAI"~"TH",
+    country == "TJK"~"TJ", 
+    country == "TKL"~"TK", 
+    country == "TKM"~"TM",  
+    country == "TLS"~"TL",
+    country == "TON"~"TO",  
+    country == "TTO"~"TT", 
+    country == "TUN"~"TN", 
+    country == "TUR"~"TR",
+    country == "TUV"~"TV",  
+    country == "TWN"~"TW",
+    country == "TZA"~"TZ",  
+    country == "UGA"~"UG", 
+    country == "UKR"~"UA", 
+    country == "UMI"~"UM",  
+    country == "URY"~"UY",
+    country == "USA"~"US",
+    country == "PSA"~"US",
+    country == "URY"~"UY", 
+    country == "VAT"~"VA", 
+    country == "VEN"~"VE",
+    country == "VGB"~"VG",  
+    country == "VIR"~"VI", 
+    country == "VNM"~"VN",
+    country == "WLF"~"WF", 
+    country == "WSM"~"WS",  
+    country == "YEM"~"YE",
+    country == "MYT"~"YT",
+    country == "ZAF"~"ZA", 
+     country == "RSA"~"ZA",
+    country == "ZMB"~"ZM", 
+    country == "ZWE"~"ZW",
+    TRUE ~ country ))
+
+df_PSA001 <- select(df_PSA001, user_id, age,sex,country_map)
+#合并重复的行
+df_PSA001 <- distinct(df_PSA001)
+
+df_PSA001 <- df_PSA001 %>%
+count(country_map)  %>% arrange(-n)
+
+df_PSA001 <- mutate(.data = df_PSA001, percentage_sample = n/11481) 
+df_PSA001
+```
+
+
+```{r}
+wppdata <- read_csv("WPP2022.csv")
+wppdata
+```
+
+```{r}
+wppdata1 <- subset(wppdata, select = c("country_map","continent", "pop"))
+wppdata2 <- mutate(.data = wppdata1, percentage_pop = pop/7909295.151) 
+wppdata2
+```
+
+
+```{r}
+wppdata3 <- wppdata2 %>% left_join(df_PSA001_country, by = "country_map")
+#将台湾省的数据与中国内地的数据合并
+sum_of_cn <- sum(wppdata3$percentage_pop[wppdata3$country_map %in% c("CN", "TW")])
+wppdata3$percentage_pop[wppdata3$country_map %in% c("CN", "TW")] <- sum_of_cn
+sum_of_cn
+wppdata3$percentage_pop[wppdata3 $country_map == "GL"] <- NA
+wppdata3 
+```
+
+```{r}
+wppdata3$ps2014 <- NA  # 添加一列名为ps2014的缺失值列
+wppdata3$ps2014[wppdata3 $continent == "Europe"] <- 0.000216  
+wppdata3$ps2014[wppdata3 $country_map == "US"] <- 0.952011  
+wppdata3$ps2014[wppdata3 $country_map == "ZA"] <- 0.043042 
+wppdata3$ps2014[wppdata3 $country_map == "CH"] <- 0.000354  
+wppdata3$ps2014[wppdata3 $country_map == "GB"] <- 0.003164
+wppdata3$ps2014[wppdata3 $country_map == "BE"] <- 0.000819 
+wppdata3$ps2014[wppdata3 $country_map == "DE"] <- 0.001257 
+#wppdata3$ps2014[wppdata3 $country_map == "GL"] <- NA
+wppdata3 
+
+PS2014_map <- wppdata3[complete.cases(wppdata3$ps2014), ]
+PS2014_map 
+```
+
+```{r}  
+# maybe try binning
+PS2014_map$n_binned <- 
+  if_else(PS2014_map$ps2014 >= 0.16, "0.16-1",
+  if_else(PS2014_map$ps2014 < 0.16 & PS2014_map$ps2014 >= 0.08, "0.08-0.16" , 
+   if_else(PS2014_map$ps2014 < 0.08 & PS2014_map$ps2014 >= 0.04, "0.04-0.08" ,
+   
+  if_else(PS2014_map$ps2014 < 0.04 & PS2014_map$ps2014 >= 0.02, "0.02-0.04" ,    
+  if_else(PS2014_map$ps2014 < 0.02 & PS2014_map$ps2014 >= 0.01, "0.01-0.02" ,
+  if_else(PS2014_map$ps2014 < 0.01 & PS2014_map$ps2014 >= 0.005, "0.005-0.01" ,  
+  if_else(PS2014_map$ps2014 < 0.005 & PS2014_map$ps2014 >= 0.0025, "0.0025-0.005",
+      "0-0.0025"
+    )
+  )
+ )
+))))
+PS2014_map
+```
+
+```{r}
+df_PSA001_country <- df_PSA001 %>% left_join(wppdata2, by = "country_map")
+# 计算列"TW"为"CN"对应的数据
+sum_of_CN_TW <- sum(df_PSA001_country$percentage_sample[df_PSA001_country$country_map == "CN"])
+
+# 添加一行数据到数据框
+new_row <- data.frame(country_map = "TW", n = NA, percentage_sample = sum_of_CN_TW,  continent = NA, pop = NA, percentage_pop = NA)
+df_PSA001_country <- rbind(df_PSA001_country, new_row)
+df_PSA001_country
+```
+
+
+```{r}
+# create a world map 
+world_map <- map_data(map = "world")
+world_map$region <- iso.alpha(world_map$region)
+world_map <- subset(world_map, region != "AQ")
+world_map
+
+# 创建新的数据框df_new
+world_map_new <- world_map
+
+# 将列"column_name"的数据都加上180并存入df_new
+world_map_new$long <- ifelse(world_map$long >= -180 & world_map_new$long <= -30, world_map$long + 360, world_map_new$long)
+world_map_new
+max_map <- max(world_map_new$long)
+min_map <- min(world_map_new$long)
+max_map
+min_map
+```
+
+```{r}  
+# maybe try binning
+df_PSA001_country$n_binned <- 
+  if_else(df_PSA001_country$percentage_sample >= 0.16, "0.16-1",
+  if_else(df_PSA001_country$percentage_sample < 0.16 & df_PSA001_country$percentage_sample >= 0.08, "0.08-0.16" , 
+   if_else(df_PSA001_country$percentage_sample < 0.04 & df_PSA001_country$percentage_sample >= 0.08, "0.04-0.08" ,
+   
+  if_else(df_PSA001_country$percentage_sample < 0.04 & df_PSA001_country$percentage_sample >= 0.02, "0.02-0.04" ,    
+  if_else(df_PSA001_country$percentage_sample < 0.02 & df_PSA001_country$percentage_sample >= 0.01, "0.01-0.02" ,
+    
+  if_else(df_PSA001_country$percentage_sample < 0.01 & df_PSA001_country$percentage_sample >= 0.005, "0.005-0.01" ,                                                         
+  if_else(df_PSA001_country$percentage_sample < 0.005 & df_PSA001_country$percentage_sample >= 0.0025, "0.0025-0.005",
+      "0-0.0025"
+    )
+  )
+ )
+))))
+df_PSA001_country
+```
+
+```{r}  
+# maybe try binning
+wppdata3$n_binned <- 
+  if_else(wppdata3$percentage_pop >= 0.16, "0.16-1",
+  if_else(wppdata3$percentage_pop < 0.16 & wppdata3$percentage_pop >= 0.08, "0.08-0.16" , 
+   if_else(wppdata3$percentage_pop < 0.08 & wppdata3$percentage_pop >= 0.04, "0.04-0.08" , 
+  if_else(wppdata3$percentage_pop < 0.04 & wppdata3$percentage_pop >= 0.02, "0.02-0.04" , 
+   if_else(wppdata3$percentage_pop < 0.02 & wppdata3$percentage_pop >= 0.01, "0.01-0.02" , 
+   if_else(wppdata3$percentage_pop < 0.01 & wppdata3$percentage_pop >= 0.005, "0.005-0.01" ,         
+  if_else(wppdata3$percentage_pop < 0.005 & wppdata3$percentage_pop >= 0.0025, "0.0025-0.005",
+      "0-0.0025"
+    )
+  )
+ )
+))))
+wppdata3
+```
+
+```{r}
+# map of PS2014 data 
+country_PS2014 <- ggplot(PS2014_map) +
+  geom_map(aes(map_id = country_map, fill = n_binned), map = world_map_new) +
+  geom_polygon(data = world_map_new, 
+               aes(x = long, y = lat, group = group), 
+               colour = 'black', size=0.1, fill = NA) + 
+  theme_void() + 
+  xlim(c(-30, 329)) + 
+  ylim(c(-60, 90)) + 
+  scale_fill_manual(name = "Proportion of PS2014",
+                    values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
+                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+ggtitle("Geographical distribution of sample from traditional studies")+
+  theme(plot.title = element_text(hjust = 0.5, size = 15),
+        legend.text = element_text(size = 10),  # 调整图例文字的大小
+        legend.title = element_text(size = 12),  # 调整图例标题的大小
+        legend.key.size = unit(3, "pt"),  # 调整图例键的尺寸
+        legend.key.height = unit(3, "pt"),  # 调整图例键的高度
+        legend.key.width = unit(15, "pt")  # 调整图例键的宽度
+        )
+country_PS2014
+```
+
+```{r}
+# map of PSA001 data 
+country_PSA001 <- ggplot(df_PSA001_country) +
+  geom_map(aes(map_id = country_map, fill = n_binned), map = world_map_new) +
+  geom_polygon(data = world_map_new, 
+               aes(x = long, y = lat, group = group), 
+               colour = 'black', size=0.1, fill = NA) + 
+  theme_void() + 
+   xlim(c(-30, 329)) + 
+  ylim(c(-60, 90)) + 
+  scale_fill_manual(name = "Proportion of PSA001",
+                    values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
+                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+ggtitle("Geographical distribution of sample from BTS")+
+  theme(plot.title = element_text(hjust = 0.5, size = 15),
+        legend.text = element_text(size = 10),  # 调整图例文字的大小
+        legend.title = element_text(size = 12),  # 调整图例标题的大小
+        legend.key.size = unit(3, "pt"),  # 调整图例键的尺寸
+        legend.key.height = unit(3, "pt"),  # 调整图例键的高度
+        legend.key.width = unit(15, "pt")  # 调整图例键的宽度
+        )
+country_PSA001
+```
+
+```{r}
+#删除某列数据中包含缺失值的所在行
+wppdata4 <- wppdata3[complete.cases(wppdata3$percentage_pop), ]
+# map of World people data 
+country_people <- ggplot(wppdata4) +
+  geom_map(aes(map_id = country_map, fill = n_binned), map = world_map_new) +
+  geom_polygon(data = world_map_new, 
+               aes(x = long, y = lat, group = group), 
+               colour = 'black', size=0.1, fill = NA) + 
+  theme_void() + 
+   xlim(c(-30, 329)) + 
+  ylim(c(-60, 90)) + 
+  scale_fill_manual(name = "Proportion of people",
+                    values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
+                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+ggtitle("Geographical distribution of world population")+
+  theme(plot.title = element_text(hjust = 0.5, size = 15),
+        legend.text = element_text(size = 10),  # 调整图例文字的大小
+        legend.title = element_text(size = 12),  # 调整图例标题的大小
+        legend.key.size = unit(3, "pt"),  # 调整图例键的尺寸
+        legend.key.height = unit(3, "pt"),  # 调整图例键的高度
+        legend.key.width = unit(15, "pt")  # 调整图例键的宽度
+        )
+country_people
+```
+
+```{r}  
+# maybe try binning
+country_PS2014 + country_PSA001 +country_people +  plot_layout(ncol = 1, nrow = 3, 
+                                 heights = c(4,4))+
+plot_annotation(tag_levels = 'A')
+ggsave("Geographical_distribution_of_samples.pdf", width = 9, height = 13.5)
+```
+
+
+```{r}
+author <- read_csv("author_bts.csv")
+author
+```
+
+```{r}  
+# maybe try binning for bts
+author$n_binned_bts <- 
+  if_else(author$percentage_author_bts >= 0.16, "0.16-1",
+
+  
+  if_else(author$percentage_author_bts < 0.16 & author$percentage_author_bts >= 0.08, "0.08-0.16" , 
+   if_else(author$percentage_author_bts < 0.04 & author$percentage_author_bts >= 0.08, "0.04-0.08" ,
+   
+  if_else(author$percentage_author_bts < 0.04 & author$percentage_author_bts >= 0.02, "0.02-0.04" ,    
+  if_else(author$percentage_author_bts < 0.02 & author$percentage_author_bts >= 0.01, "0.01-0.02" ,
+      if_else(author$percentage_author_bts < 0.01 & author$percentage_author_bts >= 0.005, "0.005-0.01" ,
+      
+  if_else(author$percentage_author_bts < 0.005 & author$percentage_author_bts >= 0.0025, "0.0025-0.005" ,
+      "0-0.0025"  
+  ))
+ )
+))))
+# maybe try binning for ps2014
+author$n_binned_ps2014 <- 
+  if_else(author$percentage_author_ps2014 >= 0.16, "0.16-1",
+ 
+  
+  if_else(author$percentage_author_ps2014 < 0.16 & author$percentage_author_ps2014 >= 0.08, "0.08-0.16" , 
+   if_else(author$percentage_author_ps2014 < 0.04 & author$percentage_author_ps2014 >= 0.08, "0.04-0.08" ,
+   
+  if_else(author$percentage_author_ps2014 < 0.04 & author$percentage_author_ps2014 >= 0.02, "0.02-0.04" ,
+   if_else(author$percentage_author_ps2014 < 0.02 & author$percentage_author_ps2014 >= 0.01, "0.01-0.02" ,
+    if_else(author$percentage_author_ps2014 < 0.01 & author$percentage_author_ps2014 >= 0.005, "0.005-0.01" ,        
+  if_else(author$percentage_author_ps2014 < 0.005 & author$percentage_author_ps2014 >= 0.0025, "0.0025-0.005" ,
+      "0-0.0025"
+  )
+ ))
+))))
+author
+```
+
+```{r}
+#删除包含缺失值的行
+author_bts_no_na <- author[complete.cases(author$n_binned_bts), ]
+author_bts_no_na
+# map of PSA001 data 
+author_psa001 <- ggplot(author_bts_no_na) +
+  geom_map(aes(map_id = country_map, fill = n_binned_bts), map = world_map_new) +
+  geom_polygon(data = world_map_new, 
+               aes(x = long, y = lat, group = group), 
+               colour = 'black', size=0.1, fill = NA) + 
+  theme_void() + 
+  xlim(c(-30, 329)) + 
+  ylim(c(-60, 90)) +
+  scale_fill_manual(name = "Proportion of authors",
+                    values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
+                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+ggtitle("Geographical distribution of authors from BTS")+
+  theme(plot.title = element_text(hjust = 0.5, size = 15),
+        legend.text = element_text(size = 10),  # 调整图例文字的大小
+        legend.title = element_text(size = 12),  # 调整图例标题的大小
+        legend.key.size = unit(3, "pt"),  # 调整图例键的尺寸
+        legend.key.height = unit(3, "pt"),  # 调整图例键的高度
+        legend.key.width = unit(15, "pt")  # 调整图例键的宽度
+        )
+author_psa001
+```
+
+```{r}
+# 创建新的数据框 author_ps2022_no_na，剔除包含缺失值的行
+author_ps2022_no_na <- author[complete.cases(author$n_binned_ps2014), ]
+author_ps2022_no_na
+
+# map of PS2014 data 
+author_ps2014 <- ggplot(author_ps2022_no_na) +
+  geom_map(aes(map_id = country_map, fill = n_binned_ps2014), map = world_map_new) +
+  geom_polygon(data = world_map_new, 
+               aes(x = long, y = lat, group = group), 
+               colour = 'black', size=0.1, fill = NA) + 
+  theme_void() + 
+  xlim(c(-30, 329)) + 
+  ylim(c(-60, 90)) +
+  scale_fill_manual(name = "Proportion of authors",
+                    values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
+                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+ggtitle("Geographical distribution of authors from traditional studies")+
+  theme(plot.title = element_text(hjust = 0.5, size = 15),
+        legend.text = element_text(size = 10),  # 调整图例文字的大小
+        legend.title = element_text(size = 12),  # 调整图例标题的大小
+        legend.key.size = unit(3, "pt"),  # 调整图例键的尺寸
+        legend.key.height = unit(3, "pt"),  # 调整图例键的高度
+        legend.key.width = unit(15, "pt")  # 调整图例键的宽度
+        )
+author_ps2014
+```
+
+```{r}  
+author_ps2014 + author_psa001 + country_people + plot_layout(ncol = 1, nrow = 3, heights = c(4, 4)) +
+  plot_annotation(tag_levels = 'A')   # 调整图形标题的字体大小为12
+
+ggsave("Geographical_distribution_of_authors.pdf", width = 9, height = 13.5)
+```
+
+```{r}
+wpp_age60 <- read_csv("wpp_age_60.csv")
+wpp_age60
+```
+
+```{r}
+df_PSA001
+new_test_df_filter <- df_PSA001 %>% 
+    filter(sex != 'no')%>% 
+    filter(sex != 'na')
+new_test_df_filter
+```
+
+
+```{r H2b ageBins plot, message=FALSE, warning=FALSE}
+#  <- PSA_Jones_CN
+df_PSA001_Age <- df_PSA001 %>%
+  dplyr::filter(!is.na(age)) %>%
+  dplyr::filter(!is.na(sex)) %>%  
+    filter(sex != 'no')%>% 
+    filter(sex != 'na')%>%
+  
+  dplyr::mutate(ageBins_pyr = cut(age, 
+                                   breaks=c(-Inf, 5, 10, 15, 20, 25, 30, 35, 40, 45,
+                                            50, 55,60, Inf), 
+                            labels=c("0~4","5~9","10~14", "15~19", "20~24", "25~29", "30~34", "35~39", "40~44",
+                                     "45~49","50~54","55~59",">=60")),
+                ageBins_pyr = factor(ageBins_pyr, levels = c("0~4","5~9","10~14", "15~19", "20~24", "25~29", 
+                                                             "30~34", "35~39", "40~44", "45~49","50~54",
+                                                             "55~59",">=60"))) %>%
+  dplyr::count(ageBins_pyr, sex) %>%
+  dplyr::mutate(Proportion = round(n / sum(n), 4) * 100) %>%
+  tidyr::complete(ageBins_pyr, sex, fill=list(Proportion=0)) %>%
+  dplyr::mutate(Site = "BTS",
+                sex = ifelse(sex == "f" , "female","male"))
+
+df_PSA001_Age
+```
+
+#age_simulation
+```{r}
+df_rad2018 <- read.csv("Rad_2018_suppl.csv") %>%
+  dplyr::mutate(male_num = as.numeric(male_num),
+                female_num = as.numeric(female_num)) %>%
+  dplyr::filter(!is.na(male_num)) %>%
+  dplyr::select(1:2, 13:14) %>%
+  dplyr::mutate(prop = male_num/(male_num + female_num),
+                deviation = prop - 0.5,
+                dev_abs = abs(deviation)) %>%
+  dplyr::arrange(dev_abs)
+
+effect_size <- bootES::bootES(df_rad2018$dev_abs, plot=TRUE)
+df_rad2018
+```
+## Re-addressing the age bin issue
+This time, we tried to conduct a simulation using the logic as we generate age count data from the mean and SD data extracted from papers.
+
+The simulation will use N as 1200 so that it will reveal the sensitivity of the sample size that resulted from sex ratio data.
+
+```{r sensitivity analysis by mean age, eval=FALSE}
+## First, we get a reasonable  mean age range by using PSA 001's data
+# get the SD of age from PSA001
+df_PSA001_CN_SD <- df_PSA001 %>%
+  dplyr::filter(Countries == "CHN") %>%
+  dplyr::summarise(SD = sd(Age)) %>%
+  dplyr::pull(SD)
+
+df_PSA001_CN_M <- df_PSA001 %>%
+  dplyr::filter(Countries == "CHN") %>%
+  dplyr::summarise(M = mean(Age)) %>%
+  dplyr::pull(M)
+df_PSA001_CN_SD
+df_PSA001_CN_M
+```
+
+```{r sensitivity analysis by mean age, eval=FALSE}
+#df_PS01_M <- c(20.3,68.57,22.66,20.59,18.63,22.2,23.7,19.4,   22,   33)
+#df_PS01_SD <- c(1.2,10.87,1.12, 2.06 ,1.39 ,3.8,  4.4, 1.7, 3.53,10.2 )
+#N  <-         c(398,  21 , 663,  97  , 97   ,20 ,62,    30 ,  45, 476)
+
+df_PS01_M <- 33
+df_PS01_SD <-10.2
+
+Sim_Sens_mult <- function(Mean1, diff_age, SD1, SD2, sampe_N= 476){
+  # get the mean of difference
+  Mean2 <- Mean1 + diff_age
+  # Generate data with N = 1200
+  # 0~17, 18~25, 26~40, 41~60, 61~
+  ageData1 <- round((pnorm(c(5,10,15,20,25,30,35,40,45,50,55,60), mean = Mean1, sd =SD1) * sampe_N))
+  ageData2 <- round((pnorm(c(5,10,15,20,25,30,35,40,45,50,55,60), mean = Mean2, sd =SD2) * sampe_N))
+  
+    # create a dataframe with ageData1 and ageData2:
+  sim_age_df <- setNames(data.frame(matrix(ncol = 3, nrow = 13)), c("ageBins", "sim1", "sim2"))
+  sim_age_df$ageBins <- c("<=4", "5~9", "10~14", "15~19","20~24", "25~29", "30~34", "35~39","40~44", "45~49", "50~54", "55~59",">=60")
+  sim_age_df$sim1[0:12] <- ageData1
+  sim_age_df$sim2[0:12] <- ageData2
+  
+  # create a dataframe with ageData1 and ageData2:
+  sim_age_df <- setNames(data.frame(matrix(ncol = 3, nrow = 13)), c("ageBins", "sim1", "sim2"))
+  sim_age_df$ageBins <- c("<=4", "5~9", "10~14", "15~19","20~24", "25~29", "30~34", "35~39","40~44", "45~49", "50~54", "55~59",">=60")
+  sim_age_df$sim1[0:12] <- ageData1
+  sim_age_df$sim2[0:12] <- ageData2
+  
+  sim_age_df <- sim_age_df %>%
+    dplyr::mutate(sim1_new = sim1 - lag(sim1),
+                  sim1_new = ifelse(is.na(sim1_new), sim1, sim1_new),
+                  sim2_new = sim2 - lag(sim2),
+                  sim2_new = ifelse(is.na(sim2_new), sim2, sim2_new),
+                  # fill NA and zeros with 1 to avoid the error for Bayesian multinomial test
+                  sim1_new = ifelse((is.na(sim1_new) | sim1_new == 0), 1, sim1_new),
+                  sim2_new = ifelse((is.na(sim2_new) | sim2_new == 0), 1, sim2_new),
+                  ageBins = factor(ageBins, levels = c("<=4", "5~9", "10~14", "15~19","20~24", "25~29", "30~34", "35~39","40~44", "45~49", "50~54", "55~59",">=60"))) %>%
+    dplyr::select(ageBins, sim1_new, sim2_new) %>%
+    dplyr::rename(obs = sim1_new,
+                  expected = sim2_new)
+  
+  tmp_BF <- BayesMultiNomial(sim_age_df, 
+                              factor = 'ageBins', 
+                              observed = 'obs', 
+                              expected = 'expected')
+  # res <- c(tmp_BF$BF$BF10, tmp_BF$LogBF10)
+  return(tmp_BF)
+}
+```
+
+
+```{r sensitivity analysis by mean age, eval=FALSE}
+tmp <- Sim_Sens_mult(Mean1=df_PS01_M, 
+              diff_age=0, 
+              SD1=df_PS01_SD, 
+              SD2=df_PS01_SD, 
+              sampe_N= 476)
+
+## record results
+sim_age_diff <- seq(0, 2, 0.05)
+
+rm('sim_MNtest')
+sim_MNtest <- data.frame(matrix(nrow = length(sim_age_diff), ncol = 3))
+colnames(sim_MNtest) <- c("ageDiff","BF10", "LogBF10")
+
+for (kk in (seq(length(sim_age_diff)))){
+  tmp_BF <- Sim_Sens_mult(Mean1=df_PS01_M, 
+                          diff_age=sim_age_diff[kk],
+                          SD1=df_PS01_SD, 
+                          SD2=df_PS01_SD, 
+                          sampe_N = 476)
+  sim_MNtest$ageDiff[kk] <- sim_age_diff[kk]
+  sim_MNtest$BF10[kk] <- tmp_BF$BF$BF10
+  sim_MNtest$LogBF10[kk] <- tmp_BF$BF$LogBF10
+}
+
+sim_MNtest %>% 
+  ggplot2::ggplot(aes(x = ageDiff, y = LogBF10)) + 
+  ggplot2::geom_point() +
+  ggplot2::geom_hline(yintercept = c(log(6), log(1/6))) +
+  ggplot2::theme_classic()
+
+tmp_BF
+df1 <- data.frame(tmp_BF)
+write.csv(df1, file = "df010_simulation.csv", row.names = FALSE)
+```
+
+
+```{r}
+#加载传统研究（以PS2014为例）的性别年龄数据
+age_simulation <- read_csv("df_simulation60.csv")
+age_simulation
+```
+
+```{r}
+fig3c <- ggplot(data = wpp_age60, aes(x = ageBins, y = ifelse(sex == "male", -Proportion, Proportion), fill = sex)) +
+  geom_col(alpha = 0.5, width = 1) +
+  geom_line(data = df_PSA001_Age, aes(x = ageBins_pyr,
+                                      y = ifelse(sex == "male", -Proportion, Proportion),
+                                      group = sex, color = Site), linetype = "solid", size = 1, inherit.aes = FALSE) +
+  geom_line(data = age_simulation, aes(x = ageBins_PS,
+                                       y = ifelse(sex == "male", -Proportion, Proportion), group = sex, color = Site), linetype = "solid", size = 1, inherit.aes = FALSE) +
+  coord_flip() +
+  labs(y = "Proportion", x = "Age bins", color = NULL) +
+  annotate("text", label = "italic(Male)", x = 13, y = -10.5, parse = TRUE, size = 8, family = "serif") +
+  annotate("text", label = "italic(Female)", x = 13, y = 13.5, parse = TRUE, size = 8, family = "serif") + 
+  
+  scale_fill_manual(name="World population data", values = c("male" = "#00BFC4", "female" = "#F8766D"))  +
+  
+scale_color_manual(name="Sample source", values = c("BTS" ="#E41A1C", "traditional studies" =  "#377EB8")) +
+  guides(fill = guide_legend(order = 1), color = guide_legend(order = 2)) +  # 调整图例顺序
+  theme_classic() +  # 使用theme_classic()的设置作为基础
+  theme(
+    legend.position = "right",     # 修改图例位置为坐标轴内的右上方
+    legend.spacing = unit(1, "cm"),   # 增加上下间距，单位可以根据需要调整
+    legend.margin = margin(-10, 0.5, 5, 0.5),  # 调整图例与边界的距离
+    aspect.ratio = 9 / 8,
+    legend.text = element_text(size = 14, family = "serif"),
+    legend.title = element_text(size = 16, family = "serif"),
+    axis.title = element_text(size = 22, family = "serif"),
+    axis.text = element_text(size = 14, family = "serif"),
+    # 添加其他自定义主题设置
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    # ... 添加其他自定义主题设置
+  ) +
+
+  scale_x_discrete(limits = c("0~4", "5~9", "10~14", "15~19", "20~24", "25~29", "30~34", "35~39", "40~44", "45~49", "50~54", "55~59", ">=60"),
+                   breaks = c("0~4", "5~9", "10~14", "15~19", "20~24", "25~29", "30~34", "35~39", "40~44", "45~49", "50~54", "55~59", ">=60"))+
+  
+  ylim(c(-39, 39))  # 将x轴的范围限制为0到0.25
+fig3c
+ggsave("Sex_age.pdf", fig3c, device = "pdf", width = 12, height = 9)
+```
+
+#sample’ country distributions
+```{r}
+wppdata <- read_csv("WPP2022.csv")
+wppdata
+```
+
+```{r}
+wppdata1 <- mutate(.data = wppdata, percentage_pop = pop/7909295.151) 
+wppdata1
+```
+
+
+```{r}
+psadata <- read_csv("psa001_ind.csv")
+psadata
+```
+
+```{r}
+psa1 <- psadata %>%
+count(country)
+psa1
+```
+
+```{r}
+psa2 <- mutate(.data = psa1, n1 = n/120) 
+psa2
+```
+
+```{r}
+psa3 <- mutate(.data = psa2, percentage_n = n1/11484) 
+psa3
+```
+
+```{r}
+#将PSA的数据按照国家为锚点粘贴到世界人口数据上
+uniondata <- wppdata1 %>% left_join(psa3, by = "country")
+#将数据中Developed Country替换为Developed country
+uniondata <- uniondata %>%mutate(Country_groups =                                    case_when(Country_groups == "Developed Country"~"Developed country", TRUE ~ Country_groups))
+#将缺失值替换为0
+uniondata$percentage_n[is.na(uniondata$percentage_n)] <- 0
+uniondata
+```
+
+```{r}
+#加入PS2014的数据
+uniondata$ps2014 <- NA  # 添加一列名为ps2014的缺失值列
+uniondata$ps2014[uniondata$continent == "Europe"] <- 0.000216  
+uniondata$ps2014[uniondata$country_map == "US"] <- 0.952011  
+uniondata$ps2014[uniondata$country_map == "ZA"] <- 0.043042
+uniondata$ps2014[uniondata$country_map == "CH"] <- 0.000354  
+uniondata$ps2014[uniondata$country_map == "GB"] <- 0.003164
+uniondata$ps2014[uniondata$country_map == "BE"] <- 0.000819
+uniondata$ps2014[uniondata$country_map == "DE"] <- 0.001257 
+uniondata
+```
+
+
+```{r}
+# 绘制主要的散点图
+pp1 <- 
+ggplot(data = uniondata, aes(x = percentage_pop, y = percentage_n, color = Country_groups)) +
+   geom_point(stat = "identity", position = "identity", size = 9) +
+  geom_rect(aes(xmin=0, xmax=0.04, ymin=0, ymax=0.04), fill= NA,color="grey80", size = 1)+
+  geom_text_repel(data = uniondata, aes(label = country_map), max.overlaps=3,label.padding=1,
+                  segment.color = NA, family = "sans", size = 9, color = "black") +
+  xlab("Proportion of population") +
+  ylab("Proportion of sample from BTS") +
+
+ scale_color_manual(name = "Country groups",
+    values = c("#F8766D","#00BA38","#619CFF"),
+                    breaks = c("Developed country", "Developing country", "Least developed country"),
+                    labels = c("Developed country", "Developing country", "Least developed country")) +
+ #添加x=y的线段
+  geom_segment(aes(x = 0, y = 0, xend = 0.095, yend = 0.095),color = "black",size = 0.5,linetype = "dashed") +
+ #添加指向放大框的线段 
+  geom_segment(aes(x = 0, y = 0.04, xend = 0.066, yend = 0.25),color = "grey80",size = 1,linetype = "dashed")+
+  geom_segment(aes(x = 0.04, y = 0, xend = 0.23, yend = 0.095),color = "grey80",size = 1,linetype = "dashed")+
+
+  theme(
+        legend.position = "bottom",
+        legend.key.size = unit(0.5, "cm"),
+        legend.text = element_text(size = 18),
+        legend.title = element_text(size = 20),
+        axis.text = element_text(size = 26),
+        axis.title = element_text(size = 30),
+        panel.background = element_rect(fill = "white"), # 背景为白色
+        axis.line = element_line(color = "black"),
+         # 轴线为黑色
+        aspect.ratio = 1   ) +
+  xlim(c(0, 0.25)) + # 将x轴的范围限制为0到0.25
+  ylim(c(0, 0.25))  # 将y轴的范围限制为0到0.25
+
+# 提取放大区域的数据
+zoom_data <- uniondata %>%
+  filter(between(percentage_n, 0, 0.04))%>%
+  arrange(percentage_n) %>%
+  mutate(idx = row_number())
+
+zoom_plt <- zoom_data %>%
+  ggplot( aes(x = percentage_pop, y = percentage_n, color = Country_groups)) +
+  geom_point(stat = "identity", position = "identity", size = 9)+ 
+  #添加标签
+  geom_text_repel(data = uniondata, aes(label = country_map), max.overlaps=3,label.padding=1,
+                  segment.color = NA, family = "sans", size = 9, color = "black") +
+  geom_abline(slope = 1, intercept = 0, size = 0.5,linetype = "dashed", color = "black") +
+  scale_y_continuous(limits = c(0, 0.04)) +
+  scale_x_continuous(limits = c(0, 0.04))+
+  # 添加x轴和y轴
+  theme_void()+
+  theme(plot.background = element_rect(fill = NA, color = "grey80", size = 2),
+        legend.position = "none",
+        legend.key.size = unit(0.5, "cm"),
+        axis.line = element_line(colour = "black"),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 30),
+        axis.text.x = element_text(size = 24),
+        axis.text.y = element_text(size = 24),
+        aspect.ratio = 1) +
+  xlab(" ") +
+  ylab(" ") 
+zoom_plt
+
+# 合并图片
+pp2 <- pp1 + inset_element(zoom_plt, 0.3, 0.4, 0.9, 1)+ # 调整位置
+  plot_annotation(theme=theme(
+      plot.title = element_text( size = 12, color = "black", hjust = 0.5, margin = margin(5,0,10,0)), ))
+  
+# 显示图形
+pp2
+# 保存为pdf
+  ggsave(filename = "PSA_Population_percentage_by_Country_enlarge.pdf", plot = pp2,  dpi = 300)
+```
+
+```{r}
+# 绘制主要的散点图
+pp3 <- 
+ggplot(data = uniondata, aes(x = percentage_pop, y = ps2014, color = Country_groups)) +
+   geom_point(stat = "identity", position = "identity", size = 9) +
+  geom_rect(aes(xmin=0, xmax=0.045, ymin=0, ymax=0.045), fill= NA,color="grey80", size = 1)+
+  geom_text_repel(data = uniondata, aes(label = country_map), max.overlaps=3,label.padding=1,
+                  segment.color = NA, family = "sans", size = 9, color = "black") +
+  xlab("Proportion of population") +
+  ylab("Proportion of sample from traditional studies") +
+
+ scale_color_manual(name = "Country groups",
+    values = c("#F8766D","#00BA38","#619CFF"),
+                    breaks = c("Developed country", "Developing country", "Least developed country"),
+                    labels = c("Developed country", "Developing country", "Least developed country")) +
+ #添加x=y的线段
+  geom_segment(aes(x = 0, y = 0, xend = 0.38, yend = 0.38),color = "black",size = 0.5,linetype = "dashed") +
+ #添加指向放大框的线段 
+  geom_segment(aes(x = 0, y = 0.045, xend = 0.27, yend = 1),color = "grey80",size = 1,linetype = "dashed")+
+  geom_segment(aes(x = 0.045, y = 0, xend = 0.93, yend = 0.39),color = "grey80",size = 1,linetype = "dashed")+
+
+  theme(
+        legend.position = "bottom",
+        legend.key.size = unit(0.5, "cm"),
+        legend.text = element_text(size = 18),
+        legend.title = element_text(size = 20),
+        axis.text = element_text(size = 26),
+        axis.title = element_text(size = 30),
+        panel.background = element_rect(fill = "white"), # 背景为白色
+        axis.line = element_line(color = "black"),
+         # 轴线为黑色
+        aspect.ratio = 1 ) +
+  
+  xlim(c(0, 1)) + # 将x轴的范围限制为0到0.25
+  ylim(c(0, 1))  # 将y轴的范围限制为0到0.25
+
+# 提取放大区域的数据
+zoom_data1 <- uniondata %>%
+  filter(between(ps2014, 0, 0.05))%>%
+  arrange(ps2014) %>%
+  mutate(idx = row_number())
+
+zoom_plt1 <- zoom_data1 %>%
+  ggplot( aes(x = percentage_pop, y = ps2014, color = Country_groups)) +
+  geom_point(stat = "identity", position = "identity", size = 9)+ 
+  #添加标签
+  geom_text_repel(data = uniondata, aes(label = country_map), max.overlaps=10,label.padding=1,
+                  segment.color = NA, family = "sans", size = 9, color = "black") +
+  geom_abline(slope = 1, intercept = 0, size = 0.5,linetype = "dashed", color = "black") +
+  scale_y_continuous(limits = c(0, 0.045)) +
+  scale_x_continuous(limits = c(0, 0.045))+
+  # 添加x轴和y轴
+  theme_void()+
+ scale_color_manual(name = "Country groups",
+    values = c("#F8766D","#00BA38","#619CFF"),
+                    breaks = c("Developed country", "Developing country", "Least developed country"),
+                    labels = c("Developed country", "Developing country", "Least developed country")) +
+   theme(plot.background = element_rect(fill = NA, color = "grey80", size = 2),
+        legend.position = "none",
+        legend.key.size = unit(0.5, "cm"),
+        axis.line = element_line(colour = "black"),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 30),
+        axis.text.x = element_text(size = 24),
+        axis.text.y = element_text(size = 24),
+        aspect.ratio = 1) +
+  xlab(" ") +
+  ylab(" ") 
+
+zoom_plt1
+
+# 合并图片
+pp4 <- pp3 + inset_element(zoom_plt1, 0.3, 0.4, 0.9, 1)+ # 调整位置
+  plot_annotation(theme=theme(
+      plot.title = element_text( size = 12, color = "black", hjust = 0.5, margin = margin(5,0,10,0)), ))
+pp4
+# 保存为pdf
+  ggsave(filename = "PS2014_&_World_Population_by_Country_enlarge.pdf", plot = pp4,  dpi = 300)
+```
+
+```{r}  
+# 将两个图形横向左右排列
+combined_plot_people <-   pp4 + pp2+
+  plot_layout(ncol = 2) + # 设置两列布局
+plot_annotation(tag_levels = list(c('A', '','B', '')), theme=theme(plot.tag = element_text(size = 10)))
+
+combined_plot_people
+# Save the plot as a pdf image
+ggsave(filename = "people_analyses.pdf", plot = combined_plot_people, device = "pdf", width = 24, height = 12)
+```
+
+
+##心理距离画图
+```{r}
+#读取数据
+pddata <- read_csv("PD from the USA.csv")
+pddata <- pddata %>% left_join(df_PSA001, by = "country_map")
+pddata$ps2014 <- NA  # 添加一列名为ps2014的缺失值列
+pddata$ps2014[pddata $continent == "Europe"] <- 0.000216  
+pddata$ps2014[pddata $country_map == "US"] <- 0.952011  
+pddata$ps2014[pddata $country_map == "ZA"] <- 0.043042
+pddata$ps2014[pddata $country_map == "CH"] <- 0.000354  
+pddata$ps2014[pddata $country_map == "GB"] <- 0.003164
+pddata$ps2014[pddata $country_map == "BE"] <- 0.000819
+pddata$ps2014[pddata $country_map == "DE"] <- 0.001257 
+pddata1 <- pddata[!is.na(pddata$ps2014),]
+pddata2 <- pddata[!is.na(pddata$percentage_sample),]
+pddata
+```
+
+```{r}
+#计算斯皮尔曼相关
+library(neatStats)
+# 1 - ps2014 vs percentage_pd
+x1 <- pddata1$ps2014 
+y1 <- pddata1$pd 
+x2 <- pddata2$percentage_sample 
+y2 <- pddata2$pd
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x1, y1, bf_added = TRUE, nonparametric = TRUE)
+result2 <- corr_neat(x2, y2, bf_added = TRUE, nonparametric = TRUE)
+# View the result
+result1
+result2
+```
+
+```{r}
+combined_data1 <- rbind(
+  transform(pddata, source = "PS2014", value = ps2014),
+  transform(pddata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+pd1 <- ggplot(combined_data1, aes(x = pd, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "BTS")) +
+
+  ylab("Proportion of sample") +
+  xlab("Culture distance from United States") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  # 设置图例位置为顶部
+        legend.text = element_text(size = 18),  # 设置图例文本字体大小
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 0.20)) +
+  ylim(c(-0.30, 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+pd1 <- pd1 +
+  annotate("text", x = 0.018, y = 0.955, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 0.018, y = 0.235, 
+           label = expression("US"), size = 6)
+#翻转X轴
+pd1 <- pd1 + scale_x_reverse()
+# Print the plot
+pd1
+
+# Save the plot as a JPEG image
+ggsave(filename = "PD.jpg", plot = pd1, device = "jpg", width = 12, height = 12)
+```
+
+
+##人均GDP画图
+```{r}
+gdpdata <- read_csv("Per capita GDP 2022.csv")
+gdpdata <- gdpdata %>% left_join(df_PSA001, by = "country_map")
+gdpdata$ps2014 <- NA  # 添加一列名为ps2014的缺失值列
+gdpdata$ps2014[gdpdata $continent == "Europe"] <- 0.000216  
+gdpdata$ps2014[gdpdata $country_map == "US"] <- 0.952011  
+gdpdata$ps2014[gdpdata $country_map == "ZA"] <- 0.043042 
+gdpdata$ps2014[gdpdata $country_map == "CH"] <- 0.000354  
+gdpdata$ps2014[gdpdata $country_map == "GB"] <- 0.003164
+gdpdata$ps2014[gdpdata $country_map == "BE"] <- 0.000819 
+gdpdata$ps2014[gdpdata $country_map == "DE"] <- 0.001257
+gdpdata
+gdpdata1 <- gdpdata[!is.na(gdpdata$ps2014),]
+gdpdata2 <- gdpdata[!is.na(gdpdata$percentage_sample),]
+```
+
+```{r}
+#计算人均gdp与bts样本的斯皮尔曼相关
+library(neatStats)
+# 1 - ps2014 vs percentage_pd
+x1 <- gdpdata1$per_capita_gdp  
+y1 <- gdpdata1$ps2014 
+x2 <- gdpdata2$per_capita_gdp  
+y2 <- gdpdata2$percentage_sample
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x1, y1, bf_added = TRUE, nonparametric = TRUE)
+result2 <- corr_neat(x2, y2, bf_added = TRUE, nonparametric = TRUE)
+# View the result
+result1
+result2
+```
+
+#绘制加回归线的散点图
+```{r}  
+combined_data2 <- rbind(
+  transform(gdpdata, source = "PS2014", value = ps2014),
+  transform(gdpdata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+gdp1 <- ggplot(combined_data2, aes(x = per_capita_gdp, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "BTS"))+
+  
+  ylab("Proportion of sample") +
+  xlab("GDP per capita") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  # 设置图例位置为顶部
+        legend.text = element_text(size = 18),  # 设置图例文本字体大小
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 100000)) +
+  ylim(c(-0.2, 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+gdp1 <- gdp1 +
+  annotate("text", x = 69300, y = 0.955, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 69300, y = 0.235, 
+           label = expression("US"), size = 6)
+gdp1
+
+# Save the plot as a JPEG image
+ggsave(filename = "GDP.jpg", plot = gdp1, device = "jpg", width = 12, height = 12)
+```
+
+
+##Research expenditure as a share of GDP画图
+```{r}
+rddata <- read_csv("Research expenditure as a share of GDP.csv")
+rddata <- rddata %>% left_join(df_PSA001, by = "country_map")
+rddata$ps2014 <- NA  # 添加一列名为ps2014的缺失值列
+rddata$ps2014[rddata $continent == "Europe"] <- 0.000216 
+rddata$ps2014[rddata $country_map == "US"] <- 0.952011  
+rddata$ps2014[rddata $country_map == "ZA"] <- 0.043042
+rddata$ps2014[rddata $country_map == "CH"] <- 0.000354  
+rddata$ps2014[rddata $country_map == "GB"] <- 0.003164
+rddata$ps2014[rddata $country_map == "BE"] <- 0.000819 
+rddata$ps2014[rddata $country_map == "DE"] <- 0.001257
+rddata
+rddata1 <- rddata[!is.na(rddata$ps2014),]
+rddata2 <- rddata[!is.na(rddata$percentage_sample),]
+```
+
+```{r}
+#计算R_&_D与bts样本的斯皮尔曼相关
+library(neatStats)
+# 1 - ps2014 vs percentage_pd
+x1 <- rddata1$R_D  
+y1 <- rddata1$ps2014 
+x2 <- rddata2$R_D  
+y2 <- rddata2$percentage_sample
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x1, y1, bf_added = TRUE, nonparametric = TRUE)
+result2 <- corr_neat(x2, y2, bf_added = TRUE, nonparametric = TRUE)
+# View the result
+result1
+result2
+```
+
+#绘制加回归线的散点图
+```{r}  
+# 拟合线性回归模型并计算置信区间
+combined_data3 <- rbind(
+  transform(rddata, source = "PS2014", value = ps2014),
+  transform(rddata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+RD1 <- ggplot(combined_data3, aes(x = R_D, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "BTS"))+
+  ylab("Proportion of sample") +
+  xlab("Research expenditure as a share of GDP") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  # 设置图例位置为顶部
+        legend.text = element_text(size = 18),  # 设置图例文本字体大小
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 3.5)) +
+  ylim(c(-0.14, 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+RD1 <- RD1 +
+  annotate("text", x = 2.55, y = 0.955, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 2.55, y = 0.235, 
+           label = expression("US"), size = 6)
+
+# Print the plot
+RD1
+
+# Save the plot as a JPEG image
+ggsave(filename = "RD.jpg", plot = RD1, device = "jpg", width = 12, height = 12)
+```
+
+
+##globalization_index画图
+```{r}
+gidata <- read_csv("globalization_index.csv")
+gidata <- gidata %>% left_join(df_PSA001, by = "country_map")
+gidata$ps2014 <- NA  # 添加一列名为ps2014的缺失值列
+gidata$ps2014[gidata $continent == "Europe"] <- 0.000216  
+gidata$ps2014[gidata $country_map == "US"] <- 0.952011  
+gidata$ps2014[gidata $country_map == "ZA"] <- 0.043042 
+gidata$ps2014[gidata $country_map == "CH"] <- 0.000354  
+gidata$ps2014[gidata $country_map == "GB"] <- 0.003164
+gidata$ps2014[gidata $country_map == "BE"] <- 0.000819 
+gidata$ps2014[gidata $country_map == "DE"] <- 0.001257 
+
+gidata1 <- gidata[!is.na(gidata$ps2014),]
+gidata2 <- gidata[!is.na(gidata$percentage_sample),]
+gidata
+```
+
+```{r}
+#计算GI与bts样本的斯皮尔曼相关
+library(neatStats)
+# 1 - ps2014 vs percentage_pd
+x1 <- gidata1$GI  
+y1 <- gidata1$ps2014 
+x2 <- gidata2$GI  
+y2 <- gidata2$percentage_sample
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x1, y1, bf_added = TRUE, nonparametric = TRUE)
+result2 <- corr_neat(x2, y2, bf_added = TRUE, nonparametric = TRUE)
+
+# View the result
+result1
+result2
+```
+
+#绘制加回归线的散点图
+```{r}  
+# 拟合线性回归模型并计算置信区间
+combined_data4 <- rbind(
+  transform(gidata, source = "PS2014", value = ps2014),
+  transform(gidata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+GI1 <- ggplot(combined_data4, aes(x = GI, y = value, color = source)) +
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "BTS"))+
+  ylab("Proportion of sample") +
+  xlab("Globalization Index") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  # 设置图例位置为顶部
+        legend.text = element_text(size = 18),  # 设置图例文本字体大小
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 100)) +
+  ylim(c(-0.15, 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the annotations
+GI1 <- GI1 +
+  annotate("text", x = 73.8, y = 0.955, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 73.8, y = 0.235, 
+           label = expression("US"), size = 6)
+# Print the plot
+GI1
+
+# Save the plot as a JPEG image
+ggsave(filename = "GI.jpg", plot = GI1, device = "jpg", width = 12, height = 12)
+```
+
+
+##Network penetration rate画图
+```{r}
+networkdata <- read_csv("Network penetration rate.csv")
+networkdata <- networkdata %>% left_join(df_PSA001, by = "country_map")
+networkdata$ps2014 <- NA  # 添加一列名为ps2014的缺失值列
+networkdata$ps2014[networkdata $continent == "Europe"] <- 0.000216
+networkdata$ps2014[networkdata $country_map == "US"] <- 0.952011  
+networkdata$ps2014[networkdata $country_map == "ZA"] <- 0.043042 
+networkdata$ps2014[networkdata $country_map == "CH"] <- 0.000354  
+networkdata$ps2014[networkdata $country_map == "GB"] <- 0.003164
+networkdata$ps2014[networkdata $country_map == "BE"] <- 0.000819 
+networkdata$ps2014[networkdata $country_map == "DE"] <- 0.001257 
+networkdata
+networkdata1 <- networkdata[!is.na(networkdata$ps2014),]
+networkdata2 <- networkdata[!is.na(networkdata$percentage_sample),]
+```
+
+```{r}
+#计算互联网普及率与bts样本的斯皮尔曼相关
+library(neatStats)
+# 1 - ps2014 vs percentage_pd
+x1 <- networkdata1$Network_2021 
+y1 <- networkdata1$ps2014
+x2 <- networkdata2$Network_2021 
+y2 <- networkdata2$percentage_sample
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x1, y1, bf_added = TRUE,nonparametric = TRUE)
+result2 <- corr_neat(x2, y2, bf_added = TRUE, nonparametric = TRUE)
+# View the result
+result1
+result2
+```
+
+#绘制加回归线的散点图（ps2014）
+```{r}  
+# 拟合线性回归模型并计算置信区间
+combined_data5 <- rbind(
+  transform(networkdata, source = "PS2014", value = ps2014),
+  transform(networkdata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+Network1 <- ggplot(combined_data5, aes(x = Network_2021, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "BTS"))+
+  
+  ylab("Proportion of sample") +
+  xlab("Proportion of population using the internet") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  # 设置图例位置为顶部
+        legend.text = element_text(size = 18),  # 设置图例文本字体大小
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 100)) +
+  ylim(c(-0.18, 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the annotations
+Network1 <- Network1 +
+  annotate("text", x = 84.3, y = 0.955, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 84.3, y = 0.235, 
+           label = expression("US"), size = 6)
+
+Network1
+
+# Save the plot as a JPEG image
+ggsave(filename = "Network.jpg", plot = Network1, device = "jpg", width = 12, height = 12)
+```
+
+
+##英语距离画图
+```{r}
+lddata <- read_csv("LD from the USA.csv")
+lddata$lp1[pddata$lp1 == 0] <- NA
+lddata$lp2[pddata$lp2 == 0] <- NA
+# 创建新的行数据
+new_row <- data.frame(country_map = "US", continent = NA,lp1 = 0,lp2 = 0)
+
+# 将新行数据添加到数据框pddata中
+lddata <- rbind(lddata, new_row)
+#
+rownames(pddata) <- NULL
+lddata <- lddata %>% left_join(df_PSA001, by = "country_map")
+lddata$ps2014 <- NA  # 添加一列名为ps2014的缺失值列
+lddata$ps2014[lddata $continent == "Europe"] <- 0.000216 
+lddata$ps2014[lddata $country_map == "US"] <- 0.952011  
+lddata$ps2014[lddata $country_map == "ZA"] <- 0.043042 
+lddata$ps2014[lddata $country_map == "CH"] <- 0.000354  
+lddata$ps2014[lddata $country_map == "GB"] <- 0.003164
+lddata$ps2014[lddata $country_map == "BE"] <- 0.000819 
+lddata$ps2014[lddata $country_map == "DE"] <- 0.001257 
+lddata
+lddata1 <- lddata[!is.na(lddata$ps2014),]
+lddata2 <- lddata[!is.na(lddata$percentage_sample),]
+```
+
+```{r}
+#计算语言距离与ps2014 & bts样本的斯皮尔曼相关
+library(neatStats)
+# 1 - ps2014 vs percentage_pd
+x1 <- lddata1$lp1 
+y1 <- lddata1$ps2014 
+x2 <- lddata2$lp1  
+y2 <- lddata2$percentage_sample
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x1, y1, bf_added = TRUE, nonparametric = TRUE)
+result2 <- corr_neat(x2, y2, bf_added = TRUE, nonparametric = TRUE)
+# View the result
+result1
+result2
+```
+
+```{r}
+#计算语言距离与ps2014 & bts样本的斯皮尔曼相关
+library(neatStats)
+# 1 - ps2014 vs percentage_pd
+x3 <- lddata1$lp2 
+y3 <- lddata1$ps2014 
+x4<- lddata2$lp2  
+y4 <- lddata2$percentage_sample
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x3, y3, bf_added = TRUE, nonparametric = TRUE)
+result2 <- corr_neat(x4, y4, bf_added = TRUE, nonparametric = TRUE)
+# View the result
+result1
+result2
+```
+
+```{r}
+# 拟合线性回归模型并计算置信区间
+combined_data6 <- rbind(
+  transform(lddata, source = "PS2014", value = ps2014),
+  transform(lddata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+ld1 <- ggplot(combined_data6, aes(x = lp1, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "BTS"))+
+  ylab("Proportion of sample") +
+  xlab("Linguistic distance from United States\n(from English)") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  # 设置图例位置为顶部
+        legend.text = element_text(size = 18),  # 设置图例文本字体大小
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 3.5)) +
+  ylim(c(-0.25, 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+ld1 <- ld1 +
+  annotate("text", x = 0.30, y = 0.955, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 0.30, y = 0.235, 
+           label = expression("US"), size = 6)
+
+#翻转X轴
+ld1 <- ld1 + scale_x_reverse()
+# Print the plot
+ld1
+
+# Save the plot as a JPEG image
+ggsave(filename = "LD.jpg", plot = ld1, device = "jpg", width = 12, height = 12)
+```
+
+
+##英语熟练度画图
+```{r}
+englishdata <- read_csv("EPI.csv")
+englishdata <- englishdata %>% left_join(df_PSA001, by = "country_map")
+englishdata$ps2014 <- NA  # 添加一列名为ps2014的缺失值列
+englishdata$ps2014[englishdata $continent == "Europe"] <- 0.000216 
+englishdata$ps2014[englishdata $country_map == "US"] <- 0.952011  
+englishdata$ps2014[englishdata $country_map == "ZA"] <- 0.043042 
+englishdata$ps2014[englishdata $country_map == "CH"] <- 0.000354  
+englishdata$ps2014[englishdata $country_map == "GB"] <- 0.003164
+englishdata$ps2014[englishdata $country_map == "BE"] <- 0.000819 
+englishdata$ps2014[englishdata $country_map == "DE"] <- 0.001257 
+englishdata
+englishdata1 <- englishdata[!is.na(englishdata$ps2014),]
+englishdata2 <- englishdata[!is.na(englishdata$percentage_sample),]
+```
+
+
+
+```{r}
+#计算人均gdp与bts样本的斯皮尔曼相关
+library(neatStats)
+# 1 - ps2014 vs percentage_pd
+x1 <- englishdata1$EPI_rank 
+y1 <- englishdata1$ps2014 
+x2 <- englishdata2$EPI_rank  
+y2 <- englishdata2$percentage_sample
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x1, y1, bf_added = TRUE, nonparametric = TRUE)
+result2 <- corr_neat(x2, y2, bf_added = TRUE, nonparametric = TRUE)
+# View the result
+result1
+result2
+```
+
+
+#绘制加回归线的散点图
+```{r}  
+# 拟合线性回归模型并计算置信区间
+combined_data7 <- rbind(
+  transform(englishdata, source = "PS2014", value = ps2014),
+  transform(englishdata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+EPI1 <- ggplot(combined_data7, aes(x = EPI_rank, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "BTS"))+
+    
+  ylab("Proportion of sample") +
+  xlab("English Proficiency Index") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  # 设置图例位置为顶部
+        legend.text = element_text(size = 18),  # 设置图例文本字体大小
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 120)) +
+  ylim(c(-0.25, 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the annotations
+EPI1 <- EPI1 +
+  annotate("text", x = 11.5, y = 0.955, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 11.5, y = 0.235, 
+           label = expression("US"), size = 6)
+
+#翻转X轴
+EPI1 <- EPI1 + scale_x_reverse()
+# Print the plot
+EPI1
+
+# Save the plot as a JPEG image
+ggsave(filename = "EPI.jpg", plot = EPI1, device = "jpg", width = 12, height = 12)
+```
+
+
+##城市化画图
+```{r}
+Urbanization_data <- read_csv("Urbanization.csv")
+Urbanization_data <- Urbanization_data %>% left_join(df_PSA001, by = "country_map")
+Urbanization_data$ps2014 <- NA  # 添加一列名为ps2014的缺失值列
+Urbanization_data$ps2014[Urbanization_data $continent == "Europe"] <- 0.000216 
+Urbanization_data$ps2014[Urbanization_data $country_map == "US"] <- 0.952011  
+Urbanization_data$ps2014[Urbanization_data $country_map == "ZA"] <- 0.043042 
+Urbanization_data$ps2014[Urbanization_data $country_map == "CH"] <- 0.000354  
+Urbanization_data$ps2014[Urbanization_data $country_map == "GB"] <- 0.003164
+Urbanization_data$ps2014[Urbanization_data $country_map == "BE"] <- 0.000819 
+Urbanization_data$ps2014[Urbanization_data $country_map == "DE"] <- 0.001257 
+Urbanization_data
+Urbanization_data1 <- Urbanization_data[!is.na(Urbanization_data$ps2014),]
+Urbanization_data2 <- Urbanization_data[!is.na(Urbanization_data$percentage_sample),]
+```
+
+
+
+```{r}
+#计算人均gdp与bts样本的斯皮尔曼相关
+library(neatStats)
+# 1 - ps2014 vs percentage_pd
+x1 <- Urbanization_data1$Urbanization 
+y1 <- Urbanization_data1$ps2014 
+x2 <- Urbanization_data2$Urbanization  
+y2 <- Urbanization_data2$percentage_sample
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x1, y1, bf_added = TRUE, nonparametric = TRUE)
+result2 <- corr_neat(x2, y2, bf_added = TRUE, nonparametric = TRUE)
+# View the result
+result1
+result2
+```
+
+
+#绘制加回归线的散点图
+```{r}  
+# 拟合线性回归模型并计算置信区间
+combined_data8 <- rbind(
+  transform(Urbanization_data, source = "PS2014", value = ps2014),
+  transform(Urbanization_data, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+UP1 <- ggplot(combined_data8, aes(x = Urbanization, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "BTS"))+
+    
+  ylab("Proportion of sample") +
+  xlab("Proportion of urban population") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  # 设置图例位置为顶部
+        legend.text = element_text(size = 18),  # 设置图例文本字体大小
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 100)) +
+  ylim(c(-0.25, 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the annotations
+UP1 <- UP1 +
+  annotate("text", x = 75, y = 0.955, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 75, y = 0.235, 
+           label = expression("US"), size = 6)
+
+# Print the plot
+UP1
+
+# Save the plot as a JPEG image
+ggsave(filename = "UP.jpg", plot = UP1, device = "jpg", width = 12, height = 12)
+```
+
+
+##教育年限
+```{r}
+Education_data <- read_csv("Average_years_of_schooling.csv")
+Education_data <- Education_data %>% left_join(df_PSA001, by = "country_map")
+Education_data$ps2014 <- NA  # 添加一列名为ps2014的缺失值列
+Education_data$ps2014[Education_data $continent == "Europe"] <- 0.000216 
+Education_data$ps2014[Education_data $country_map == "US"] <- 0.952011  
+Education_data$ps2014[Education_data $country_map == "ZA"] <- 0.043042 
+Education_data$ps2014[Education_data $country_map == "CH"] <- 0.000354  
+Education_data$ps2014[Education_data $country_map == "GB"] <- 0.003164
+Education_data$ps2014[Education_data $country_map == "BE"] <- 0.000819 
+Education_data$ps2014[Education_data $country_map == "DE"] <- 0.001257 
+Education_data
+Education_data1 <- Education_data[!is.na(Education_data$ps2014),]
+Education_data2 <- Education_data[!is.na(Education_data$percentage_sample),]
+```
+
+
+
+```{r}
+#计算人均gdp与bts样本的斯皮尔曼相关
+library(neatStats)
+# 1 - ps2014 vs percentage_pd
+x1 <- Education_data1$average_years_of_schooling 
+y1 <- Education_data1$ps2014 
+x2 <- Education_data2$average_years_of_schooling  
+y2 <- Education_data2$percentage_sample
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x1, y1, bf_added = TRUE, nonparametric = TRUE)
+result2 <- corr_neat(x2, y2, bf_added = TRUE, nonparametric = TRUE)
+# View the result
+result1
+result2
+```
+
+
+#绘制加回归线的散点图
+```{r}  
+# 拟合线性回归模型并计算置信区间
+combined_data9 <- rbind(
+  transform(Education_data, source = "PS2014", value = ps2014),
+  transform(Education_data, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+education1 <- ggplot(combined_data9, aes(x = average_years_of_schooling, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "BTS"))+
+    
+  ylab("Proportion of sample") +
+  xlab("Average years of formal education\nfor individuals aged 15-64") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  # 设置图例位置为顶部
+        legend.text = element_text(size = 18),  # 设置图例文本字体大小
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 15)) +
+  ylim(c(-0.25, 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the annotations
+education1 <- education1 +
+  annotate("text", x = 12.1, y = 0.955, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 12.1, y = 0.235, 
+           label = expression("US"), size = 6)
+
+# Print the plot
+education1
+
+# Save the plot as a JPEG image
+ggsave(filename = "education.jpg", plot = education1, device = "jpg", width = 12, height = 12)
+```
+
+
+
+```{r}  
+# 将两个图形横向左右排列
+combined_plot1 <-  gdp1+ RD1+education1+UP1+GI1+ Network1 + pd1+ld1+EPI1 + 
+  plot_layout(ncol = 2) + # 设置两列布局
+plot_annotation(tag_levels ="A",
+                  theme = theme(plot.title = element_text(size = 26)))
+
+# Save the plot as a JPEG image
+ggsave(filename = "Exploratory_analyses.pdf", plot = combined_plot1, device = "pdf", width = 18, height = 30)
+```
+
+
+###尼日利亚、中国、美国的互联网普及率按省份画图
+##尼日利亚按省份画图(互联网普及率)
+```{r}
+NG_data <- read_csv("NG_internet.csv")
+NG_data1 <- NG_data[NG_data$Ruggeri_NG != 0, ]
+NG_data1
+```
+
+```{r}
+#计算人均gdp与bts样本的斯皮尔曼相关
+library(neatStats)
+# 1 - ps2014 vs percentage_pd
+x3 <- NG_data1$Internet_NG_2022 
+y3 <- NG_data1$Ruggeri_NG 
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x3, y3, bf_added = TRUE, nonparametric = TRUE)
+
+result1
+```
+
+#绘制加回归线的散点图（NG）
+```{r}  
+# 拟合线性回归模型并计算置信区间
+model <- lm(Ruggeri_NG ~ Internet_NG_2022, data = NG_data1)
+predict_data_NG <- data.frame(Internet_NG_2022 = NG_data1$Internet_NG_2022, Ruggeri_NG = NG_data1$Ruggeri_NG )
+predict_data_NG$predicted <- predict(model, newdata = predict_data_NG)
+predict_data_NG$lower <- predict(model, newdata = NG_data1, interval = "confidence")[, "lwr"]
+predict_data_NG$upper <- predict(model, newdata = NG_data1, interval = "confidence")[, "upr"]
+
+# 绘制散点图和回归线
+NG_IPR <- ggplot(data = NG_data1, aes(y = Ruggeri_NG, x = Internet_NG_2022, color = "#E41A1C")) +
+  geom_point(stat = "identity", position = "identity", size = 6) +
+  geom_line(data = predict_data_NG, aes(y = predicted), color = "#E41A1C", size = 2) +
+  geom_ribbon(data = predict_data_NG, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
+  ylab("Proportion of sample in BTS") +
+  xlab("Proportion of active Internet\nby state in Nigeria") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1) +
+  xlim(c(0, 3)) +
+  ylim(c(-0.18, 0.7)) +
+  guides(color = FALSE)
+
+NG_IPR
+# Save the plot as a JPEG image
+ggsave(filename = "NG_IPR.jpg", plot = NG_IPR, device = "jpg", width = 12, height = 12)
+```
+
+
+##中国按省份画图(互联网普及率)
+```{r}
+CN_data <- read_csv("CN_internet.csv")
+CN_data1 <- CN_data[CN_data$Ruggeri_CN != 0, ]
+CN_data1
+```
+
+```{r}
+#计算人均gdp与bts样本的斯皮尔曼相关
+library(neatStats)
+x3 <- CN_data1$Internet_CN_2016
+y3 <- CN_data1$Ruggeri_CN 
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x3, y3, bf_added = TRUE, nonparametric = TRUE)
+
+result1
+```
+
+#绘制加回归线的散点图（CN）
+```{r}  
+# 拟合线性回归模型并计算置信区间
+model <- lm(Ruggeri_CN ~ Internet_CN_2016, data = CN_data1)
+predict_data_CN <- data.frame(Internet_CN_2016= CN_data1$Internet_CN_2016, Ruggeri_CN = CN_data1$Ruggeri_CN )
+predict_data_CN$predicted <- predict(model, newdata = predict_data_CN)
+predict_data_CN$lower <- predict(model, newdata = CN_data1, interval = "confidence")[, "lwr"]
+predict_data_CN$upper <- predict(model, newdata = CN_data1, interval = "confidence")[, "upr"]
+
+# 绘制散点图和回归线
+CN_IPR <- ggplot(data = CN_data1, aes(y = Ruggeri_CN, x = Internet_CN_2016, color = "#E41A1C")) +
+  geom_point(stat = "identity", position = "identity", size = 6) +
+  geom_line(data = predict_data_CN, aes(y = predicted), color = "#E41A1C", size = 2) +
+  geom_ribbon(data = predict_data_CN, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
+  ylab("Proportion of sample in BTS") +
+  xlab("Proportion of population using the internet\nby province in china") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1) +
+  xlim(c(38, 100)) +
+  ylim(c(-0.03, 0.3)) +
+  guides(color = FALSE)
+
+CN_IPR
+# Save the plot as a JPEG image
+ggsave(filename = "CN_IPR.jpg", plot = CN_IPR, device = "jpg", width = 12, height = 12)
+```
+
+##美国按省份画图(互联网普及率)
+```{r}
+US_data <- read_csv("US_internet.csv")
+US_data1 <- US_data[US_data$Ruggeri_US != 0, ]
+US_data1
+```
+
+```{r}
+#计算US各州互联网普及率与bts样本的斯皮尔曼相关
+library(neatStats)
+x3 <- US_data1$Internet_US_2018
+y3 <- US_data1$Ruggeri_US 
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x3, y3, bf_added = TRUE, nonparametric = TRUE)
+
+result1
+```
+
+#绘制加回归线的散点图（US）
+```{r}  
+# 拟合线性回归模型并计算置信区间
+model <- lm(Ruggeri_US ~ Internet_US_2018, data = US_data1)
+predict_data_US <- data.frame(Internet_US_2018= US_data1$Internet_US_2018, Ruggeri_US = US_data1$Ruggeri_US )
+predict_data_US$predicted <- predict(model, newdata = predict_data_US)
+predict_data_US$lower <- predict(model, newdata = US_data1, interval = "confidence")[, "lwr"]
+predict_data_US$upper <- predict(model, newdata = US_data1, interval = "confidence")[, "upr"]
+
+# 绘制散点图和回归线
+US_IPR <- ggplot(data = US_data1, aes(y = Ruggeri_US, x = Internet_US_2018, color = "#E41A1C")) +
+  geom_point(stat = "identity", position = "identity", size = 6) +
+  geom_line(data = predict_data_US, aes(y = predicted), color = "#E41A1C", size = 2) +
+  geom_ribbon(data = predict_data_US, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
+  ylab("Proportion of sample in BTS") +
+  xlab("Proportion of population using the internet\nby state in United States") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1) +
+  xlim(c(38, 100)) +
+  ylim(c(-0.03, 0.2)) +
+  guides(color = FALSE)
+
+US_IPR
+# Save the plot as a JPEG image
+ggsave(filename = "US_IPR.jpg", plot = US_IPR, device = "jpg", width = 12, height = 12)
+```
+
+```{r}
+NG_EPI_data <- read_csv("NG_EPI.csv")
+NG_EPI_data1 <- NG_EPI_data[NG_EPI_data$Ruggeri_NG != 0, ]
+NG_EPI_data1
+```
+
+```{r}
+#计算bts样本与英语熟练度的斯皮尔曼相关
+library(neatStats)
+x3 <- NG_EPI_data1$EPI_NG_2022 
+y3 <- NG_EPI_data1$Ruggeri_NG 
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x3, y3, bf_added = TRUE, nonparametric = TRUE)
+
+result1
+```
+
+#绘制加回归线的散点图（NG）
+```{r}  
+# 拟合线性回归模型并计算置信区间
+model <- lm(Ruggeri_NG ~ EPI_NG_2022, data = NG_EPI_data1)
+predict_data_NG <- data.frame(EPI_NG_2022 = NG_EPI_data1$EPI_NG_2022, Ruggeri_NG = NG_EPI_data1$Ruggeri_NG )
+predict_data_NG$predicted <- predict(model, newdata = predict_data_NG)
+predict_data_NG$lower <- predict(model, newdata = NG_EPI_data1, interval = "confidence")[, "lwr"]
+predict_data_NG$upper <- predict(model, newdata = NG_EPI_data1, interval = "confidence")[, "upr"]
+
+# 绘制散点图和回归线
+NG_EPI <- ggplot(data = NG_EPI_data1, aes(y = Ruggeri_NG, x = EPI_NG_2022, color = "#E41A1C")) +
+  geom_point(stat = "identity", position = "identity", size = 6) +
+  geom_line(data = predict_data_NG, aes(y = predicted), color = "#E41A1C", size = 2) +
+  geom_ribbon(data = predict_data_NG, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
+  ylab("Proportion of sample in BTS") +
+  xlab("English Proficiency of Nigeria by state") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1) +
+  xlim(c(470, 670)) +
+  ylim(c(-0.13, 0.67)) +
+  guides(color = FALSE)
+#翻转X轴
+NG_EPI <- NG_EPI + scale_x_reverse()
+
+NG_EPI 
+# Save the plot as a JPEG image
+ggsave(filename = " NG_EPI.jpg", plot = NG_EPI, device = "jpg", width = 12, height = 12)
+```
+
+
+中国按省份画图（英语熟练度）
+```{r}
+CN_EPI_data <- read_csv("CN_EPI.csv")
+CN_EPI_data1 <- CN_EPI_data[CN_EPI_data$Ruggeri_CN != 0, ]
+CN_EPI_data1
+```
+
+```{r}
+#计算bts样本与英语熟练度的斯皮尔曼相关
+library(neatStats)
+x3 <- CN_EPI_data1$EPI_CN_2022 
+y3 <- CN_EPI_data1$Ruggeri_CN 
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x3, y3, bf_added = TRUE, nonparametric = TRUE)
+
+result1
+```
+
+#绘制加回归线的散点图（CN）
+```{r}  
+# 拟合线性回归模型并计算置信区间
+model <- lm(Ruggeri_CN ~ EPI_CN_2022, data = CN_EPI_data1)
+predict_data_CN <- data.frame(EPI_CN_2022 = CN_EPI_data1$EPI_CN_2022, Ruggeri_CN = CN_EPI_data1$Ruggeri_CN )
+predict_data_CN$predicted <- predict(model, newdata = predict_data_CN)
+predict_data_CN$lower <- predict(model, newdata = CN_EPI_data1, interval = "confidence")[, "lwr"]
+predict_data_CN$upper <- predict(model, newdata = CN_EPI_data1, interval = "confidence")[, "upr"]
+
+# 绘制散点图和回归线
+CN_EPI <- ggplot(data = CN_EPI_data1, aes(y = Ruggeri_CN, x = EPI_CN_2022, color = "#E41A1C")) +
+  geom_point(stat = "identity", position = "identity", size = 6) +
+  geom_line(data = predict_data_CN, aes(y = predicted), color = "#E41A1C", size = 2) +
+  geom_ribbon(data = predict_data_CN, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
+  ylab("Proportion of sample in BTS") +
+  xlab("English Proficiency of China by province") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1) +
+  xlim(c(0, 32)) +
+  ylim(c(-0.13, 0.67)) +
+  guides(color = FALSE)
+
+#翻转X轴
+CN_EPI <- CN_EPI + scale_x_reverse()
+
+CN_EPI 
+# Save the plot as a JPEG image
+ggsave(filename = " CN_EPI.jpg", plot = CN_EPI, device = "jpg", width = 12, height = 12)
+```
+
+##荷兰按省画图（英语熟练度）
+```{r}
+NL_EPI_data <- read_csv("NL_EPI.csv")
+NL_EPI_data1 <- NL_EPI_data[NL_EPI_data$Ruggeri_NL != 0, ]
+NL_EPI_data1
+```
+
+```{r}
+#计算bts样本与英语熟练度的斯皮尔曼相关
+library(neatStats)
+x3 <- NL_EPI_data1$EPI_NL_2022 
+y3 <- NL_EPI_data1$Ruggeri_NL 
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x3, y3, bf_added = TRUE, nonparametric = TRUE)
+
+result1
+```
+
+#绘制加回归线的散点图（NL）
+```{r}  
+# 拟合线性回归模型并计算置信区间
+model <- lm(Ruggeri_NL ~ EPI_NL_2022, data = NL_EPI_data1)
+predict_data_NL <- data.frame(EPI_NL_2022 = NL_EPI_data1$EPI_NL_2022, Ruggeri_NL = NL_EPI_data1$Ruggeri_NL )
+predict_data_NL$predicted <- predict(model, newdata = predict_data_NL)
+predict_data_NL$lower <- predict(model, newdata = NL_EPI_data1, interval = "confidence")[, "lwr"]
+predict_data_NL$upper <- predict(model, newdata = NL_EPI_data1, interval = "confidence")[, "upr"]
+
+# 绘制散点图和回归线
+NL_EPI <- ggplot(data = NL_EPI_data1, aes(y = Ruggeri_NL, x = EPI_NL_2022, color = "#E41A1C")) +
+  geom_point(stat = "identity", position = "identity", size = 6) +
+  geom_line(data = predict_data_NL, aes(y = predicted), color = "#E41A1C", size = 2) +
+  geom_ribbon(data = predict_data_NL, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
+  ylab("Proportion of sample in BTS") +
+  xlab("English Proficiency of Netherlands by state") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1) +
+  xlim(c(0, 32)) +
+  ylim(c(-0.18, 0.67)) +
+  guides(color = FALSE)
+#翻转X轴
+NL_EPI <- NL_EPI + scale_x_reverse()
+
+NL_EPI 
+# Save the plot as a JPEG image
+ggsave(filename = " NL_EPI.jpg", plot = NL_EPI, device = "jpg", width = 12, height = 12)
+```
+
+###尼日利亚、中国、美国的城市化按省份画图
+##尼日利亚按省份画图(城市化)
+```{r}
+KE_UP_data <- read_csv("KE_urbanization.csv")
+KE_UP_data1 <- KE_UP_data[KE_UP_data$Ruggeri_KE != 0, ]
+KE_UP_data1
+```
+
+```{r}
+#计算斯皮尔曼相关
+library(neatStats)
+
+x3 <- KE_UP_data1$KE_UP_2020 
+y3 <- KE_UP_data1$Ruggeri_KE 
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x3, y3, bf_added = TRUE, nonparametric = TRUE)
+
+result1
+```
+
+#绘制加回归线的散点图（KE_UP）
+```{r}  
+# 拟合线性回归模型并计算置信区间
+model <- lm(Ruggeri_KE ~ KE_UP_2020, data = KE_UP_data1)
+predict_data_KE <- data.frame(KE_UP_2020 = KE_UP_data1$KE_UP_2020, Ruggeri_KE = KE_UP_data1$Ruggeri_KE )
+predict_data_KE$predicted <- predict(model, newdata = predict_data_KE)
+predict_data_KE$lower <- predict(model, newdata = KE_UP_data1, interval = "confidence")[, "lwr"]
+predict_data_KE$upper <- predict(model, newdata = KE_UP_data1, interval = "confidence")[, "upr"]
+
+# 绘制散点图和回归线
+KE_UP <- ggplot(data = KE_UP_data1, aes(y = Ruggeri_KE, x = KE_UP_2020, color = "#E41A1C")) +
+  geom_point(stat = "identity", position = "identity", size = 6) +
+  geom_line(data = predict_data_KE, aes(y = predicted), color = "#E41A1C", size = 2) +
+  geom_ribbon(data = predict_data_KE, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
+  ylab("Proportion of sample in BTS") +
+  xlab("Proportion of urban population\nby province in Kenya") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1) +
+  xlim(c(0, 100)) +
+  ylim(c(-0.23, 0.9)) +
+  guides(color = FALSE)
+
+KE_UP 
+# Save the plot as a pdf image
+ggsave(filename = " KE_UP.pdf", plot = KE_UP, device = "jpg", width = 12, height = 12)
+```
+
+
+##中国按省份画图(城市化)
+```{r}
+CN_UP_data <- read_csv("CN_urbanization.csv")
+CN_UP_data1 <- CN_UP_data[CN_UP_data$Ruggeri_CN != 0, ]
+CN_UP_data1
+```
+
+```{r}
+#计算斯皮尔曼相关
+library(neatStats)
+x3 <- CN_UP_data1$CN_UP_2020
+y3 <- CN_UP_data1$Ruggeri_CN 
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x3, y3, bf_added = TRUE, nonparametric = TRUE)
+
+result1
+```
+
+#绘制加回归线的散点图（CN）
+```{r}  
+# 拟合线性回归模型并计算置信区间
+model <- lm(Ruggeri_CN ~ CN_UP_2020, data = CN_UP_data1)
+predict_data_CN <- data.frame(CN_UP_2020= CN_UP_data1$CN_UP_2020, Ruggeri_CN = CN_UP_data1$Ruggeri_CN )
+predict_data_CN$predicted <- predict(model, newdata = predict_data_CN)
+predict_data_CN$lower <- predict(model, newdata = CN_UP_data1, interval = "confidence")[, "lwr"]
+predict_data_CN$upper <- predict(model, newdata = CN_UP_data1, interval = "confidence")[, "upr"]
+
+# 绘制散点图和回归线
+CN_UP <- ggplot(data = CN_UP_data1, aes(y = Ruggeri_CN, x = CN_UP_2020, color = "#E41A1C")) +
+  geom_point(stat = "identity", position = "identity", size = 6) +
+  geom_line(data = predict_data_CN, aes(y = predicted), color = "#E41A1C", size = 2) +
+  geom_ribbon(data = predict_data_CN, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
+  ylab("Proportion of sample in BTS") +
+  xlab("Proportion of urban population\nby province in China") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1) +
+  xlim(c(0, 100)) +
+  ylim(c(-0.03, 0.2)) +
+  guides(color = FALSE)
+
+CN_UP 
+# Save the plot as a pdf image
+ggsave(filename = "CN_UP.jpg", plot = CN_UP, device = "pdf", width = 12, height = 12)
+```
+
+##美国按省份画图(城市化)
+```{r}
+US_UP_data <- read_csv("US_urbanization.csv")
+US_UP_data1 <- US_UP_data[US_UP_data$Ruggeri_US != 0, ]
+US_UP_data1
+```
+
+```{r}
+#计算US各州互联网普及率与bts样本的斯皮尔曼相关
+library(neatStats)
+x3 <- US_UP_data1$US_UP_2020
+y3 <- US_UP_data1$Ruggeri_US 
+
+# Compute Spearman correlation using corr_neat
+result1 <- corr_neat(x3, y3, bf_added = TRUE, nonparametric = TRUE)
+
+result1
+```
+
+#绘制加回归线的散点图（US）
+```{r}  
+# 拟合线性回归模型并计算置信区间
+model <- lm(Ruggeri_US ~ US_UP_2020, data = US_UP_data1)
+predict_data_US <- data.frame(US_UP_2020= US_UP_data1$US_UP_2020, Ruggeri_US = US_UP_data1$Ruggeri_US )
+predict_data_US$predicted <- predict(model, newdata = predict_data_US)
+predict_data_US$lower <- predict(model, newdata = US_UP_data1, interval = "confidence")[, "lwr"]
+predict_data_US$upper <- predict(model, newdata = US_UP_data1, interval = "confidence")[, "upr"]
+
+# 绘制散点图和回归线
+US_UP <- ggplot(data = US_UP_data1, aes(y = Ruggeri_US, x = US_UP_2020, color = "#E41A1C")) +
+  geom_point(stat = "identity", position = "identity", size = 6) +
+  geom_line(data = predict_data_US, aes(y = predicted), color = "#E41A1C", size = 2) +
+  geom_ribbon(data = predict_data_US, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
+  ylab("Proportion of sample in BTS") +
+  xlab("Proportion of urban population\nby state in United States") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1) +
+  xlim(c(0, 100)) +
+  ylim(c(-0.036, 0.2)) +
+  guides(color = FALSE)
+
+US_UP 
+# Save the plot as a pdf image
+ggsave(filename = " US_UP.jpg", plot = US_UP, device = "pdf", width = 12, height = 12)
+```
+
+
+```{r}  
+# 将两个图形横向左右排列
+combined_plot2 <- KE_UP + CN_UP + US_UP + NG_IPR + CN_IPR + US_IPR + NG_EPI + CN_EPI + NL_EPI+
+  plot_layout(ncol = 3) + # 设置两列布局
+plot_annotation(tag_levels ="A",
+                  theme = theme(plot.title = element_text(size = 26)))
+
+combined_plot2
+# Save the plot as a pdf image
+ggsave(filename = "Exploratory_analyses_by_state.pdf", plot = combined_plot2, device = "pdf", width = 24, height = 24)
+```
+
+
+##计算simpson系数
+```{r}
+author_BTS_1 <- read_csv("author_BTS.csv")
+author_BTS <-filter(author_BTS_1, country_map != "TW")
+author_BTS[author_BTS == ""] <- NA
+author_bts_clean <- author_BTS$author_bts[!is.na(author_BTS$author_bts)]
+author_ps2014_clean <- author_BTS$author_ps2014[!is.na(author_BTS$author_ps2014)]
+author_BTS
+author_bts_clean
+author_ps2014_clean
+```
+
+```{r}
+library(vegan)
+# 计算变量的Simpson系数
+α_bts <- diversity(author_bts_clean, index = "simpson")
+α_ps2014 <- diversity(author_ps2014_clean, index = "simpson")
+α_wpd <- diversity(author_BTS$wpd, index = "simpson")
+# 输出结果
+α_ps2014
+α_bts
+α_wpd
+```
+
+```{r}
+# 计算变量author_bts的方差
+N1 <- sum(author_bts_clean)
+sum_of_squares1 <- sum((author_bts_clean / N1)^2)
+sum_of_cubes1 <- sum((author_bts_clean / N1)^3)
+
+Var_bts <- (4 * N1 * (N1 - 1) * (N1 - 2) * sum_of_cubes1 +
+           2 * N1 * (N1 - 1) * sum_of_squares1 -
+           2 * N1 * (N1 - 1) * (2 * N1 - 3) * sum_of_squares1 * sum_of_squares1) / (N1 * N1 * (N1 - 1) * (N1 - 1))
+
+# 计算变量author_ps2014的方差
+N2 <- sum(author_ps2014_clean)
+sum_of_squares2 <- sum((author_ps2014_clean / N2)^2)
+sum_of_cubes2 <- sum((author_ps2014_clean / N2)^3)
+
+Var_ps2014 <- (4 * N2 * (N2 - 1) * (N2 - 2) * sum_of_cubes2 +
+           2 * N2 * (N2 - 1) * sum_of_squares2 -
+           2 * N2 * (N2 - 1) * (2 * N2 - 3) * sum_of_squares2 * sum_of_squares2) / (N2 * N2 * (N2 - 1) * (N2 - 1))
+# 计算变量wpd的方差
+N3 <- sum(author_BTS$wpd)
+sum_of_squares3 <- sum((author_BTS$wpd / N3)^2)
+sum_of_cubes3 <- sum((author_BTS$wpd / N3)^3)
+
+Var_wpd <- (4 * N3 * (N3 - 1) * (N3 - 2) * sum_of_cubes3 +
+           2 * N3 * (N3 - 1) * sum_of_squares3 -
+           2 * N3 * (N3 - 1) * (2 * N3 - 3) * sum_of_squares3 * sum_of_squares3) / (N3 * N3 * (N3 - 1) * (N3 - 1))
+# 输出结果
+Var_ps2014
+Var_bts
+Var_wpd
+```
+
+```{r}
+# 计算 t 值和自由度
+t_value1 <- (α_bts - α_ps2014) / sqrt(Var_bts + Var_ps2014)
+  
+df_1 <- (Var_bts + Var_ps2014)^2 / (Var_bts^2 / N1 + Var_ps2014^2 / N2)
+p_value1 <- 2 * pt(abs(t_value1), df_1, lower.tail = FALSE)
+
+t_value2 <- (α_wpd-α_bts) / sqrt(Var_wpd+Var_bts)
+  
+df_2 <- (Var_wpd+Var_bts)^2 / (Var_bts^2 / N1 + Var_wpd^2 / N3)
+# 计算 p 值
+p_value2 <- 2 * pt(abs(t_value2), df_2, lower.tail = FALSE)
+
+# 输出结果
+t_value1
+p_value1
+df_1
+t_value2
+p_value2
+df_2
+```
+
+
+
+
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
