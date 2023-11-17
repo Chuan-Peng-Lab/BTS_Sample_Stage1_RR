@@ -1,0 +1,117 @@
+"country1","EPI_rank","country_map","continent","n","percentage_sample","ps2014"
+"Australia",3,"AU","Oceania",885,0.0770838777110008,0
+"Canada",3,"CA","North America",630,0.0548732688790175,0
+"New Zealand",3,"NZ","Oceania",159,0.0138489678599425,0
+"United Kingdom",3,"GB","Europe",361,0.031443254071945,0.003164
+"United States of America",3,"US","North America",2682,0.233603344656389,0.952011
+"Netherlands",6,"NL","Europe",356,0.0310077519379845,0.000216
+"Singapore",7,"SG","Asia",NA,0,0
+"Austria",8,"AT","Europe",236,0.0205557007229335,0.000216
+"Norway",9,"NO","Europe",363,0.0316174549255291,0.000216
+"Denmark",10,"DK","Europe",92,0.0080132392648724,0.000216
+"Belgium",11,"BE","Europe",86,0.00749063670411985,0.000819
+"Sweden",12,"SE","Europe",152,0.0132392648723979,0.000216
+"Finland",13,"FI","Europe",46,0.0040066196324362,0.000216
+"Portugal",14,"PT","Europe",NA,0,0.000216
+"Germany",15,"DE","Europe",266,0.0231687135266963,0.001257
+"Croatia",16,"HR","Europe",NA,0,0.000216
+"South Africa",17,"ZA","Africa",130,0.0113230554829719,0.043042
+"Poland",18,"PL","Europe",36,0.00313561536451529,0.000216
+"Greece",19,"GR","Europe",99,0.00862294225241704,0.000216
+"Slovakia",20,"SK","Europe",263,0.02290741224632,0.000216
+"Luxembourg",21,"LU","Europe",NA,0,0.000216
+"Romania",22,"RO","Europe",27,0.00235171152338646,0.000216
+"Hungary",23,"HU","Europe",174,0.0151554742618239,0.000216
+"Lithuania",24,"LT","Europe",NA,0,0.000216
+"Kenya",25,"KE","Africa",347,0.0302238480968557,0
+"Bulgaria",26,"BG","Europe",NA,0,0.000216
+"Philippines",27,"PH","Asia",NA,0,0
+"Czechia",28,"CZ","Europe",NA,0,0.000216
+"Malaysia",29,"MY","Asia",281,0.0244752199285777,0
+"Latvia",30,"LV","Europe",NA,0,0.000216
+"Estonia",31,"EE","Europe",NA,0,0.000216
+"Serbia",32,"RS","Europe",69,0.0060099294486543,0.000216
+"Nigeria",33,"NG","Africa",43,0.00374531835205993,0
+"Switzerland",34,"CH","Europe",109,0.00949394652033795,0.000354
+"Argentina",35,"AR","South America",91,0.00792613883808031,0
+"China, Hong Kong SAR",36,"HK","Asia",NA,0,0
+"Italy",37,"IT","Europe",153,0.01332636529919,0.000216
+"Spain",38,"ES","Europe",270,0.0235171152338646,0.000216
+"France",39,"FR","Europe",211,0.0183781900531313,0.000216
+"Ukraine",40,"UA","Europe",NA,0,0.000216
+"Republic of Korea",41,"KR","Asia",NA,0,0
+"Costa Rica",42,"CR","North America",NA,0,0
+"Cuba",43,"CU","North America",NA,0,0
+"Belarus",44,"BY","Europe",NA,0,0.000216
+"Russian Federation",45,"RU","Europe",240,0.0209041024301019,0.000216
+"Ghana",46,"GH","Africa",NA,0,0
+"Republic of Moldova",47,"MD","Europe",NA,0,0.000216
+"Paraguay",48,"PY","South America",NA,0,0
+"Bolivia (Plurinational State of)",49,"BO","South America",NA,0,0
+"Chile",50,"CL","South America",430,0.0374531835205993,0
+"Georgia",51,"GE","Asia",NA,0,0
+"Albania",52,"AL","Europe",NA,0,0.000216
+"Honduras",53,"HN","North America",NA,0,0
+"Uruguay",54,"UY","South America",NA,0,0
+"El Salvador",55,"SV","North America",89,0.00775193798449612,0
+"Peru",56,"PE","South America",115,0.0100165490810905,0
+"India",57,"IN","Asia",NA,0,0
+"Dominican Republic",58,"DO","North America",NA,0,0
+"Lebanon",59,"LB","Asia",NA,0,0
+"Uganda",60,"UG","Africa",NA,0,0
+"Tunisia",61,"TN","Africa",NA,0,0
+"Armenia",62,"AM","Asia",NA,0,0
+"Brazil",63,"BR","South America",201,0.0175071857852103,0
+"Guatemala",63,"GT","North America",NA,0,0
+"Viet Nam",65,"VN","Asia",NA,0,0
+"Nicaragua",66,"NI","North America",NA,0,0
+"China",67,"CN","Asia",316,0.0275237348663008,0
+"United Republic of Tanzania",68,"TZ","Africa",NA,0,0
+"Turkey",69,"TR","Asia",286,0.0249107220625381,0
+"Nepal",70,"NP","Asia",NA,0,0
+"Bangladesh",71,"BD","Asia",NA,0,0
+"Venezuela (Bolivarian Republic of)",72,"VE","South America",NA,0,0
+"Ethiopia",73,"ET","Africa",NA,0,0
+"Iran (Islamic Republic of)",74,"IR","Asia",48,0.00418082048602038,0
+"Pakistan",75,"PK","Asia",NA,0,0
+"Sri Lanka",76,"LK","Asia",NA,0,0
+"Mongolia",77,"MN","Asia",NA,0,0
+"Qatar",78,"QA","Asia",NA,0,0
+"Israel",79,"IL","Asia",NA,0,0
+"Panama",80,"PA","North America",NA,0,0
+"Morocco",81,"MA","Africa",NA,0,0
+"Colombia",82,"CO","South America",446,0.0388467903492727,0
+"Algeria",83,"DZ","Africa",NA,0,0
+"United Arab Emirates",84,"AE","Asia",80,0.0069680341433673,0
+"Japan",85,"JP","Asia",NA,0,0
+"Indonesia",86,"ID","Asia",NA,0,0
+"Ecuador",87,"EC","South America",105,0.00914554481316958,0
+"Syrian Arab Republic",88,"SY","Asia",NA,0,0
+"Kuwait",89,"KW","Asia",NA,0,0
+"Egypt",90,"EG","Africa",NA,0,0
+"Mozambique",91,"MZ","Africa",NA,0,0
+"Afghanistan",92,"AF","Asia",NA,0,0
+"Mexico",93,"MX","North America",249,0.0216880062712307,0
+"Uzbekistan",94,"UZ","Asia",NA,0,0
+"Jordan",95,"JO","Asia",NA,0,0
+"Kyrgyzstan",96,"KG","Asia",NA,0,0
+"Azerbaijan",97,"AZ","Asia",NA,0,0
+"Myanmar",98,"MM","Asia",NA,0,0
+"Cambodia",99,"KH","Asia",NA,0,0
+"South Sudan",100,"SS","Africa",NA,0,0
+"Cameroon",101,"CM","Africa",NA,0,0
+"Thailand",102,"TH","Asia",183,0.0159393781029527,0
+"Haiti",103,"HT","North America",NA,0,0
+"Kazakhstan",104,"KZ","Asia",NA,0,0
+"Somalia",105,"SO","Africa",NA,0,0
+"Oman",106,"OM","Asia",NA,0,0
+"Saudi Arabia",107,"SA","Asia",NA,0,0
+"Iraq",108,"IQ","Asia",NA,0,0
+"Cote d'Ivoire",109,"CI","Africa",NA,0,0
+"Angola",110,"AO","Africa",NA,0,0
+"Tajikistan",111,"TJ","Asia",NA,0,0
+"Rwanda",112,"RW","Africa",NA,0,0
+"Libya",113,"LY","Africa",NA,0,0
+"Yemen",114,"YE","Asia",NA,0,0
+"Democratic Republic of the Congo",115,"CD","Africa",NA,0,0
+"Lao People's Democratic Republic",116,"LA","Asia",NA,0,0

@@ -1,0 +1,192 @@
+"country","year","GI","country3","country_map","continent","n","percentage_sample","ps2014"
+"Aruba",2020,45,"ABW","AW","North America",NA,0,0
+"Afghanistan",2020,38,"AFG","AF","Asia",NA,0,0
+"Angola",2020,43,"AGO","AO","Africa",NA,0,0
+"Albania",2020,64,"ALB","AL","Europe",NA,0,0.000216
+"United Arab Emirates",2020,76,"ARE","AE","Asia",80,0.0069680341433673,0
+"Argentina",2020,69,"ARG","AR","South America",91,0.00792613883808031,0
+"Armenia",2020,67,"ARM","AM","Asia",NA,0,0
+"Antigua and Barbuda",2020,55,"ATG","AG","North America",NA,0,0
+"Australia",2020,80,"AUS","AU","Oceania",885,0.0770838777110008,0
+"Austria",2020,88,"AUT","AT","Europe",236,0.0205557007229335,0.000216
+"Azerbaijan",2020,66,"AZE","AZ","Asia",NA,0,0
+"Burundi",2020,40,"BDI","BI","Africa",NA,0,0
+"Belgium",2020,90,"BEL","BE","Europe",86,0.00749063670411985,0.000819
+"Benin",2020,50,"BEN","BJ","Africa",NA,0,0
+"Burkina Faso",2020,51,"BFA","BF","Africa",NA,0,0
+"Bangladesh",2020,50,"BGD","BD","Asia",NA,0,0
+"Bulgaria",2020,79,"BGR","BG","Europe",NA,0,0.000216
+"Bahrain",2020,68,"BHR","BH","Asia",NA,0,0
+"Bahamas, The",2020,55,"BHS","BS","North America",NA,0,0
+"Bosnia and Herzegovina",2020,67,"BIH","BA","Europe",NA,0,0.000216
+"Belarus",2020,67,"BLR","BY","Europe",NA,0,0.000216
+"Belize",2020,55,"BLZ","BZ","North America",NA,0,0
+"Bermuda",2020,43,"BMU","BM","North America",NA,0,0
+"Bolivia",2020,57,"BOL","BO","South America",NA,0,0
+"Brazil",2020,64,"BRA","BR","South America",201,0.0175071857852103,0
+"Barbados",2020,63,"BRB","BB","North America",NA,0,0
+"Brunei Darussalam",2020,63,"BRN","BN","Asia",NA,0,0
+"Bhutan",2020,41,"BTN","BT","Asia",NA,0,0
+"Botswana",2020,54,"BWA","BW","Africa",NA,0,0
+"Central African Republic",2020,39,"CAF","CF","Africa",NA,0,0
+"Canada",2020,84,"CAN","CA","North America",630,0.0548732688790175,0
+"Switzerland",2020,91,"CHE","CH","Europe",109,0.00949394652033795,0.000354
+"Chile",2020,76,"CHL","CL","South America",430,0.0374531835205993,0
+"China",2020,65,"CHN","CN","Asia",316,0.0275237348663008,0
+"Cote d'Ivoire",2020,53,"CIV","CI","Africa",NA,0,0
+"Cameroon",2020,49,"CMR","CM","Africa",NA,0,0
+"Congo, Rep",2020,51,"COG","CG","Africa",NA,0,0
+"Colombia",2020,63,"COL","CO","South America",446,0.0388467903492727,0
+"Comoros",2020,39,"COM","KM","Africa",NA,0,0
+"Cabo Verde",2020,55,"CPV","CV","Africa",NA,0,0
+"Costa Rica",2020,71,"CRI","CR","North America",NA,0,0
+"Cuba",2020,59,"CUB","CU","North America",NA,0,0
+"Cayman Islands",2020,45,"CYM","KY","North America",NA,0,0
+"Cyprus",2020,80,"CYP","CY","Asia",NA,0,0
+"Czech Republic",2020,85,"CZE","CZ","Europe",NA,0,0.000216
+"Germany",2020,88,"DEU","DE","Europe",266,0.0231687135266963,0.001257
+"Djibouti",2020,57,"DJI","DJ","Africa",NA,0,0
+"Dominica",2020,51,"DMA","DM","North America",NA,0,0
+"Denmark",2020,88,"DNK","DK","Europe",92,0.0080132392648724,0.000216
+"Dominican Republic",2020,65,"DOM","DO","North America",NA,0,0
+"Algeria",2020,55,"DZA","DZ","Africa",NA,0,0
+"Ecuador",2020,59,"ECU","EC","South America",105,0.00914554481316958,0
+"Egypt, Arab Rep",2020,66,"EGY","EG","Africa",NA,0,0
+"Eritrea",2020,31,"ERI","ER","Africa",NA,0,0
+"Spain",2020,85,"ESP","ES","Europe",270,0.0235171152338646,0.000216
+"Estonia",2020,82,"EST","EE","Europe",NA,0,0.000216
+"Ethiopia",2020,45,"ETH","ET","Africa",NA,0,0
+"Finland",2020,87,"FIN","FI","Europe",46,0.0040066196324362,0.000216
+"Fiji",2020,55,"FJI","FJ","Oceania",NA,0,0
+"France",2020,87,"FRA","FR","Europe",211,0.0183781900531313,0.000216
+"Faroe Islands",2020,42,"FRO","FO","Europe",NA,0,0.000216
+"Micronesia, Fed Sts",2020,45,"FSM","FM","Oceania",NA,0,0
+"Gabon",2020,53,"GAB","GA","Africa",NA,0,0
+"United Kingdom",2020,89,"GBR","GB","Europe",361,0.031443254071945,0.003164
+"Georgia",2020,70,"GEO","GE","Asia",NA,0,0
+"Ghana",2020,61,"GHA","GH","Africa",NA,0,0
+"Guinea",2020,51,"GIN","GN","Africa",NA,0,0
+"Gambia, The",2020,52,"GMB","GM","Africa",NA,0,0
+"Guinea-Bissau",2020,41,"GNB","GW","Africa",NA,0,0
+"Equatorial Guinea",2020,44,"GNQ","GQ","Africa",NA,0,0
+"Greece",2020,83,"GRC","GR","Europe",99,0.00862294225241704,0.000216
+"Grenada",2020,52,"GRD","GD","North America",NA,0,0
+"Guatemala",2020,61,"GTM","GT","North America",NA,0,0
+"Guyana",2020,53,"GUY","GY","South America",NA,0,0
+"Hong Kong SAR, China",2020,67,"HKG","HK","Asia",NA,0,0
+"Honduras",2020,59,"HND","HN","North America",NA,0,0
+"Croatia",2020,81,"HRV","HR","Europe",NA,0,0.000216
+"Haiti",2020,41,"HTI","HT","North America",NA,0,0
+"Hungary",2020,84,"HUN","HU","Europe",174,0.0151554742618239,0.000216
+"Indonesia",2020,63,"IDN","ID","Asia",NA,0,0
+"India",2020,63,"IND","IN","Asia",NA,0,0
+"Ireland",2020,86,"IRL","IE","Europe",NA,0,0.000216
+"Iran, Islamic Rep",2020,54,"IRN","IR","Asia",48,0.00418082048602038,0
+"Iraq",2020,44,"IRQ","IQ","Asia",NA,0,0
+"Iceland",2020,70,"ISL","IS","Europe",NA,0,0.000216
+"Israel",2020,76,"ISR","IL","Asia",NA,0,0
+"Italy",2020,83,"ITA","IT","Europe",153,0.01332636529919,0.000216
+"Jamaica",2020,62,"JAM","JM","North America",NA,0,0
+"Jordan",2020,71,"JOR","JO","Asia",NA,0,0
+"Japan",2020,75,"JPN","JP","Asia",NA,0,0
+"Kazakhstan",2020,64,"KAZ","KZ","Asia",NA,0,0
+"Kenya",2020,55,"KEN","KE","Africa",347,0.0302238480968557,0
+"Kyrgyz Republic",2020,60,"KGZ","KG","Asia",NA,0,0
+"Cambodia",2020,57,"KHM","KH","Asia",NA,0,0
+"Kiribati",2020,46,"KIR","KI","Oceania",NA,0,0
+"St Kitts and Nevis",2020,49,"KNA","KN","North America",NA,0,0
+"Korea, Rep",2020,78,"KOR","KR","Asia",NA,0,0
+"Kuwait",2020,70,"KWT","KW","Asia",NA,0,0
+"Lao PDR",2020,44,"LAO","LA","Asia",NA,0,0
+"Lebanon",2020,68,"LBN","LB","Asia",NA,0,0
+"Liberia",2020,47,"LBR","LR","Africa",NA,0,0
+"Libya",2020,55,"LBY","LY","Africa",NA,0,0
+"St Lucia",2020,54,"LCA","LC","North America",NA,0,0
+"Liechtenstein",2020,53,"LIE","LI","Europe",NA,0,0.000216
+"Sri Lanka",2020,57,"LKA","LK","Asia",NA,0,0
+"Lesotho",2020,49,"LSO","LS","Africa",NA,0,0
+"Lithuania",2020,81,"LTU","LT","Europe",NA,0,0.000216
+"Luxembourg",2020,85,"LUX","LU","Europe",NA,0,0.000216
+"Latvia",2020,77,"LVA","LV","Europe",NA,0,0.000216
+"Macao SAR, China",2020,55,"MAC","MO","Asia",NA,0,0
+"Morocco",2020,70,"MAR","MA","Africa",NA,0,0
+"Monaco",2020,49,"MCO","MC","Europe",NA,0,0.000216
+"Moldova",2020,67,"MDA","MD","Europe",NA,0,0.000216
+"Madagascar",2020,46,"MDG","MG","Africa",NA,0,0
+"Maldives",2020,50,"MDV","MV","Asia",NA,0,0
+"Mexico",2020,71,"MEX","MX","North America",249,0.0216880062712307,0
+"Marshall Islands",2020,45,"MHL","MH","Oceania",NA,0,0
+"North Macedonia",2020,69,"MKD","MK","Europe",NA,0,0.000216
+"Mali",2020,49,"MLI","ML","Africa",NA,0,0
+"Malta",2020,81,"MLT","MT","Europe",NA,0,0.000216
+"Myanmar",2020,45,"MMR","MM","Asia",NA,0,0
+"Montenegro",2020,69,"MNE","ME","Europe",NA,0,0.000216
+"Mongolia",2020,64,"MNG","MN","Asia",NA,0,0
+"Mozambique",2020,51,"MOZ","MZ","Africa",NA,0,0
+"Mauritania",2020,51,"MRT","MR","Africa",NA,0,0
+"Mauritius",2020,71,"MUS","MU","Africa",NA,0,0
+"Malawi",2020,47,"MWI","MW","Africa",NA,0,0
+"Malaysia",2020,81,"MYS","MY","Asia",281,0.0244752199285777,0
+"Namibia",2020,56,"NAM",NA,"Africa",NA,0,0
+"Niger",2020,46,"NER","NE","Africa",NA,0,0
+"Nigeria",2020,55,"NGA","NG","Africa",43,0.00374531835205993,0
+"Nicaragua",2020,59,"NIC","NI","North America",NA,0,0
+"Netherlands",2020,90,"NLD","NL","Europe",356,0.0310077519379845,0.000216
+"Norway",2020,85,"NOR","NO","Europe",363,0.0316174549255291,0.000216
+"Nepal",2020,46,"NPL","NP","Asia",NA,0,0
+"New Zealand",2020,75,"NZL","NZ","Oceania",159,0.0138489678599425,0
+"Oman",2020,61,"OMN","OM","Asia",NA,0,0
+"Pakistan",2020,53,"PAK","PK","Asia",NA,0,0
+"Panama",2020,70,"PAN","PA","North America",NA,0,0
+"Peru",2020,68,"PER","PE","South America",115,0.0100165490810905,0
+"Philippines",2020,65,"PHL","PH","Asia",NA,0,0
+"Palau",2020,46,"PLW","PW","Oceania",NA,0,0
+"Papua New Guinea",2020,49,"PNG","PG","Oceania",NA,0,0
+"Poland",2020,81,"POL","PL","Europe",36,0.00313561536451529,0.000216
+"Portugal",2020,85,"PRT","PT","Europe",NA,0,0.000216
+"Paraguay",2020,62,"PRY","PY","South America",NA,0,0
+"Qatar",2020,73,"QAT","QA","Asia",NA,0,0
+"Russian Federation",2020,71,"RUS","RU","Europe",240,0.0209041024301019,0.000216
+"Rwanda",2020,50,"RWA","RW","Africa",NA,0,0
+"Saudi Arabia",2020,67,"SAU","SA","Asia",NA,0,0
+"Sudan",2020,47,"SDN","SD","Africa",NA,0,0
+"Senegal",2020,61,"SEN","SN","Africa",NA,0,0
+"Singapore",2020,83,"SGP","SG","Asia",NA,0,0
+"Solomon Islands",2020,39,"SLB","SB","Oceania",NA,0,0
+"Sierra Leone",2020,45,"SLE","SL","Africa",NA,0,0
+"El Salvador",2020,65,"SLV","SV","North America",89,0.00775193798449612,0
+"San Marino",2020,55,"SMR","SM","Europe",NA,0,0.000216
+"Somalia",2020,31,"SOM","SO","Africa",NA,0,0
+"Serbia",2020,78,"SRB","RS","Europe",69,0.0060099294486543,0.000216
+"Sao Tome and Principe",2020,42,"STP","ST","Africa",NA,0,0
+"Suriname",2020,54,"SUR","SR","South America",NA,0,0
+"Slovak Republic",2020,83,"SVK","SK","Europe",263,0.02290741224632,0.000216
+"Slovenia",2020,80,"SVN","SI","Europe",NA,0,0.000216
+"Sweden",2020,89,"SWE","SE","Europe",152,0.0132392648723979,0.000216
+"Eswatini",2020,46,"SWZ","SZ","Eswatini",NA,0,0
+"Seychelles",2020,62,"SYC","SC","Africa",NA,0,0
+"Syrian Arab Republic",2020,47,"SYR","SY","Asia",NA,0,0
+"Chad",2020,40,"TCD","TD","Africa",NA,0,0
+"Togo",2020,51,"TGO","TG","Africa",NA,0,0
+"Thailand",2020,73,"THA","TH","Asia",183,0.0159393781029527,0
+"Tajikistan",2020,51,"TJK","TJ","Asia",NA,0,0
+"Turkmenistan",2020,41,"TKM","TM","Asia",NA,0,0
+"Tonga",2020,45,"TON","TO","Oceania",NA,0,0
+"Trinidad and Tobago",2020,61,"TTO","TT","North America",NA,0,0
+"Tunisia",2020,65,"TUN","TN","Africa",NA,0,0
+"Turkey",2020,71,"TUR","TR","Asia",286,0.0249107220625381,0
+"Tanzania",2020,49,"TZA","TZ","Africa",NA,0,0
+"Uganda",2020,52,"UGA","UG","Africa",NA,0,0
+"Ukraine",2020,73,"UKR","UA","Europe",NA,0,0.000216
+"Uruguay",2020,73,"URY","UY","South America",NA,0,0
+"United States",2020,81,"USA","US","North America",2682,0.233603344656389,0.952011
+"Uzbekistan",2020,51,"UZB","UZ","Asia",NA,0,0
+"St Vincent and the Grenadines",2020,48,"VCT","VC","North America",NA,0,0
+"Venezuela, RB",2020,52,"VEN","VE","South America",NA,0,0
+"Vietnam",2020,63,"VNM","VN","Asia",NA,0,0
+"Vanuatu",2020,48,"VUT","VU","Oceania",NA,0,0
+"Samoa",2020,49,"WSM","WS","Oceania",NA,0,0
+"Yemen, Rep",2020,49,"YEM","YE","Asia",NA,0,0
+"South Africa",2020,69,"ZAF","ZA","Africa",130,0.0113230554829719,0.043042
+"Zambia",2020,58,"ZMB","ZM","Africa",NA,0,0
+"Zimbabwe",2020,53,"ZWE","ZW","Africa",NA,0,0
