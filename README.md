@@ -9,9 +9,7 @@ This repo is data, code, and related materials of "Assessing diversity and repre
 
 |-------About_Protocol.txt
 
-|-------Research_Design.docx
-
-|-------Literature_Review.docx
+|-------Stage_1_RR_Protocol.docx
 
 
 |---2_Raw_Data
