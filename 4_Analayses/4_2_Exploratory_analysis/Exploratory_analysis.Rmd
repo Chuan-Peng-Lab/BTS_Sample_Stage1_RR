@@ -102,11 +102,11 @@ pddata %>%
 
 ```{r}
 pd_model_beta_zi_bts <- brm(
-  bf(percentage_sample ~ pd + gp(Latitude, Longitude),
-     phi ~ pd ,
+ bf(bts| trials(total_bts) ~ pd+ gp(Latitude, Longitude),
+   phi ~ pd,
      zi ~ pd),
   data = pddata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 4, seed = 1234,
   
@@ -135,7 +135,6 @@ ame_beta_zi_pd_bts <- pd_model_beta_zi_bts %>%
   posterior_draws()
 
 ame_beta_zi_pd_bts %>% median_hdi(draw)
-
 
 ggplot(ame_beta_zi_pd_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -174,11 +173,11 @@ pddata
 
 ```{r}
 pd_model_beta_zi_ps2014 <- brm(
-  bf(ps2014 ~ pd+ gp(Latitude, Longitude),
-     phi ~ pd,
+   bf(ps| trials(total_ps) ~ pd+ gp(Latitude, Longitude),
+   phi ~ pd,
      zi ~ pd),
   data = pddata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -285,7 +284,7 @@ ggsave(filename = "PD.jpg", plot = pd1, device = "jpg", width = 12, height = 12)
 gdpdata <- read_csv("gdpdata.csv")
 gdpdata
 gdpdata %>% 
-  count(ps2014 == 0) %>% 
+  count(ps == 0) %>% 
   mutate(prop = n / sum(n))
 
 latitude_longitude_gdp <- latitude_longitude %>%
@@ -298,11 +297,11 @@ gdpdata
 
 ```{r}
 gdp_model_beta_zi_bts <- brm(
-  bf(percentage_sample ~ GDP_per_capita+ gp(Latitude, Longitude),
-     phi ~ GDP_per_capita,
+   bf(bts| trials(total_bts) ~ GDP_per_capita+ gp(Latitude, Longitude),
+   phi ~ GDP_per_capita,
      zi ~ GDP_per_capita),
   data = gdpdata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -365,11 +364,11 @@ gdpdata %>%
 
 ```{r}
 gdp_model_beta_zi_ps2014 <- brm(
-  bf(ps2014 ~ GDP_per_capita + gp(Latitude, Longitude),
-     phi ~ GDP_per_capita,
+  bf(ps| trials(total_ps) ~ GDP_per_capita+ gp(Latitude, Longitude),
+   phi ~ GDP_per_capita,
      zi ~ GDP_per_capita),
   data = gdpdata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -454,15 +453,16 @@ gdp1 <- ggplot(combined_data2, aes(x = GDP_per_capita, y = value, color = source
 
 # Adding the label
 gdp1 <- gdp1 +
-  annotate("text", x = 69300, y = 0.955, 
+  annotate("text", x = 6.43, y = 0.955, 
            label = expression("US"), size = 6) +
-  annotate("text", x = 69300, y = 0.235, 
+  annotate("text", x = 6.43, y = 0.235, 
            label = expression("US"), size = 6)
 gdp1
 
 # Save the plot as a JPEG image
 ggsave(filename = "GDP.jpg", plot = gdp1, device = "jpg", width = 12, height = 12)
 ```
+
 
 ##03_R&D_investment
 ```{r}
@@ -483,11 +483,11 @@ rddata
 
 ```{r}
 rd_model_beta_zi_bts <- brm(
-  bf(percentage_sample ~ R_D+ gp(Latitude, Longitude),
-     phi ~ R_D,
+  bf(bts| trials(total_bts) ~ R_D+ gp(Latitude, Longitude),
+   phi ~ R_D,
      zi ~ R_D),
   data = rddata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -536,11 +536,11 @@ result$hypothesis$Est.Error
 
 ```{r}
 rd_model_beta_zi_ps2014 <- brm(
-  bf(ps2014 ~ R_D + gp(Latitude, Longitude),
-     phi ~ R_D,
+  bf(ps| trials(total_ps) ~ R_D+ gp(Latitude, Longitude),
+   phi ~ R_D,
      zi ~ R_D),
   data = rddata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -628,6 +628,332 @@ RD1
 ggsave(filename = "RD.jpg", plot = RD1, device = "jpg", width = 12, height = 12)
 ```
 
+##04_Number of universities per 100000 people
+```{r}
+universitydata <- read_csv("universitydata.csv")
+universitydata
+universitydata %>% 
+  count(percentage_sample == 0) %>% 
+  mutate(prop = n / sum(n))
+
+latitude_longitude_university <- latitude_longitude %>%
+  filter(country_map %in% universitydata$country_map)
+
+universitydata <- merge(universitydata, latitude_longitude_university, by = "country_map", all = TRUE)
+universitydata
+```
+
+```{r}
+university_model_beta_zi_bts <- brm(
+  bf(bts| trials(total_bts) ~ number_of_universities_per_capita+ gp(Latitude, Longitude),
+   phi ~ number_of_universities_per_capita,
+     zi ~ number_of_universities_per_capita),
+  data = universitydata,
+  family = zero_inflated_beta_binomial(),
+  chains = 4, iter = 2000, warmup = 1000,
+  cores = 2, seed = 1234,
+  
+  # regularising priors
+  prior = c(prior(normal(0, 1), class = Intercept),
+            prior(normal(0, 1), class = b),
+            prior(exponential(2), class = sdgp)),
+  
+  # tune the mcmc sampler
+  control = list(adapt_delta = 0.99),
+  
+  backend = "cmdstanr",
+  file = "university_model_beta_zi_bts"
+)
+tidy(university_model_beta_zi_bts, effects = "fixed")
+
+```
+
+```{r}
+ame_beta_zi_university_bts <- university_model_beta_zi_bts %>%
+  avg_comparisons(variables = "number_of_universities_per_capita") %>% 
+  posterior_draws()
+
+ame_beta_zi_university_bts %>% median_hdi(draw)
+
+
+ggplot(ame_beta_zi_university_bts, aes(x = draw)) +
+  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
+               fill = "#bc3032") +
+  scale_x_continuous(labels = label_pp) +
+  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+       caption = "80% and 95% credible intervals shown in black") +
+  theme_clean()
+```
+
+```{r}
+result <- hypothesis(ame_beta_zi_university_bts, "draw>0")
+result
+result$hypothesis$Estimate
+result$hypothesis$CI.Lower
+result$hypothesis$CI.Upper
+result$hypothesis$Evid.Ratio
+result$hypothesis$Est.Error
+```
+
+```{r}
+university_model_beta_zi_ps2014 <- brm(
+  bf(ps| trials(total_ps) ~ number_of_universities_per_capita+ gp(Latitude, Longitude),
+   phi ~ number_of_universities_per_capita,
+     zi ~ number_of_universities_per_capita),
+  data = universitydata,
+  family = zero_inflated_beta_binomial(),
+  chains = 4, iter = 2000, warmup = 1000,
+  cores = 2, seed = 1234,
+  
+  # regularising priors
+  prior = c(prior(normal(0, 1), class = Intercept),
+            prior(normal(0, 1), class = b),
+            prior(exponential(2), class = sdgp)),
+  
+  # tune the mcmc sampler
+  control = list(adapt_delta = 0.99),
+  
+  backend = "cmdstanr",
+  file = "university_model_beta_zi_ps2014"
+)
+tidy(university_model_beta_zi_ps2014, effects = "fixed")
+
+```
+
+```{r}
+ame_beta_zi_university_ps2014 <- university_model_beta_zi_ps2014 %>%
+  avg_comparisons(variables = "number_of_universities_per_capita") %>% 
+  posterior_draws()
+
+ame_beta_zi_university_ps2014 %>% median_hdi(draw)
+
+
+ggplot(ame_beta_zi_university_ps2014, aes(x = draw)) +
+  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
+               fill = "#bc3032") +
+  scale_x_continuous(labels = label_pp) +
+  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+       caption = "80% and 95% credible intervals shown in black") +
+  theme_clean()
+```
+
+```{r}
+result <- hypothesis(ame_beta_zi_university_ps2014, "draw>0")
+result
+result$hypothesis$Estimate
+result$hypothesis$CI.Lower
+result$hypothesis$CI.Upper
+result$hypothesis$Evid.Ratio
+result$hypothesis$Est.Error
+```
+
+
+##人均大学数量画图
+```{r}
+combined_data1 <- rbind(
+  transform(universitydata, source = "PS2014", value = ps2014),
+  transform(universitydata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+university <- ggplot(combined_data1, aes(x = number_of_universities_per_capita, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "BTS")) +
+
+  ylab("Proportion of sample") +
+  xlab("Number of universities per 100000 people") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  # 设置图例位置为顶部
+        legend.text = element_text(size = 18),  # 设置图例文本字体大小
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 54)) +
+  ylim(c(-0.10, 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+university <- university +
+  annotate("text", x = 5, y = 0.955, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 5, y = 0.235, 
+           label = expression("US"), size = 6)
+# Print the plot
+university
+# Save the plot as a JPEG image
+ggsave(filename = "university.jpg", plot = university, device = "jpg", width = 12, height = 12)
+```
+##number_of_psychology_researchers_per_capita
+```{r}
+researcherdata <- read_csv("researcherdata.csv")
+researcherdata
+researcherdata %>% 
+  count(percentage_sample == 0) %>% 
+  mutate(prop = n / sum(n))
+
+latitude_longitude_researcher <- latitude_longitude %>%
+  filter(country_map %in% researcherdata$country_map)
+
+researcherdata <- merge(researcherdata, latitude_longitude_researcher, by = "country_map", all = TRUE)
+researcherdata
+```
+
+```{r}
+researcher_model_beta_zi_bts <- brm(
+  bf(bts| trials(total_bts) ~ number_of_psychology_researchers_per_capita+ gp(Latitude, Longitude),
+   phi ~ number_of_psychology_researchers_per_capita,
+     zi ~ number_of_psychology_researchers_per_capita),
+  data = researcherdata,
+  family = zero_inflated_beta_binomial(),
+  chains = 4, iter = 2000, warmup = 1000,
+  cores = 2, seed = 1234,
+  
+  # regularising priors
+  prior = c(prior(normal(0, 1), class = Intercept),
+            prior(normal(0, 1), class = b),
+            prior(exponential(2), class = sdgp)),
+  
+  # tune the mcmc sampler
+  control = list(adapt_delta = 0.99),
+  
+  backend = "cmdstanr",
+  file = "researcher_model_beta_zi_bts"
+)
+tidy(researcher_model_beta_zi_bts, effects = "fixed")
+
+```
+
+```{r}
+ame_beta_zi_researcher_bts <- researcher_model_beta_zi_bts %>%
+  avg_comparisons(variables = "number_of_psychology_researchers_per_capita") %>% 
+  posterior_draws()
+
+ame_beta_zi_researcher_bts %>% median_hdi(draw)
+
+
+ggplot(ame_beta_zi_researcher_bts, aes(x = draw)) +
+  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
+               fill = "#bc3032") +
+  scale_x_continuous(labels = label_pp) +
+  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+       caption = "80% and 95% credible intervals shown in black") +
+  theme_clean()
+```
+
+```{r}
+result <- hypothesis(ame_beta_zi_researcher_bts, "draw>0")
+result
+result$hypothesis$Estimate
+result$hypothesis$CI.Lower
+result$hypothesis$CI.Upper
+result$hypothesis$Evid.Ratio
+result$hypothesis$Est.Error
+```
+
+```{r}
+researcher_model_beta_zi_ps2014 <- brm(
+  bf(ps| trials(total_ps) ~ number_of_psychology_researchers_per_capita+ gp(Latitude, Longitude),
+   phi ~ number_of_psychology_researchers_per_capita,
+     zi ~ number_of_psychology_researchers_per_capita),
+  data = researcherdata,
+  family = zero_inflated_beta_binomial(),
+  chains = 4, iter = 2000, warmup = 1000,
+  cores = 2, seed = 1234,
+  
+  # regularising priors
+  prior = c(prior(normal(0, 1), class = Intercept),
+            prior(normal(0, 1), class = b),
+            prior(exponential(2), class = sdgp)),
+  
+  # tune the mcmc sampler
+  control = list(adapt_delta = 0.99),
+  
+  backend = "cmdstanr",
+  file = "researcher_model_beta_zi_ps2014"
+)
+tidy(researcher_model_beta_zi_ps2014, effects = "fixed")
+
+```
+
+```{r}
+ame_beta_zi_researcher_ps2014 <- researcher_model_beta_zi_ps2014 %>%
+  avg_comparisons(variables = "number_of_psychology_researchers_per_capita") %>% 
+  posterior_draws()
+
+ame_beta_zi_researcher_ps2014 %>% median_hdi(draw)
+
+
+ggplot(ame_beta_zi_researcher_ps2014, aes(x = draw)) +
+  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
+               fill = "#bc3032") +
+  scale_x_continuous(labels = label_pp) +
+  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+       caption = "80% and 95% credible intervals shown in black") +
+  theme_clean()
+```
+
+```{r}
+result <- hypothesis(ame_beta_zi_researcher_ps2014, "draw>0")
+result
+result$hypothesis$Estimate
+result$hypothesis$CI.Lower
+result$hypothesis$CI.Upper
+result$hypothesis$Evid.Ratio
+result$hypothesis$Est.Error
+```
+
+
+##人均心理学研究者数量画图
+```{r}
+combined_data1 <- rbind(
+  transform(researcherdata, source = "PS2014", value = ps2014),
+  transform(researcherdata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+researcher <- ggplot(combined_data1, aes(x = number_of_psychology_researchers_per_capita, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "BTS")) +
+
+  ylab("Proportion of sample") +
+  xlab("Number of psychology researchers per 100000 people") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  # 设置图例位置为顶部
+        legend.text = element_text(size = 18),  # 设置图例文本字体大小
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 200)) +
+  ylim(c(-0.14, 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+researcher <- researcher +
+  annotate("text", x = 50, y = 0.955, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 50, y = 0.235, 
+           label = expression("US"), size = 6)
+# Print the plot
+researcher
+# Save the plot as a JPEG image
+ggsave(filename = "researcher.jpg", plot = researcher, device = "jpg", width = 12, height = 12)
+```
+
+
+
+
 ##Education_data
 ```{r}
 edudata <- read_csv("Education_data.csv")
@@ -646,13 +972,13 @@ edudata
 
 ```{r}
 edu_model_beta_zi_bts <- brm(
-  bf(percentage_sample ~ average_years_of_schooling+ gp(Latitude, Longitude),
-     phi ~ average_years_of_schooling,
+   bf(bts| trials(total_bts) ~ average_years_of_schooling+ gp(Latitude, Longitude),
+   phi ~ average_years_of_schooling,
      zi ~ average_years_of_schooling),
   data = edudata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 2, seed = 1234,
+  cores = 4, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
@@ -698,13 +1024,13 @@ result$hypothesis$Est.Error
 
 ```{r}
 edu_model_beta_zi_ps2014 <- brm(
-  bf(ps2014 ~ average_years_of_schooling + gp(Latitude, Longitude),
-     phi ~ average_years_of_schooling,
+  bf(ps| trials(total_ps) ~ average_years_of_schooling+ gp(Latitude, Longitude),
+   phi ~ average_years_of_schooling,
      zi ~ average_years_of_schooling),
   data = edudata,
-  family = zero_inflated_beta(),
-  chains = 4, iter = 2000, warmup = 1000,
-  cores = 2, seed = 1234,
+  family = zero_inflated_beta_binomial(),
+  chains = 4, iter = 4000, warmup = 2000,
+  cores = 4, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
@@ -814,11 +1140,11 @@ urbandata
 
 ```{r}
 urban_model_beta_zi_bts <- brm(
-  bf(percentage_sample ~ Urbanization+ gp(Latitude, Longitude),
-     phi ~ Urbanization,
+  bf(bts| trials(total_bts) ~ Urbanization+ gp(Latitude, Longitude),
+   phi ~ Urbanization,
      zi ~ Urbanization),
   data = urbandata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -864,13 +1190,13 @@ result$hypothesis$Est.Error
 
 ```{r}
 urban_model_beta_zi_ps2014 <- brm(
-  bf(ps2014 ~ Urbanization + gp(Latitude, Longitude),
-     phi ~ Urbanization,
+  bf(ps| trials(total_ps) ~ Urbanization+ gp(Latitude, Longitude),
+   phi ~ Urbanization,
      zi ~ Urbanization),
   data = urbandata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 2, seed = 1234,
+  cores = 4, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
@@ -900,7 +1226,7 @@ ggplot(ame_beta_zi_urban_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of having a gender-based on the proportion of women in parliament", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -980,11 +1306,11 @@ gidata
 
 ```{r}
 gi_model_beta_zi_bts <- brm(
-  bf(percentage_sample ~ GI+ gp(Latitude, Longitude),
-     phi ~ GI,
+   bf(bts| trials(total_bts) ~ GI+ gp(Latitude, Longitude),
+   phi ~ GI,
      zi ~ GI),
   data = gidata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -1030,11 +1356,11 @@ result$hypothesis$Evid.Ratio
 
 ```{r}
 gi_model_beta_zi_ps2014 <- brm(
-  bf(ps2014 ~ GI + gp(Latitude, Longitude),
-     phi ~ GI,
+  bf(ps| trials(total_ps) ~ GI+ gp(Latitude, Longitude),
+   phi ~ GI,
      zi ~ GI),
   data = gidata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -1141,11 +1467,11 @@ networkdata
 
 ```{r}
 network_model_beta_zi_bts <- brm(
-  bf(percentage_sample ~ Network_2021+ gp(Latitude, Longitude),
-     phi ~ Network_2021,
+   bf(bts| trials(total_bts) ~ Network_2021+ gp(Latitude, Longitude),
+   phi ~ Network_2021,
      zi ~ Network_2021),
   data = networkdata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -1191,11 +1517,11 @@ result$hypothesis$Est.Error
 
 ```{r}
 network_model_beta_zi_ps2014 <- brm(
-  bf(ps2014 ~ Network_2021 + gp(Latitude, Longitude),
-     phi ~ Network_2021,
+ bf(ps| trials(total_ps) ~ Network_2021+ gp(Latitude, Longitude),
+   phi ~ Network_2021,
      zi ~ Network_2021),
   data = networkdata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -1305,11 +1631,11 @@ lddata
 
 ```{r}
 ld1_model_beta_zi_bts <- brm(
-  bf(percentage_sample ~ lp1+ gp(Latitude, Longitude),
-     phi ~ lp1,
+  bf(bts| trials(total_bts) ~ lp1+ gp(Latitude, Longitude),
+   phi ~ lp1,
      zi ~ lp1),
   data = lddata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -1355,11 +1681,11 @@ result$hypothesis$Est.Error
 
 ```{r}
 ld1_model_beta_zi_ps2014 <- brm(
-  bf(ps2014 ~ lp1 + gp(Latitude, Longitude),
-     phi ~ lp1,
+  bf(ps| trials(total_ps) ~ lp1+ gp(Latitude, Longitude),
+   phi ~ lp1,
      zi ~ lp1),
   data = lddata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -1455,11 +1781,11 @@ ggsave(filename = "LD.jpg", plot = ld1, device = "jpg", width = 12, height = 12)
 ##lp2
 ```{r}
 ld2_model_beta_zi_bts <- brm(
-  bf(percentage_sample ~ lp2+ gp(Latitude, Longitude),
-     phi ~ lp2,
+  bf(bts| trials(total_bts) ~ lp2+ gp(Latitude, Longitude),
+   phi ~ lp2,
      zi ~ lp2),
   data = lddata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -1505,11 +1831,11 @@ result$hypothesis$Est.Error
 
 ```{r}
 ld2_model_beta_zi_ps2014 <- brm(
-  bf(ps2014 ~ lp2 + gp(Latitude, Longitude),
-     phi ~ lp2,
+  bf(ps| trials(total_ps) ~ lp2+ gp(Latitude, Longitude),
+   phi ~ lp2,
      zi ~ lp2),
   data = lddata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 20000, warmup = 10000,
   cores = 4, seed = 1234,
   
@@ -1575,11 +1901,12 @@ englishdata
 
 ```{r}
 english_model_beta_zi_bts <- brm(
-  bf(percentage_sample ~ EPI_rank+ gp(Latitude, Longitude),
-     phi ~ EPI_rank,
+  bf(bts| trials(total_bts) ~ EPI_rank+ gp(Latitude, Longitude),
+   phi ~ EPI_rank,
      zi ~ EPI_rank),
   data = englishdata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
+
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -1614,7 +1941,7 @@ ggplot(ame_beta_zi_english_bts, aes(x = draw)) +
 ```
 
 ```{r}
-result <- hypothesis(ame_beta_zi_english_bts, "draw<0")
+result <- hypothesis(ame_beta_zi_english_bts, "draw>0")
 result
 result$hypothesis$Estimate
 result$hypothesis$CI.Lower
@@ -1625,11 +1952,11 @@ result$hypothesis$Est.Error
 
 ```{r}
 english_model_beta_zi_ps2014 <- brm(
-  bf(ps2014 ~ EPI_rank + gp(Latitude, Longitude),
-     phi ~ EPI_rank,
+  bf(ps| trials(total_ps) ~ EPI_rank+ gp(Latitude, Longitude),
+   phi ~ EPI_rank,
      zi ~ EPI_rank),
   data = englishdata,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -1667,7 +1994,7 @@ ggplot(ame_beta_zi_english_ps2014, aes(x = draw)) +
 ```
 
 ```{r}
-result <- hypothesis(ame_beta_zi_english_ps2014, "draw<0")
+result <- hypothesis(ame_beta_zi_english_ps2014, "draw>0")
 result
 result$hypothesis$Estimate
 result$hypothesis$CI.Lower
@@ -1725,7 +2052,7 @@ ggsave(filename = "EPI.jpg", plot = EPI1, device = "jpg", width = 12, height = 1
 
 ```{r}  
 # 将两个图形横向左右排列
-combined_plot1 <-  gdp1+ RD1+education1+UP1+GI1+ Network1 + pd1+ld1+EPI1 + 
+combined_plot1 <-  gdp1+ RD1+university+  researcher+education1+UP1+GI1+ Network1 + pd1+ld1+EPI1 + 
   plot_layout(ncol = 2) + # 设置两列布局
 plot_annotation(tag_levels ="A",
                   theme = theme(plot.title = element_text(size = 26)))
