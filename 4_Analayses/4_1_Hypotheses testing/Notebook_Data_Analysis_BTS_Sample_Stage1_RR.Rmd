@@ -38,7 +38,7 @@ df
 ```
 
 ```{r}
-df_PSA001 <- df %>%
+df <- df %>%
   mutate(country_map = case_when(
     country == "AFG"~"AF", 
     country == "UAE"~"AE", 
@@ -299,13 +299,20 @@ df_PSA001 <- df %>%
     country == "ZMB"~"ZM", 
     country == "ZWE"~"ZW",
     TRUE ~ country ))
+```
 
-df_PSA001 <- select(df_PSA001, user_id, age,sex,country_map)
+```{r}
+df_PSA001 <- select(df, user_id, age,sex,country_map)
 #合并重复的行
 df_PSA001 <- distinct(df_PSA001)
+df_PSA001 <- df_PSA001 %>% 
+  group_by(country_map) %>% 
+  summarise(n = n())
 
-df_PSA001 <- df_PSA001 %>%
-count(country_map)  %>% arrange(-n)
+df_PSA001
+
+
+df_PSA001 <- df_PSA001  %>% arrange(-n)
 
 df_PSA001 <- mutate(.data = df_PSA001, percentage_sample = n/11481) 
 df_PSA001
@@ -325,7 +332,7 @@ wppdata2
 
 
 ```{r}
-wppdata3 <- wppdata2 %>% left_join(df_PSA001_country, by = "country_map")
+wppdata3 <- wppdata2 %>% left_join(df_PSA001, by = "country_map")
 #将台湾省的数据与中国内地的数据合并
 sum_of_cn <- sum(wppdata3$percentage_pop[wppdata3$country_map %in% c("CN", "TW")])
 wppdata3$percentage_pop[wppdata3$country_map %in% c("CN", "TW")] <- sum_of_cn
@@ -560,6 +567,22 @@ author$n_binned_ps2014 <-
   )
  ))
 ))))
+# maybe try binning for first_corresponding_author_ps2014
+author$n_binned_fc_ps2014 <- 
+  if_else(author$percentage_fc_author_ps2014 >= 0.16, "0.16-1",
+ 
+  
+  if_else(author$percentage_fc_author_ps2014 < 0.16 & author$percentage_fc_author_ps2014 >= 0.08, "0.08-0.16" , 
+   if_else(author$percentage_fc_author_ps2014 < 0.04 & author$percentage_fc_author_ps2014 >= 0.08, "0.04-0.08" ,
+   
+  if_else(author$percentage_fc_author_ps2014 < 0.04 & author$percentage_fc_author_ps2014 >= 0.02, "0.02-0.04" ,
+   if_else(author$percentage_fc_author_ps2014 < 0.02 & author$percentage_fc_author_ps2014 >= 0.01, "0.01-0.02" ,
+    if_else(author$percentage_fc_author_ps2014 < 0.01 & author$percentage_fc_author_ps2014 >= 0.005, "0.005-0.01" ,        
+  if_else(author$percentage_fc_author_ps2014 < 0.005 & author$percentage_fc_author_ps2014 >= 0.0025, "0.0025-0.005" ,
+      "0-0.0025"
+  )
+ ))
+))))
 author
 ```
 
@@ -623,6 +646,41 @@ author_ps2014 + author_psa001 + country_people + plot_layout(ncol = 1, nrow = 3,
   plot_annotation(tag_levels = 'A')   # 调整图形标题的字体大小为12
 
 ggsave("Geographical_distribution_of_authors.pdf", width = 9, height = 13.5)
+```
+
+```{r}
+# 创建新的数据框 author_ps2022_no_na，剔除包含缺失值的行
+author_ps2022_no_na <- author[complete.cases(author$n_binned_fc_ps2014), ]
+author_ps2022_no_na
+
+# map of PS2014 data 
+author_ps2014_fc <- ggplot(author_ps2022_no_na) +
+  geom_map(aes(map_id = country_map, fill = n_binned_fc_ps2014), map = world_map_new) +
+  geom_polygon(data = world_map_new, 
+               aes(x = long, y = lat, group = group), 
+               colour = 'black', size=0.1, fill = NA) + 
+  theme_void() + 
+  xlim(c(-30, 329)) + 
+  ylim(c(-60, 90)) +
+  scale_fill_manual(name = "Proportion of authors",
+                    values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
+                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+ggtitle("Geographical distribution of first/corresponding_authors from traditional studies")+
+  theme(plot.title = element_text(hjust = 0.5, size = 15),
+        legend.text = element_text(size = 10),  # 调整图例文字的大小
+        legend.title = element_text(size = 12),  # 调整图例标题的大小
+        legend.key.size = unit(3, "pt"),  # 调整图例键的尺寸
+        legend.key.height = unit(3, "pt"),  # 调整图例键的高度
+        legend.key.width = unit(15, "pt")  # 调整图例键的宽度
+        )
+author_ps2014_fc
+```
+
+```{r}  
+author_ps2014_fc + country_people + plot_layout(ncol = 1, nrow = 3, heights = c(4, 4)) +
+  plot_annotation(tag_levels = 'A')   # 调整图形标题的字体大小为12
+
+ggsave("Geographical_distribution_of_first_corresponding_authors.pdf", width = 9, height = 13.5)
 ```
 
 ```{r}
@@ -1073,9 +1131,16 @@ pddata$ps2014[pddata $country_map == "CH"] <- 0.000354
 pddata$ps2014[pddata $country_map == "GB"] <- 0.003164
 pddata$ps2014[pddata $country_map == "BE"] <- 0.000819
 pddata$ps2014[pddata $country_map == "DE"] <- 0.001257 
-pddata1 <- pddata[!is.na(pddata$ps2014),]
-pddata2 <- pddata[!is.na(pddata$percentage_sample),]
+pddata$percentage_sample[is.na(pddata$percentage_sample)] <- 0
+pddata$ps2014[is.na(pddata$ps2014)] <- 0
 pddata
+```
+
+```{r}
+pddata$percentage_sample[is.na(pddata$percentage_sample)] <- 0
+pddata$ps2014[is.na(pddata$ps2014)] <- 0
+pddata
+write.csv(pddata, file = "pddata.csv", row.names = FALSE)
 ```
 
 ```{r}
@@ -1158,6 +1223,13 @@ gdpdata2 <- gdpdata[!is.na(gdpdata$percentage_sample),]
 ```
 
 ```{r}
+gdpdata$percentage_sample[is.na(gdpdata$percentage_sample)] <- 0
+gdpdata$ps2014[is.na(gdpdata$ps2014)] <- 0
+gdpdata
+write.csv(gdpdata, file = "gdpdata.csv", row.names = FALSE)
+```
+
+```{r}
 #计算人均gdp与bts样本的斯皮尔曼相关
 library(neatStats)
 # 1 - ps2014 vs percentage_pd
@@ -1235,6 +1307,13 @@ rddata2 <- rddata[!is.na(rddata$percentage_sample),]
 ```
 
 ```{r}
+rddata$percentage_sample[is.na(rddata$percentage_sample)] <- 0
+rddata$ps2014[is.na(rddata$ps2014)] <- 0
+rddata
+write.csv(rddata, file = "rddata.csv", row.names = FALSE)
+```
+
+```{r}
 #计算R_&_D与bts样本的斯皮尔曼相关
 library(neatStats)
 # 1 - ps2014 vs percentage_pd
@@ -1296,6 +1375,136 @@ ggsave(filename = "RD.jpg", plot = RD1, device = "jpg", width = 12, height = 12)
 ```
 
 
+#universitydata
+```{r}
+#读取数据
+universitydata <- read_csv("Number of Universities.csv")
+universitydata <- universitydata %>% left_join(df_PSA001, by = "country_map")
+universitydata$ps2014 <- NA  # 添加一列名为ps2014的缺失值列
+universitydata$ps2014[universitydata $continent == "Europe"] <- 0.000216  
+universitydata$ps2014[universitydata $country_map == "US"] <- 0.952011  
+universitydata$ps2014[universitydata $country_map == "ZA"] <- 0.043042
+universitydata$ps2014[universitydata $country_map == "CH"] <- 0.000354  
+universitydata$ps2014[universitydata $country_map == "GB"] <- 0.003164
+universitydata$ps2014[universitydata $country_map == "BE"] <- 0.000819
+universitydata$ps2014[universitydata $country_map == "DE"] <- 0.001257 
+universitydata$percentage_sample[is.na(universitydata$percentage_sample)] <- 0
+universitydata$ps2014[is.na(universitydata$ps2014)] <- 0
+universitydata
+```
+
+```{r}
+write.csv(universitydata, file = "universitydata.csv", row.names = FALSE)
+```
+
+##人均大学数量画图
+```{r}
+combined_data1 <- rbind(
+  transform(universitydata, source = "PS2014", value = ps2014),
+  transform(universitydata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+university <- ggplot(combined_data1, aes(x = number_of_universities_per_capita, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "BTS")) +
+
+  ylab("Proportion of sample") +
+  xlab("Number of universities per 100000 people") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  # 设置图例位置为顶部
+        legend.text = element_text(size = 18),  # 设置图例文本字体大小
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 0.20)) +
+  ylim(c(-0.30, 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+university <- university +
+  annotate("text", x = 0.018, y = 0.955, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 0.018, y = 0.235, 
+           label = expression("US"), size = 6)
+# Print the plot
+university
+# Save the plot as a JPEG image
+ggsave(filename = "university.jpg", plot = university, device = "jpg", width = 12, height = 12)
+```
+
+##researcherdata
+```{r}
+#读取数据
+researcherdata <- read_csv("IUPS.csv")
+researcherdata <- researcherdata %>% left_join(df_PSA001, by = "country_map")
+researcherdata$ps2014 <- NA  # 添加一列名为ps2014的缺失值列
+researcherdata$ps2014[researcherdata $continent == "Europe"] <- 0.000216  
+researcherdata$ps2014[researcherdata $country_map == "US"] <- 0.952011  
+researcherdata$ps2014[researcherdata $country_map == "ZA"] <- 0.043042
+researcherdata$ps2014[researcherdata $country_map == "CH"] <- 0.000354  
+researcherdata$ps2014[researcherdata $country_map == "GB"] <- 0.003164
+researcherdata$ps2014[researcherdata $country_map == "BE"] <- 0.000819
+researcherdata$ps2014[researcherdata $country_map == "DE"] <- 0.001257 
+researcherdata$percentage_sample[is.na(researcherdata$percentage_sample)] <- 0
+researcherdata$ps2014[is.na(researcherdata$ps2014)] <- 0
+researcherdata
+```
+
+```{r}
+write.csv(researcherdata, file = "researcherdata.csv", row.names = FALSE)
+```
+
+##人均心理学研究者数量画图
+```{r}
+combined_data1 <- rbind(
+  transform(researcherdata, source = "PS2014", value = ps2014),
+  transform(researcherdata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+researcher <- ggplot(combined_data1, aes(x = number_of_psychology_researchers_per_capita, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "BTS")) +
+
+  ylab("Proportion of sample") +
+  xlab("Number of psychology researchers per 100000 people") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  # 设置图例位置为顶部
+        legend.text = element_text(size = 18),  # 设置图例文本字体大小
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 200)) +
+  ylim(c(-0.30, 1)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+researcher <- researcher +
+  annotate("text", x = 0.018, y = 0.955, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 0.018, y = 0.235, 
+           label = expression("US"), size = 6)
+# Print the plot
+researcher
+# Save the plot as a JPEG image
+ggsave(filename = "researcher.jpg", plot = researcher, device = "jpg", width = 12, height = 12)
+```
+
+
+
 ##globalization_index画图
 ```{r}
 gidata <- read_csv("globalization_index.csv")
@@ -1313,6 +1522,15 @@ gidata1 <- gidata[!is.na(gidata$ps2014),]
 gidata2 <- gidata[!is.na(gidata$percentage_sample),]
 gidata
 ```
+
+```{r}
+gidata$percentage_sample[is.na(gidata$percentage_sample)] <- 0
+gidata$ps2014[is.na(gidata$ps2014)] <- 0
+gidata
+write.csv(gidata, file = "gidata.csv", row.names = FALSE)
+```
+
+
 
 ```{r}
 #计算GI与bts样本的斯皮尔曼相关
@@ -1391,6 +1609,15 @@ networkdata
 networkdata1 <- networkdata[!is.na(networkdata$ps2014),]
 networkdata2 <- networkdata[!is.na(networkdata$percentage_sample),]
 ```
+
+```{r}
+networkdata$percentage_sample[is.na(networkdata$percentage_sample)] <- 0
+networkdata$ps2014[is.na(networkdata$ps2014)] <- 0
+networkdata
+write.csv(networkdata, file = "networkdata.csv", row.names = FALSE)
+```
+
+
 
 ```{r}
 #计算互联网普及率与bts样本的斯皮尔曼相关
@@ -1479,6 +1706,15 @@ lddata
 lddata1 <- lddata[!is.na(lddata$ps2014),]
 lddata2 <- lddata[!is.na(lddata$percentage_sample),]
 ```
+
+```{r}
+lddata$percentage_sample[is.na(lddata$percentage_sample)] <- 0
+lddata$ps2014[is.na(lddata$ps2014)] <- 0
+lddata
+write.csv(lddata, file = "lddata.csv", row.names = FALSE)
+```
+
+
 
 ```{r}
 #计算语言距离与ps2014 & bts样本的斯皮尔曼相关
@@ -1577,6 +1813,12 @@ englishdata1 <- englishdata[!is.na(englishdata$ps2014),]
 englishdata2 <- englishdata[!is.na(englishdata$percentage_sample),]
 ```
 
+```{r}
+englishdata$percentage_sample[is.na(englishdata$percentage_sample)] <- 0
+englishdata$ps2014[is.na(englishdata$ps2014)] <- 0
+englishdata
+write.csv(englishdata, file = "englishdata.csv", row.names = FALSE)
+```
 
 
 ```{r}
@@ -1662,6 +1904,12 @@ Urbanization_data1 <- Urbanization_data[!is.na(Urbanization_data$ps2014),]
 Urbanization_data2 <- Urbanization_data[!is.na(Urbanization_data$percentage_sample),]
 ```
 
+```{r}
+Urbanization_data$percentage_sample[is.na(Urbanization_data$percentage_sample)] <- 0
+Urbanization_data$ps2014[is.na(Urbanization_data$ps2014)] <- 0
+Urbanization_data
+write.csv(Urbanization_data, file = "Urbanization_data.csv", row.names = FALSE)
+```
 
 
 ```{r}
@@ -1745,6 +1993,12 @@ Education_data1 <- Education_data[!is.na(Education_data$ps2014),]
 Education_data2 <- Education_data[!is.na(Education_data$percentage_sample),]
 ```
 
+```{r}
+Education_data$percentage_sample[is.na(Education_data$percentage_sample)] <- 0
+Education_data$ps2014[is.na(Education_data$ps2014)] <- 0
+Education_data
+write.csv(Education_data, file = "Education_data.csv", row.names = FALSE)
+```
 
 
 ```{r}
@@ -2299,9 +2553,13 @@ author_BTS <-filter(author_BTS_1, country_map != "TW")
 author_BTS[author_BTS == ""] <- NA
 author_bts_clean <- author_BTS$author_bts[!is.na(author_BTS$author_bts)]
 author_ps2014_clean <- author_BTS$author_ps2014[!is.na(author_BTS$author_ps2014)]
+
+first_corresponding_author_ps2014_clean <- author_BTS$first_corresponding_author_ps2014[!is.na(author_BTS$first_corresponding_author_ps2014)]
+
 author_BTS
 author_bts_clean
 author_ps2014_clean
+first_corresponding_author_ps2014_clean
 ```
 
 ```{r}
@@ -2310,10 +2568,13 @@ library(vegan)
 α_bts <- diversity(author_bts_clean, index = "simpson")
 α_ps2014 <- diversity(author_ps2014_clean, index = "simpson")
 α_wpd <- diversity(author_BTS$wpd, index = "simpson")
+
+α_ps2014_first_corresponding <- diversity(first_corresponding_author_ps2014_clean, index = "simpson")
 # 输出结果
 α_ps2014
 α_bts
 α_wpd
+α_ps2014_first_corresponding
 ```
 
 ```{r}
@@ -2342,10 +2603,21 @@ sum_of_cubes3 <- sum((author_BTS$wpd / N3)^3)
 Var_wpd <- (4 * N3 * (N3 - 1) * (N3 - 2) * sum_of_cubes3 +
            2 * N3 * (N3 - 1) * sum_of_squares3 -
            2 * N3 * (N3 - 1) * (2 * N3 - 3) * sum_of_squares3 * sum_of_squares3) / (N3 * N3 * (N3 - 1) * (N3 - 1))
+
+# 计算变量first_corresponding_author_ps2014的方差
+N4 <- sum(first_corresponding_author_ps2014_clean)
+sum_of_squares4 <- sum((first_corresponding_author_ps2014_clean / N4)^2)
+sum_of_cubes4 <- sum((first_corresponding_author_ps2014_clean / N4)^3)
+
+Var_ps2014_first_corresponding <- (4 * N4 * (N4 - 1) * (N4 - 2) * sum_of_cubes4 +
+           2 * N4 * (N4 - 1) * sum_of_squares4 -
+           2 * N4 * (N4 - 1) * (2 * N4 - 3) * sum_of_squares4 * sum_of_squares4) / (N4 * N4 * (N4 - 1) * (N4 - 1))
+
 # 输出结果
 Var_ps2014
 Var_bts
 Var_wpd
+Var_ps2014_first_corresponding
 ```
 
 ```{r}
@@ -2361,6 +2633,11 @@ df_2 <- (Var_wpd+Var_bts)^2 / (Var_bts^2 / N1 + Var_wpd^2 / N3)
 # 计算 p 值
 p_value2 <- 2 * pt(abs(t_value2), df_2, lower.tail = FALSE)
 
+t_value3 <- (α_wpd-α_ps2014_first_corresponding) / sqrt(Var_wpd+Var_ps2014_first_corresponding)
+  
+df_3 <- (Var_wpd+Var_ps2014_first_corresponding)^2 / (Var_ps2014_first_corresponding^2 / N4 + Var_wpd^2 / N3)
+# 计算 p 值
+p_value3 <- 2 * pt(abs(t_value3), df_3, lower.tail = FALSE)
 # 输出结果
 t_value1
 p_value1
@@ -2368,6 +2645,9 @@ df_1
 t_value2
 p_value2
 df_2
+t_value3
+p_value3
+df_3
 ```
 
 
