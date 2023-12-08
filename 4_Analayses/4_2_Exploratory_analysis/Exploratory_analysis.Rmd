@@ -28,7 +28,8 @@ library(marginaleffects)  # Calculate marginal effects for regression models
 library(modelsummary)     # Create side-by-side regression tables
 library(ggthemes)
 #library(rstan)
-
+library(emmeans)
+library(bayestestR)
 ```
 
 ```{r}
@@ -121,14 +122,25 @@ pd_model_beta_zi_bts <- brm(
   backend = "cmdstanr",
   file = "pd_model_beta_zi_bts"
 )
-
-```
-
-```{r}
 tidy(pd_model_beta_zi_bts, effects = "fixed")
 ```
 
+```{r}
+ame_beta_zi_pd_bts <- 
+  emtrends(pd_model_beta_zi_bts,~pd,var = "pd")%>% 
+  gather_emmeans_draws()
+ame_beta_zi_pd_bts
+#summary(ame_beta_zi_pd_bts)
+#ame_beta_zi_pd_bts %>% median_hdi()
+#ame_beta_zi_pd_bts %>% mean_hdi()
+#ame_beta_zi_pd_bts %>% mode_hdi()
+```
 
+%>% 
+  gather_emmeans_draws()
+var = "pd",
+
+,epred=TRUE
 ```{r}
 ame_beta_zi_pd_bts <- pd_model_beta_zi_bts %>%
   avg_comparisons(variables = "pd") %>% 
@@ -140,15 +152,26 @@ ggplot(ame_beta_zi_pd_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Cultural distance", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
+```
+```{r}
+describe_posterior(ame_beta_zi_pd_bts,
+                   estimate = "median", dispersion = TRUE,
+                   ci = .95, ci_method = "hdi",
+                   test = "bf",
+
+                                   bf_prior = stan_model)
+fit_bayes_prior <- update(pd_model_beta_zi_bts,prior_PD = TRUE)
+bayes_sum_prior <- emmeans(fit_bayes_prior, ~ pd)
+bayesfactor_restricted(ame_beta_zi_pd_bts,prior=bayes_sum_prior, hypothesis=".value>0")
 ```
 
 
 ```{r}
-ame_beta_zi_pd_bts %>% mean_hdi(draw)
-result <- hypothesis(ame_beta_zi_pd_bts, "draw<0")
+ame_beta_zi_pd_bts <- na.omit(ame_beta_zi_pd_bts)
+result <- hypothesis(ame_beta_zi_pd_bts, ".value>0")
 result
 result$hypothesis$Estimate
 result$hypothesis$CI.Lower
@@ -196,7 +219,16 @@ tidy(pd_model_beta_zi_ps2014, effects = "fixed")
 
 ```
 
-
+```{r}
+ame_beta_zi_pd_ps2014 <- 
+  emtrends(pd_model_beta_zi_ps2014,~pd,var = "pd")%>% 
+  gather_emmeans_draws()
+ame_beta_zi_pd_ps2014
+#summary(ame_beta_zi_pd_bts)
+#ame_beta_zi_pd_bts %>% median_hdi()
+#ame_beta_zi_pd_bts %>% mean_hdi()
+#ame_beta_zi_pd_bts %>% mode_hdi()
+```
 
 
 ```{r}
@@ -209,9 +241,21 @@ ggplot(ame_beta_zi_pd_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Cultural distance", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
+```
+
+```{r}
+describe_posterior(ame_beta_zi_pd_ps2014,
+                   estimate = "median", dispersion = TRUE,
+                   ci = .95, ci_method = "hdi",
+                   test = "bf",
+
+                                   bf_prior = stan_model)
+bayesfactor_restricted(ame_beta_zi_pd_ps2014, hypothesis=".value>0")
+
+
 ```
 
 ```{r}
@@ -332,7 +376,7 @@ ggplot(ame_beta_zi_gdp_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of GDP per capita", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -400,7 +444,7 @@ ggplot(ame_beta_zi_gdp_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of GDP per capita", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -518,7 +562,7 @@ ggplot(ame_beta_zi_rd_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of R&D investment", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -569,7 +613,7 @@ ggplot(ame_beta_zi_rd_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of R&D investment", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -680,7 +724,7 @@ ggplot(ame_beta_zi_university_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Number of universities per 100000 people", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -732,7 +776,7 @@ ggplot(ame_beta_zi_university_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Number of universities per 100000 people", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -789,6 +833,7 @@ university
 # Save the plot as a JPEG image
 ggsave(filename = "university.jpg", plot = university, device = "jpg", width = 12, height = 12)
 ```
+
 ##number_of_psychology_researchers_per_capita
 ```{r}
 researcherdata <- read_csv("researcherdata.csv")
@@ -841,7 +886,7 @@ ggplot(ame_beta_zi_researcher_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of number of psychology researchers per capita", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -893,7 +938,7 @@ ggplot(ame_beta_zi_researcher_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of number of psychology researchers per capita", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -1007,7 +1052,7 @@ ggplot(ame_beta_zi_edu_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Average years of schooling", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -1061,7 +1106,7 @@ ggplot(ame_beta_zi_edu_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Average years of schooling", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -1157,8 +1202,7 @@ urban_model_beta_zi_bts <- brm(
   control = list(adapt_delta = 0.99),
   
   backend = "cmdstanr",
-  file = "urban_model_beta_zi_bts"
-)
+  file = "urban_model_beta_zi_bts")
 tidy(urban_model_beta_zi_bts, effects = "fixed")
 
 ```
@@ -1173,7 +1217,7 @@ ggplot(ame_beta_zi_urban_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Urbanization", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -1189,34 +1233,52 @@ result$hypothesis$Est.Error
 ```
 
 ```{r}
+urbandata  <- prepare_predictions(urbandata, nug=1e6)
 urban_model_beta_zi_ps2014 <- brm(
   bf(ps| trials(total_ps) ~ Urbanization+ gp(Latitude, Longitude),
    phi ~ Urbanization,
      zi ~ Urbanization),
   data = urbandata,
   family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 2000, warmup = 1000,
+  chains = 4, iter = 100, warmup = 50,
   cores = 4, seed = 1234,
-  
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
             prior(normal(0, 1), class = b),
             prior(exponential(2), class = sdgp)),
-  
+  methods= "brmsfit",
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
   
   backend = "cmdstanr",
   file = "urban_model_beta_zi_ps2014"
 )
-
-```
-
-```{r}
 tidy(urban_model_beta_zi_ps2014, effects = "fixed")
 ```
 
 ```{r}
+
+```
+
+```{r}
+ame_beta_zi_urban_ps2014 <- 
+  emmeans(urban_model_beta_zi_ps2014,~ Urbanization,epred = TRUE,
+          re_formula = NULL) %>% 
+  contrast(method = "revpairwise") %>% 
+  gather_emmeans_draws()
+ame_beta_zi_urban_ps2014
+ame_beta_zi_urban_ps2014 %>% median_hdi()
+```
+
+prepare_predictions(urban_model_beta_zi_ps2014,nug=1e-1)
+prepare_predictions(urban_model_beta_zi_ps2014,sample_new_levels="gaussian", nug=1e-1)
+sample_new_levels
+
+urban_model_beta_zi_ps2014  <- prepare_predictions(urban_model_beta_zi_ps2014, nug=1e-7)
+
+
+```{r}
+urban_model_beta_zi_ps2014  <- prepare_predictions(urban_model_beta_zi_ps2014, nug=1e6)
 ame_beta_zi_urban_ps2014 <- urban_model_beta_zi_ps2014 %>%
   avg_comparisons(variables = "Urbanization") %>% 
   posterior_draws()
@@ -1226,7 +1288,7 @@ ggplot(ame_beta_zi_urban_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Urbanization", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -1339,7 +1401,7 @@ ggplot(ame_beta_zi_gi_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Globalization", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -1392,7 +1454,7 @@ ggplot(ame_beta_zi_gi_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Globalization", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -1500,7 +1562,7 @@ ggplot(ame_beta_zi_network_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Internet penetration rate", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -1553,7 +1615,7 @@ ggplot(ame_beta_zi_network_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Internet penetration rate", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -1664,7 +1726,7 @@ ggplot(ame_beta_zi_ld1_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Linguistic distance", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -1717,7 +1779,7 @@ ggplot(ame_beta_zi_ld1_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Linguistic distance", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -1786,7 +1848,7 @@ ld2_model_beta_zi_bts <- brm(
      zi ~ lp2),
   data = lddata,
   family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 2000, warmup = 1000,
+  chains = 4, iter = 200, warmup = 100,
   cores = 2, seed = 1234,
   
   # regularising priors
@@ -1805,22 +1867,41 @@ tidy(ld2_model_beta_zi_bts, effects = "fixed")
 ```
 
 ```{r}
+ame_beta_zi_ld2_bts <- 
+  emtrends(ld2_model_beta_zi_bts,~lp2,var = "lp2",)%>% 
+  gather_emmeans_draws()
+
+ame_beta_zi_ld2_bts
+summary(ame_beta_zi_ld2_bts)
+ame_beta_zi_ld2_bts %>% median_qi()
+ame_beta_zi_ld2_bts %>% mean_qi()
+ame_beta_zi_ld2_bts %>%mode_hdi()
+```
+
+
+  emmeans(~ condition) %>%
+  gather_emmeans_draws() %>%
+
+```{r}
 ame_beta_zi_ld2_bts <- ld2_model_beta_zi_bts %>%
   avg_comparisons(variables = "lp2") %>% 
   posterior_draws()
 ame_beta_zi_ld2_bts %>% median_hdi(draw)
-
+ame_beta_zi_ld2_bts
 ggplot(ame_beta_zi_ld2_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Linguistic distance", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
 
 ```{r}
-result <- hypothesis(ame_beta_zi_ld2_bts, "draw>0")
+ame_beta_zi_ld2_bts <- na.omit(ame_beta_zi_ld2_bts)
+
+result <- hypothesis(ame_beta_zi_ld2_bts, ".value< 0")
+
 result
 result$hypothesis$Estimate
 result$hypothesis$CI.Lower
@@ -1836,7 +1917,7 @@ ld2_model_beta_zi_ps2014 <- brm(
      zi ~ lp2),
   data = lddata,
   family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 20000, warmup = 10000,
+  chains = 4, iter = 40, warmup = 20,
   cores = 4, seed = 1234,
   
   # regularising priors
@@ -1850,11 +1931,16 @@ ld2_model_beta_zi_ps2014 <- brm(
   backend = "cmdstanr",
   file = "ld2_model_beta_zi_ps2014"
 )
-
+tidy(ld2_model_beta_zi_ps2014, effects = "fixed")
 ```
 
 ```{r}
-tidy(ld2_model_beta_zi_ps2014, effects = "fixed")
+ame_beta_zi_ld2_ps2014 <- 
+  emmeans(ld2_model_beta_zi_ps2014,~ lp2,epred = TRUE,
+          re_formula = NULL) %>% 
+  gather_emmeans_draws()
+ame_beta_zi_ld2_ps2014
+ame_beta_zi_ld2_ps2014 %>% median_hdi()
 ```
 
 ```{r}
@@ -1867,7 +1953,7 @@ ggplot(ame_beta_zi_ld2_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of Linguistic distance", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -1935,7 +2021,7 @@ ggplot(ame_beta_zi_english_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of English proficiency rank", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -1988,7 +2074,7 @@ ggplot(ame_beta_zi_english_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of English proficiency rank", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -2051,7 +2137,7 @@ ggsave(filename = "EPI.jpg", plot = EPI1, device = "jpg", width = 12, height = 1
 ```
 
 ```{r}  
-# 将两个图形横向左右排列
+# 将11个图形横向左右排列
 combined_plot1 <-  gdp1+ RD1+university+  researcher+education1+UP1+GI1+ Network1 + pd1+ld1+EPI1 + 
   plot_layout(ncol = 2) + # 设置两列布局
 plot_annotation(tag_levels ="A",
@@ -2101,7 +2187,7 @@ ggplot(ame_beta_zi_KE_urbanization, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of KE_urbanization", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -2162,7 +2248,7 @@ ggplot(ame_beta_zi_CN_urbanization, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of CN_urbanization", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -2197,20 +2283,17 @@ US_urbanization %>%
 ```
 
 ```{r}
-aUS_urbanization_model_beta_zi <- brm(
-  bf(Ruggeri_US ~ US_UP_2020,
-     phi ~ US_UP_2020,
-     zi ~ US_UP_2020),
-  data = US_urbanization,
-  family = zero_inflated_beta(),
-  chains = 4, iter = 2000, warmup = 1000,
-  cores = 2, seed = 1234,
-  backend = "cmdstanr",
-  file = "aUS_urbanization_model_beta_zi "
-)
-tidy(aUS_urbanization_model_beta_zi, effects = "fixed")
-
+#过度离散的O检验
+variance <- var(US_urbanization$Ruggeri_US_size)
+mean <- mean(US_urbanization$Ruggeri_US_size)
+sum <- sum(US_urbanization$Ruggeri_US_size)
+variance
+mean 
+sum
+O <- sqrt(sum-1)*2*(variance-mean)/mean
+O
 ```
+
 
 ```{r}
 US_urbanization_model_beta_zi <- brm(
@@ -2228,33 +2311,6 @@ tidy(US_urbanization_model_beta_zi, effects = "fixed")
 
 ```
 
-```{r}
-US_urbanization_model_beta_zi1 <- brm(
-  bf(Ruggeri_US_size| trials(size1) ~ US_UP_2020,
-   phi ~ US_UP_2020,
-     zi ~ US_UP_2020),
-  data = US_urbanization,
-  family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 2000, warmup = 1000,
-  cores = 4, seed = 1234,
-  backend = "cmdstanr",
-  file = "US_urbanization_model_beta_zi1"
-)
-tidy(US_urbanization_model_beta_zi1, effects = "fixed")
-
-```
-
-
-```{r}
-variance <- var(US_urbanization$Ruggeri_US_size)
-mean <- mean(US_urbanization$Ruggeri_US_size)
-sum <- sum(US_urbanization$Ruggeri_US_size)
-variance
-mean 
-sum
-O <- sqrt(sum-1)*2*(variance-mean)/mean
-O
-```
 
 ```{r}
 ame_beta_zi_US_urbanization <- US_urbanization_model_beta_zi %>%
@@ -2266,7 +2322,7 @@ ggplot(ame_beta_zi_US_urbanization, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of US_urbanization", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -2329,7 +2385,7 @@ ggplot(ame_beta_zi_CN_internet, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of CN_internet", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -2389,7 +2445,7 @@ ggplot(ame_beta_zi_NG_internet, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of NG_internet", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -2450,7 +2506,7 @@ ggplot(ame_beta_zi_US_internet, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of US_internet", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -2510,7 +2566,7 @@ ggplot(ame_beta_zi_NG_EPI, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of NG_EPI", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -2572,7 +2628,7 @@ ggplot(ame_beta_zi_CN_EPI, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of CN_EPI", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -2633,22 +2689,7 @@ ggplot(ame_beta_zi_NL_EPI, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
-```
-
-```{r}
-ame_beta_zi_NL_EPI <- NL_EPI_model_beta_zi %>%
-  avg_comparisons(variables = "EPI_NL_2022") %>% 
-  posterior_draws()
-ame_beta_zi_NL_EPI %>% mean_hdi(draw)
-
-ggplot(ame_beta_zi_NL_EPI, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of having a gender-based\nquota on the proportion of women in parliament", y = NULL,
+  labs(x = "Average marginal effect of NL_EPI", y = NULL,
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
@@ -2669,9 +2710,9 @@ model_ols1 <- lm(Ruggeri_NL ~ EPI_NL_2022,
 summary(model_ols1)
 ```
 
-###尼日利亚、中国、美国的互联网普及率按省份画图
 
-#绘制加回归线的散点图（NG）
+###尼日利亚、中国、美国的互联网普及率按省份画图
+##尼日利亚按省份画图(互联网普及率)
 ```{r}  
 # 拟合线性回归模型并计算置信区间
 model <- lm(Ruggeri_NG ~ Internet_NG_2022, data = NG_internet)
@@ -2733,7 +2774,6 @@ ggsave(filename = "CN_IPR.jpg", plot = CN_IPR, device = "jpg", width = 12, heigh
 ```
 
 ##美国按省份画图(互联网普及率)
-
 ```{r}  
 # 拟合线性回归模型并计算置信区间
 model <- lm(Ruggeri_US ~ Internet_US_2018, data = US_internet)
@@ -2764,7 +2804,8 @@ ggsave(filename = "US_IPR.jpg", plot = US_IPR, device = "jpg", width = 12, heigh
 ```
 
 
-##
+###尼日利亚、中国、荷兰的英语熟练度按省份画图
+##尼日利亚按省份画图(英语熟练度)
 ```{r}  
 # 拟合线性回归模型并计算置信区间
 model <- lm(Ruggeri_NG ~ EPI_NG_2022, data = NG_EPI)
