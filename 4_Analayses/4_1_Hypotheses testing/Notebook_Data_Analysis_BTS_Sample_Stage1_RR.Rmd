@@ -482,7 +482,7 @@ country_PSA001 <- ggplot(df_PSA001_country) +
   scale_fill_manual(name = "Proportion of PSA001",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggtitle("Geographical distribution of sample from BTS")+
+ggtitle("Geographical distribution of sample from big-team science")+
   theme(plot.title = element_text(hjust = 0.5, size = 15),
         legend.text = element_text(size = 10),  # 调整图例文字的大小
         legend.title = element_text(size = 12),  # 调整图例标题的大小
@@ -567,23 +567,42 @@ author$n_binned_ps2014 <-
   )
  ))
 ))))
-# maybe try binning for first_corresponding_author_ps2014
-author$n_binned_fc_ps2014 <- 
-  if_else(author$percentage_fc_author_ps2014 >= 0.16, "0.16-1",
+# maybe try binning for leading_author_bts
+author$n_binned_leading_bts <- 
+  if_else(author$percentage_leading_author_bts >= 0.16, "0.16-1",
  
   
-  if_else(author$percentage_fc_author_ps2014 < 0.16 & author$percentage_fc_author_ps2014 >= 0.08, "0.08-0.16" , 
-   if_else(author$percentage_fc_author_ps2014 < 0.04 & author$percentage_fc_author_ps2014 >= 0.08, "0.04-0.08" ,
+  if_else(author$percentage_leading_author_bts < 0.16 & author$percentage_leading_author_bts >= 0.08, "0.08-0.16" , 
+   if_else(author$percentage_leading_author_bts < 0.04 & author$percentage_leading_author_bts >= 0.08, "0.04-0.08" ,
    
-  if_else(author$percentage_fc_author_ps2014 < 0.04 & author$percentage_fc_author_ps2014 >= 0.02, "0.02-0.04" ,
-   if_else(author$percentage_fc_author_ps2014 < 0.02 & author$percentage_fc_author_ps2014 >= 0.01, "0.01-0.02" ,
-    if_else(author$percentage_fc_author_ps2014 < 0.01 & author$percentage_fc_author_ps2014 >= 0.005, "0.005-0.01" ,        
-  if_else(author$percentage_fc_author_ps2014 < 0.005 & author$percentage_fc_author_ps2014 >= 0.0025, "0.0025-0.005" ,
+  if_else(author$percentage_leading_author_bts < 0.04 & author$percentage_leading_author_bts >= 0.02, "0.02-0.04" ,
+   if_else(author$percentage_leading_author_bts < 0.02 & author$percentage_leading_author_bts >= 0.01, "0.01-0.02" ,
+    if_else(author$percentage_leading_author_bts < 0.01 & author$percentage_leading_author_bts >= 0.005, "0.005-0.01" ,        
+  if_else(author$percentage_leading_author_bts < 0.005 & author$percentage_leading_author_bts >= 0.0025, "0.0025-0.005" ,
+      "0-0.0025"
+  )
+ ))
+))))
+
+
+# maybe try binning for leading_author_ps2014
+author$n_binned_leading_ps2014 <- 
+  if_else(author$percentage_leading_author_ps2014 >= 0.16, "0.16-1",
+ 
+  
+  if_else(author$percentage_leading_author_ps2014 < 0.16 & author$percentage_leading_author_ps2014 >= 0.08, "0.08-0.16" , 
+   if_else(author$percentage_leading_author_ps2014 < 0.04 & author$percentage_leading_author_ps2014 >= 0.08, "0.04-0.08" ,
+   
+  if_else(author$percentage_leading_author_ps2014 < 0.04 & author$percentage_leading_author_ps2014 >= 0.02, "0.02-0.04" ,
+   if_else(author$percentage_leading_author_ps2014 < 0.02 & author$percentage_leading_author_ps2014 >= 0.01, "0.01-0.02" ,
+    if_else(author$percentage_leading_author_ps2014 < 0.01 & author$percentage_leading_author_ps2014 >= 0.005, "0.005-0.01" ,        
+  if_else(author$percentage_leading_author_ps2014 < 0.005 & author$percentage_leading_author_ps2014 >= 0.0025, "0.0025-0.005" ,
       "0-0.0025"
   )
  ))
 ))))
 author
+
 ```
 
 ```{r}
@@ -602,7 +621,7 @@ author_psa001 <- ggplot(author_bts_no_na) +
   scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggtitle("Geographical distribution of authors from BTS")+
+ggtitle("Geographical distribution of all authors from big-team science")+
   theme(plot.title = element_text(hjust = 0.5, size = 15),
         legend.text = element_text(size = 10),  # 调整图例文字的大小
         legend.title = element_text(size = 12),  # 调整图例标题的大小
@@ -630,7 +649,7 @@ author_ps2014 <- ggplot(author_ps2022_no_na) +
   scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggtitle("Geographical distribution of authors from traditional studies")+
+ggtitle("Geographical distribution of all authors from traditional studies")+
   theme(plot.title = element_text(hjust = 0.5, size = 15),
         legend.text = element_text(size = 10),  # 调整图例文字的大小
         legend.title = element_text(size = 12),  # 调整图例标题的大小
@@ -649,13 +668,13 @@ ggsave("Geographical_distribution_of_authors.pdf", width = 9, height = 13.5)
 ```
 
 ```{r}
-# 创建新的数据框 author_ps2022_no_na，剔除包含缺失值的行
-author_ps2022_no_na <- author[complete.cases(author$n_binned_fc_ps2014), ]
-author_ps2022_no_na
+# 创建新的数据框 author_bts_no_na，剔除包含缺失值的行
+author_bts_no_na <- author[complete.cases(author$n_binned_leading_bts), ]
+author_bts_no_na
 
-# map of PS2014 data 
-author_ps2014_fc <- ggplot(author_ps2022_no_na) +
-  geom_map(aes(map_id = country_map, fill = n_binned_fc_ps2014), map = world_map_new) +
+# map of BTS data 
+author_bts_leading <- ggplot(author_bts_no_na) +
+  geom_map(aes(map_id = country_map, fill = n_binned_leading_bts), map = world_map_new) +
   geom_polygon(data = world_map_new, 
                aes(x = long, y = lat, group = group), 
                colour = 'black', size=0.1, fill = NA) + 
@@ -665,7 +684,7 @@ author_ps2014_fc <- ggplot(author_ps2022_no_na) +
   scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggtitle("Geographical distribution of first/corresponding_authors from traditional studies")+
+ggtitle("Geographical distribution of leading authors from big-team science")+
   theme(plot.title = element_text(hjust = 0.5, size = 15),
         legend.text = element_text(size = 10),  # 调整图例文字的大小
         legend.title = element_text(size = 12),  # 调整图例标题的大小
@@ -673,11 +692,39 @@ ggtitle("Geographical distribution of first/corresponding_authors from tradition
         legend.key.height = unit(3, "pt"),  # 调整图例键的高度
         legend.key.width = unit(15, "pt")  # 调整图例键的宽度
         )
-author_ps2014_fc
+author_bts_leading
+
+
+
+# 创建新的数据框 author_ps2022_no_na，剔除包含缺失值的行
+author_ps2022_no_na <- author[complete.cases(author$n_binned_leading_ps2014), ]
+author_ps2022_no_na
+
+# map of PS2014 data 
+author_ps2014_leading <- ggplot(author_ps2022_no_na) +
+  geom_map(aes(map_id = country_map, fill = n_binned_leading_ps2014), map = world_map_new) +
+  geom_polygon(data = world_map_new, 
+               aes(x = long, y = lat, group = group), 
+               colour = 'black', size=0.1, fill = NA) + 
+  theme_void() + 
+  xlim(c(-30, 329)) + 
+  ylim(c(-60, 90)) +
+  scale_fill_manual(name = "Proportion of authors",
+                    values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
+                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+ggtitle("Geographical distribution of leading authors from traditional studies")+
+  theme(plot.title = element_text(hjust = 0.5, size = 15),
+        legend.text = element_text(size = 10),  # 调整图例文字的大小
+        legend.title = element_text(size = 12),  # 调整图例标题的大小
+        legend.key.size = unit(3, "pt"),  # 调整图例键的尺寸
+        legend.key.height = unit(3, "pt"),  # 调整图例键的高度
+        legend.key.width = unit(15, "pt")  # 调整图例键的宽度
+        )
+author_ps2014_leading
 ```
 
 ```{r}  
-author_ps2014_fc + country_people + plot_layout(ncol = 1, nrow = 3, heights = c(4, 4)) +
+author_ps2014_leading + author_bts_leading + country_people + plot_layout(ncol = 1, nrow = 3, heights = c(4, 4)) +
   plot_annotation(tag_levels = 'A')   # 调整图形标题的字体大小为12
 
 ggsave("Geographical_distribution_of_first_corresponding_authors.pdf", width = 9, height = 13.5)
@@ -2551,15 +2598,24 @@ ggsave(filename = "Exploratory_analyses_by_state.pdf", plot = combined_plot2, de
 author_BTS_1 <- read_csv("author_BTS.csv")
 author_BTS <-filter(author_BTS_1, country_map != "TW")
 author_BTS[author_BTS == ""] <- NA
-author_bts_clean <- author_BTS$author_bts[!is.na(author_BTS$author_bts)]
-author_ps2014_clean <- author_BTS$author_ps2014[!is.na(author_BTS$author_ps2014)]
 
-first_corresponding_author_ps2014_clean <- author_BTS$first_corresponding_author_ps2014[!is.na(author_BTS$first_corresponding_author_ps2014)]
+author_bts_clean <-          
+  author_BTS$author_bts[!is.na(author_BTS$author_bts)]
+
+author_ps2014_clean <- 
+  author_BTS$author_ps2014[!is.na(author_BTS$author_ps2014)]
+
+leading_author_ps2014_clean <- 
+  author_BTS$leading_author_ps2014[!is.na(author_BTS$leading_author_ps2014)]
+
+leading_author_bts_clean <- 
+  author_BTS$leading_author_bts[!is.na(author_BTS$leading_author_bts)]
 
 author_BTS
 author_bts_clean
 author_ps2014_clean
-first_corresponding_author_ps2014_clean
+leading_author_ps2014_clean
+leading_author_bts_clean
 ```
 
 ```{r}
@@ -2569,12 +2625,16 @@ library(vegan)
 α_ps2014 <- diversity(author_ps2014_clean, index = "simpson")
 α_wpd <- diversity(author_BTS$wpd, index = "simpson")
 
-α_ps2014_first_corresponding <- diversity(first_corresponding_author_ps2014_clean, index = "simpson")
+α_ps2014_leading <- diversity(leading_author_ps2014_clean, index = "simpson")
+α_bts_leading <- diversity(leading_author_bts_clean, index = "simpson")
+
 # 输出结果
 α_ps2014
 α_bts
 α_wpd
-α_ps2014_first_corresponding
+
+α_ps2014_leading
+α_bts_leading
 ```
 
 ```{r}
@@ -2604,40 +2664,53 @@ Var_wpd <- (4 * N3 * (N3 - 1) * (N3 - 2) * sum_of_cubes3 +
            2 * N3 * (N3 - 1) * sum_of_squares3 -
            2 * N3 * (N3 - 1) * (2 * N3 - 3) * sum_of_squares3 * sum_of_squares3) / (N3 * N3 * (N3 - 1) * (N3 - 1))
 
-# 计算变量first_corresponding_author_ps2014的方差
-N4 <- sum(first_corresponding_author_ps2014_clean)
-sum_of_squares4 <- sum((first_corresponding_author_ps2014_clean / N4)^2)
-sum_of_cubes4 <- sum((first_corresponding_author_ps2014_clean / N4)^3)
+# 计算变量leading_author_ps2014的方差
+N4 <- sum(leading_author_ps2014_clean)
+sum_of_squares4 <- sum((leading_author_ps2014_clean / N4)^2)
+sum_of_cubes4 <- sum((leading_author_ps2014_clean / N4)^3)
 
-Var_ps2014_first_corresponding <- (4 * N4 * (N4 - 1) * (N4 - 2) * sum_of_cubes4 +
+Var_ps2014_leading <- (4 * N4 * (N4 - 1) * (N4 - 2) * sum_of_cubes4 +
            2 * N4 * (N4 - 1) * sum_of_squares4 -
            2 * N4 * (N4 - 1) * (2 * N4 - 3) * sum_of_squares4 * sum_of_squares4) / (N4 * N4 * (N4 - 1) * (N4 - 1))
+
+# 计算变量leading_author_bts的方差
+N5 <- sum(leading_author_bts_clean)
+sum_of_squares5 <- sum((leading_author_bts_clean / N5)^2)
+sum_of_cubes5 <- sum((leading_author_bts_clean / N5)^3)
+
+Var_bts_leading <- (4 * N5 * (N5 - 1) * (N5 - 2) * sum_of_cubes5 +
+           2 * N5 * (N5 - 1) * sum_of_squares5 -
+           2 * N5 * (N5 - 1) * (2 * N5 - 3) * sum_of_squares5 * sum_of_squares5) / (N5 * N5 * (N5 - 1) * (N5 - 1))
 
 # 输出结果
 Var_ps2014
 Var_bts
 Var_wpd
-Var_ps2014_first_corresponding
+Var_ps2014_leading
+Var_bts_leading
 ```
 
 ```{r}
-# 计算 t 值和自由度
+# calculating t, df,p of bts vs ps2014 for all author
 t_value1 <- (α_bts - α_ps2014) / sqrt(Var_bts + Var_ps2014)
-  
 df_1 <- (Var_bts + Var_ps2014)^2 / (Var_bts^2 / N1 + Var_ps2014^2 / N2)
 p_value1 <- 2 * pt(abs(t_value1), df_1, lower.tail = FALSE)
 
+# calculating t, df,p of bts vs wpd for all author
 t_value2 <- (α_wpd-α_bts) / sqrt(Var_wpd+Var_bts)
-  
 df_2 <- (Var_wpd+Var_bts)^2 / (Var_bts^2 / N1 + Var_wpd^2 / N3)
-# 计算 p 值
 p_value2 <- 2 * pt(abs(t_value2), df_2, lower.tail = FALSE)
 
-t_value3 <- (α_wpd-α_ps2014_first_corresponding) / sqrt(Var_wpd+Var_ps2014_first_corresponding)
-  
-df_3 <- (Var_wpd+Var_ps2014_first_corresponding)^2 / (Var_ps2014_first_corresponding^2 / N4 + Var_wpd^2 / N3)
-# 计算 p 值
+# calculating t, df,p of bts vs ps2014 for leading author
+t_value3 <- (α_bts_leading-α_ps2014_leading)/ sqrt(Var_bts_leading+Var_ps2014_leading)
+df_3 <- (Var_bts_leading+Var_ps2014_leading)^2 / (Var_ps2014_leading^2 / N4 + Var_bts_leading^2 / N5)
 p_value3 <- 2 * pt(abs(t_value3), df_3, lower.tail = FALSE)
+
+# calculating t, df,p of bts vs wpd for leading author
+t_value4 <- (α_wpd-α_bts_leading)/ sqrt(Var_wpd+Var_bts_leading)
+df_4 <- (Var_wpd+Var_bts_leading)^2 / (Var_bts_leading^2 / N5 + Var_wpd^2 / N3)
+p_value4 <- 2 * pt(abs(t_value4), df_4, lower.tail = FALSE)
+
 # 输出结果
 t_value1
 p_value1
@@ -2648,6 +2721,9 @@ df_2
 t_value3
 p_value3
 df_3
+t_value4
+p_value4
+df_4
 ```
 
 
