@@ -2637,93 +2637,70 @@ library(vegan)
 α_bts_leading
 ```
 
+##多样性t-test
+
+#首先，计算多样性的方差,多样性t检验的方差如下：
+$$Var D=\frac{4N\left(N-1\right)\left(N-2\right)\sum p_{i}^{3}+2N\left ( N-1 \right)\sum p_{i}^{2} -2N\left(N-1\right)\left(2N-3\right)\left(\sum p_{i}^{2}\right )^{2}}{N^{2}\left(N-1\right)^{2}}$$ 
+#其次，计算独立样本t检验的t value, df, p
 ```{r}
-# 计算变量author_bts的方差
-N1 <- sum(author_bts_clean)
-sum_of_squares1 <- sum((author_bts_clean / N1)^2)
-sum_of_cubes1 <- sum((author_bts_clean / N1)^3)
+# 定义计算方差的函数
+Var_D <- function(n) {
+  return((4 * sum(n) * (sum(n) - 1) * (sum(n) - 2) * sum((n / sum(n))^3) +
+           2 *sum(n) * (sum(n)- 1) * sum((n / sum(n))^2) -
+           2 *sum(n) * (sum(n)- 1) * (2 *sum(n) - 3) * sum((n /sum(n))^2) * sum((n /sum(n))^2)) / (sum(n)* sum(n) * (sum(n)- 1) * (sum(n)- 1)))
+}
 
-Var_bts <- (4 * N1 * (N1 - 1) * (N1 - 2) * sum_of_cubes1 +
-           2 * N1 * (N1 - 1) * sum_of_squares1 -
-           2 * N1 * (N1 - 1) * (2 * N1 - 3) * sum_of_squares1 * sum_of_squares1) / (N1 * N1 * (N1 - 1) * (N1 - 1))
+# 定义计算t_value的函数
+t_value <- function(x1,x2,Var_1,Var_2) {
+  return((x1 - x2) / sqrt(Var_1 + Var_2))
+}
+# 定义计算df的函数
+df <- function(n1,n2,Var_1,Var_2) {
+  return((Var_1 + Var_2)^2 / (Var_1^2 / sum(n1) + Var_2^2 / sum(n2)))
+}
+# 定义计算p_value的函数
+p_value <- function(t_value,df) {
+  return(2 * pt(abs(t_value), df, lower.tail = FALSE))
+}
 
-# 计算变量author_ps2014的方差
-N2 <- sum(author_ps2014_clean)
-sum_of_squares2 <- sum((author_ps2014_clean / N2)^2)
-sum_of_cubes2 <- sum((author_ps2014_clean / N2)^3)
-
-Var_ps2014 <- (4 * N2 * (N2 - 1) * (N2 - 2) * sum_of_cubes2 +
-           2 * N2 * (N2 - 1) * sum_of_squares2 -
-           2 * N2 * (N2 - 1) * (2 * N2 - 3) * sum_of_squares2 * sum_of_squares2) / (N2 * N2 * (N2 - 1) * (N2 - 1))
-# 计算变量wpd的方差
-N3 <- sum(author_BTS$wpd)
-sum_of_squares3 <- sum((author_BTS$wpd / N3)^2)
-sum_of_cubes3 <- sum((author_BTS$wpd / N3)^3)
-
-Var_wpd <- (4 * N3 * (N3 - 1) * (N3 - 2) * sum_of_cubes3 +
-           2 * N3 * (N3 - 1) * sum_of_squares3 -
-           2 * N3 * (N3 - 1) * (2 * N3 - 3) * sum_of_squares3 * sum_of_squares3) / (N3 * N3 * (N3 - 1) * (N3 - 1))
-
-# 计算变量leading_author_ps2014的方差
-N4 <- sum(leading_author_ps2014_clean)
-sum_of_squares4 <- sum((leading_author_ps2014_clean / N4)^2)
-sum_of_cubes4 <- sum((leading_author_ps2014_clean / N4)^3)
-
-Var_ps2014_leading <- (4 * N4 * (N4 - 1) * (N4 - 2) * sum_of_cubes4 +
-           2 * N4 * (N4 - 1) * sum_of_squares4 -
-           2 * N4 * (N4 - 1) * (2 * N4 - 3) * sum_of_squares4 * sum_of_squares4) / (N4 * N4 * (N4 - 1) * (N4 - 1))
-
-# 计算变量leading_author_bts的方差
-N5 <- sum(leading_author_bts_clean)
-sum_of_squares5 <- sum((leading_author_bts_clean / N5)^2)
-sum_of_cubes5 <- sum((leading_author_bts_clean / N5)^3)
-
-Var_bts_leading <- (4 * N5 * (N5 - 1) * (N5 - 2) * sum_of_cubes5 +
-           2 * N5 * (N5 - 1) * sum_of_squares5 -
-           2 * N5 * (N5 - 1) * (2 * N5 - 3) * sum_of_squares5 * sum_of_squares5) / (N5 * N5 * (N5 - 1) * (N5 - 1))
-
-# 输出结果
-Var_ps2014
-Var_bts
-Var_wpd
-Var_ps2014_leading
-Var_bts_leading
-```
-
-```{r}
-# calculating t, df,p of bts vs ps2014 for all author
 t_value1 <- (α_bts - α_ps2014) / sqrt(Var_bts + Var_ps2014)
 df_1 <- (Var_bts + Var_ps2014)^2 / (Var_bts^2 / N1 + Var_ps2014^2 / N2)
 p_value1 <- 2 * pt(abs(t_value1), df_1, lower.tail = FALSE)
 
-# calculating t, df,p of bts vs wpd for all author
-t_value2 <- (α_wpd-α_bts) / sqrt(Var_wpd+Var_bts)
-df_2 <- (Var_wpd+Var_bts)^2 / (Var_bts^2 / N1 + Var_wpd^2 / N3)
-p_value2 <- 2 * pt(abs(t_value2), df_2, lower.tail = FALSE)
+# 计算方差
+Var_ps2014<- Var_D(author_ps2014_clean)
+Var_bts<- Var_D(author_bts_clean)
+Var_wpd<- Var_D(author_BTS$wpd)
+Var_ps2014_leading<- Var_D(leading_author_ps2014_clean)
+Var_bts_leading<- Var_D(leading_author_bts_clean)
 
-# calculating t, df,p of bts vs ps2014 for leading author
-t_value3 <- (α_bts_leading-α_ps2014_leading)/ sqrt(Var_bts_leading+Var_ps2014_leading)
-df_3 <- (Var_bts_leading+Var_ps2014_leading)^2 / (Var_ps2014_leading^2 / N4 + Var_bts_leading^2 / N5)
-p_value3 <- 2 * pt(abs(t_value3), df_3, lower.tail = FALSE)
+# 定义计算t_value的函数
+t_value1<- t_value(α_bts,α_ps2014,Var_bts,Var_ps2014)
+t_value2<- t_value(α_wpd,α_bts,Var_wpd,Var_bts)
+t_value3<- t_value(α_bts_leading,α_ps2014_leading,Var_bts_leading,Var_ps2014_leading)
+t_value4<- t_value(α_wpd,α_bts_leading,Var_wpd,Var_bts_leading)
 
-# calculating t, df,p of bts vs wpd for leading author
-t_value4 <- (α_wpd-α_bts_leading)/ sqrt(Var_wpd+Var_bts_leading)
-df_4 <- (Var_wpd+Var_bts_leading)^2 / (Var_bts_leading^2 / N5 + Var_wpd^2 / N3)
-p_value4 <- 2 * pt(abs(t_value4), df_4, lower.tail = FALSE)
+df1<- df(author_bts_clean,author_ps2014_clean,Var_bts,Var_ps2014)
+df2<- df(author_BTS$wpd,author_bts_clean,Var_wpd,Var_bts)
+df3<- df(leading_author_bts_clean,leading_author_ps2014_clean,Var_bts_leading,Var_ps2014_leading)
+df4<- df(author_BTS$wpd,leading_author_bts_clean,Var_wpd,Var_bts_leading)
 
-# 输出结果
+p_value1<- p_value(t_value1,df1)
+p_value2<- p_value(t_value2,df2)
+p_value3<- p_value(t_value3,df3)
+p_value4<- p_value(t_value4,df4)
+
 t_value1
 p_value1
-df_1
+
 t_value2
 p_value2
-df_2
+
 t_value3
 p_value3
-df_3
+
 t_value4
 p_value4
-df_4
 ```
 
 
