@@ -28,18 +28,19 @@ library(cowplot)
 library(ggforce)#ggforce用来画画中画
 library(boot)
 library(bootES)
+library(vegan)# 计算Simpson系数
 ```
 
 ## Import Data
 
 ```{r}
-df <- import("psa001_ind.csv")
+df <- read.csv("psa001_ind.csv")
 df
 ```
 
 ```{r}
 df <- df %>%
-  mutate(country_map = case_when(
+  dplyr::mutate(country_map = case_when(
     country == "AFG"~"AF", 
     country == "UAE"~"AE", 
     country == "ALA"~"AX",
@@ -302,19 +303,19 @@ df <- df %>%
 ```
 
 ```{r}
-df_PSA001 <- select(df, user_id, age,sex,country_map)
+df_PSA001 <- dplyr::select(df, user_id, age,sex,country_map)
 #合并重复的行
-df_PSA001 <- distinct(df_PSA001)
+df_PSA001 <- dplyr::distinct(df_PSA001)
 df_PSA001 <- df_PSA001 %>% 
-  group_by(country_map) %>% 
+  dplyr::group_by(country_map) %>% 
   summarise(n = n())
 
 df_PSA001
 
 
-df_PSA001 <- df_PSA001  %>% arrange(-n)
+df_PSA001 <- df_PSA001  %>% dplyr::arrange(-n)
 
-df_PSA001 <- mutate(.data = df_PSA001, percentage_sample = n/11481) 
+df_PSA001 <- dplyr::mutate(.data = df_PSA001, percentage_sample = n/11481) 
 df_PSA001
 ```
 
@@ -326,13 +327,13 @@ wppdata
 
 ```{r}
 wppdata1 <- subset(wppdata, select = c("country_map","continent", "pop"))
-wppdata2 <- mutate(.data = wppdata1, percentage_pop = pop/7909295.151) 
+wppdata2 <- dplyr::mutate(.data = wppdata1, percentage_pop = pop/7909295.151) 
 wppdata2
 ```
 
 
 ```{r}
-wppdata3 <- wppdata2 %>% left_join(df_PSA001, by = "country_map")
+wppdata3 <- wppdata2 %>% dplyr::left_join(df_PSA001, by = "country_map")
 #将台湾省的数据与中国内地的数据合并
 sum_of_cn <- sum(wppdata3$percentage_pop[wppdata3$country_map %in% c("CN", "TW")])
 wppdata3$percentage_pop[wppdata3$country_map %in% c("CN", "TW")] <- sum_of_cn
@@ -377,7 +378,7 @@ PS2014_map
 ```
 
 ```{r}
-df_PSA001_country <- df_PSA001 %>% left_join(wppdata2, by = "country_map")
+df_PSA001_country <- df_PSA001 %>% dplyr::left_join(wppdata2, by = "country_map")
 # 计算列"TW"为"CN"对应的数据
 sum_of_CN_TW <- sum(df_PSA001_country$percentage_sample[df_PSA001_country$country_map == "CN"])
 
@@ -447,9 +448,9 @@ wppdata3
 
 ```{r}
 # map of PS2014 data 
-country_PS2014 <- ggplot(PS2014_map) +
-  geom_map(aes(map_id = country_map, fill = n_binned), map = world_map_new) +
-  geom_polygon(data = world_map_new, 
+country_PS2014 <- ggplot2::ggplot(PS2014_map) +
+  ggplot2::geom_map(aes(map_id = country_map, fill = n_binned), map = world_map_new) +
+ ggplot2:: geom_polygon(data = world_map_new, 
                aes(x = long, y = lat, group = group), 
                colour = 'black', size=0.1, fill = NA) + 
   theme_void() + 
@@ -471,9 +472,9 @@ country_PS2014
 
 ```{r}
 # map of PSA001 data 
-country_PSA001 <- ggplot(df_PSA001_country) +
-  geom_map(aes(map_id = country_map, fill = n_binned), map = world_map_new) +
-  geom_polygon(data = world_map_new, 
+country_PSA001 <- ggplot2::ggplot(df_PSA001_country) +
+  ggplot2::geom_map(aes(map_id = country_map, fill = n_binned), map = world_map_new) +
+  ggplot2::geom_polygon(data = world_map_new, 
                aes(x = long, y = lat, group = group), 
                colour = 'black', size=0.1, fill = NA) + 
   theme_void() + 
@@ -497,9 +498,9 @@ country_PSA001
 #删除某列数据中包含缺失值的所在行
 wppdata4 <- wppdata3[complete.cases(wppdata3$percentage_pop), ]
 # map of World people data 
-country_people <- ggplot(wppdata4) +
-  geom_map(aes(map_id = country_map, fill = n_binned), map = world_map_new) +
-  geom_polygon(data = world_map_new, 
+country_people <- ggplot2::ggplot(wppdata4) +
+  ggplot2::geom_map(aes(map_id = country_map, fill = n_binned), map = world_map_new) +
+  ggplot2::geom_polygon(data = world_map_new, 
                aes(x = long, y = lat, group = group), 
                colour = 'black', size=0.1, fill = NA) + 
   theme_void() + 
@@ -521,10 +522,10 @@ country_people
 
 ```{r}  
 # maybe try binning
-country_PS2014 + country_PSA001 +country_people +  plot_layout(ncol = 1, nrow = 3, 
+country_PS2014 + country_PSA001 +country_people +  patchwork::plot_layout(ncol = 1, nrow = 3, 
                                  heights = c(4,4))+
-plot_annotation(tag_levels = 'A')
-ggsave("Geographical_distribution_of_samples.pdf", width = 9, height = 13.5)
+patchwork::plot_annotation(tag_levels = 'A')
+ggplot2::ggsave("Geographical_distribution_of_samples.pdf", width = 9, height = 13.5)
 ```
 
 
@@ -610,9 +611,9 @@ author
 author_bts_no_na <- author[complete.cases(author$n_binned_bts), ]
 author_bts_no_na
 # map of PSA001 data 
-author_psa001 <- ggplot(author_bts_no_na) +
-  geom_map(aes(map_id = country_map, fill = n_binned_bts), map = world_map_new) +
-  geom_polygon(data = world_map_new, 
+author_psa001 <- ggplot2::ggplot(author_bts_no_na) +
+  ggplot2::geom_map(aes(map_id = country_map, fill = n_binned_bts), map = world_map_new) +
+ ggplot2::geom_polygon(data = world_map_new, 
                aes(x = long, y = lat, group = group), 
                colour = 'black', size=0.1, fill = NA) + 
   theme_void() + 
@@ -638,19 +639,19 @@ author_ps2022_no_na <- author[complete.cases(author$n_binned_ps2014), ]
 author_ps2022_no_na
 
 # map of PS2014 data 
-author_ps2014 <- ggplot(author_ps2022_no_na) +
-  geom_map(aes(map_id = country_map, fill = n_binned_ps2014), map = world_map_new) +
-  geom_polygon(data = world_map_new, 
+author_ps2014 <- ggplot2::ggplot(author_ps2022_no_na) +
+  ggplot2::geom_map(aes(map_id = country_map, fill = n_binned_ps2014), map = world_map_new) +
+  ggplot2::geom_polygon(data = world_map_new, 
                aes(x = long, y = lat, group = group), 
                colour = 'black', size=0.1, fill = NA) + 
-  theme_void() + 
+  ggplot2::theme_void() + 
   xlim(c(-30, 329)) + 
   ylim(c(-60, 90)) +
-  scale_fill_manual(name = "Proportion of authors",
+  ggplot2::scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggtitle("Geographical distribution of all authors from traditional studies")+
-  theme(plot.title = element_text(hjust = 0.5, size = 15),
+ggplot2::ggtitle("Geographical distribution of all authors from traditional studies")+
+  ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 15),
         legend.text = element_text(size = 10),  # 调整图例文字的大小
         legend.title = element_text(size = 12),  # 调整图例标题的大小
         legend.key.size = unit(3, "pt"),  # 调整图例键的尺寸
@@ -661,10 +662,10 @@ author_ps2014
 ```
 
 ```{r}  
-author_ps2014 + author_psa001 + country_people + plot_layout(ncol = 1, nrow = 3, heights = c(4, 4)) +
-  plot_annotation(tag_levels = 'A')   # 调整图形标题的字体大小为12
+author_ps2014 + author_psa001 + country_people + patchwork::plot_layout(ncol = 1, nrow = 3, heights = c(4, 4)) +
+  patchwork::plot_annotation(tag_levels = 'A')   # 调整图形标题的字体大小为12
 
-ggsave("Geographical_distribution_of_authors.pdf", width = 9, height = 13.5)
+ggplot2::ggsave("Geographical_distribution_of_authors.pdf", width = 9, height = 13.5)
 ```
 
 ```{r}
@@ -673,19 +674,19 @@ author_bts_no_na <- author[complete.cases(author$n_binned_leading_bts), ]
 author_bts_no_na
 
 # map of BTS data 
-author_bts_leading <- ggplot(author_bts_no_na) +
-  geom_map(aes(map_id = country_map, fill = n_binned_leading_bts), map = world_map_new) +
-  geom_polygon(data = world_map_new, 
+author_bts_leading <- ggplot2::ggplot(author_bts_no_na) +
+  ggplot2::geom_map(aes(map_id = country_map, fill = n_binned_leading_bts), map = world_map_new) +
+  ggplot2::geom_polygon(data = world_map_new, 
                aes(x = long, y = lat, group = group), 
                colour = 'black', size=0.1, fill = NA) + 
-  theme_void() + 
+  ggplot2::theme_void() + 
   xlim(c(-30, 329)) + 
   ylim(c(-60, 90)) +
-  scale_fill_manual(name = "Proportion of authors",
+  ggplot2::scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggtitle("Geographical distribution of leading authors from big-team science")+
-  theme(plot.title = element_text(hjust = 0.5, size = 15),
+ggplot2::ggtitle("Geographical distribution of leading authors from big-team science")+
+  ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 15),
         legend.text = element_text(size = 10),  # 调整图例文字的大小
         legend.title = element_text(size = 12),  # 调整图例标题的大小
         legend.key.size = unit(3, "pt"),  # 调整图例键的尺寸
@@ -701,19 +702,19 @@ author_ps2022_no_na <- author[complete.cases(author$n_binned_leading_ps2014), ]
 author_ps2022_no_na
 
 # map of PS2014 data 
-author_ps2014_leading <- ggplot(author_ps2022_no_na) +
-  geom_map(aes(map_id = country_map, fill = n_binned_leading_ps2014), map = world_map_new) +
-  geom_polygon(data = world_map_new, 
+author_ps2014_leading <- ggplot2::ggplot(author_ps2022_no_na) +
+  ggplot2::geom_map(aes(map_id = country_map, fill = n_binned_leading_ps2014), map = world_map_new) +
+  ggplot2::geom_polygon(data = world_map_new, 
                aes(x = long, y = lat, group = group), 
                colour = 'black', size=0.1, fill = NA) + 
-  theme_void() + 
+  ggplot2::theme_void() + 
   xlim(c(-30, 329)) + 
   ylim(c(-60, 90)) +
-  scale_fill_manual(name = "Proportion of authors",
+  ggplot2::scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggtitle("Geographical distribution of leading authors from traditional studies")+
-  theme(plot.title = element_text(hjust = 0.5, size = 15),
+ggplot2::ggtitle("Geographical distribution of leading authors from traditional studies")+
+  ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 15),
         legend.text = element_text(size = 10),  # 调整图例文字的大小
         legend.title = element_text(size = 12),  # 调整图例标题的大小
         legend.key.size = unit(3, "pt"),  # 调整图例键的尺寸
@@ -724,10 +725,10 @@ author_ps2014_leading
 ```
 
 ```{r}  
-author_ps2014_leading + author_bts_leading + country_people + plot_layout(ncol = 1, nrow = 3, heights = c(4, 4)) +
-  plot_annotation(tag_levels = 'A')   # 调整图形标题的字体大小为12
+author_ps2014_leading + author_bts_leading + country_people + patchwork::plot_layout(ncol = 1, nrow = 3, heights = c(4, 4)) +
+  patchwork::plot_annotation(tag_levels = 'A')   # 调整图形标题的字体大小为12
 
-ggsave("Geographical_distribution_of_first_corresponding_authors.pdf", width = 9, height = 13.5)
+ggplot2::ggsave("Geographical_distribution_of_first_corresponding_authors.pdf", width = 9, height = 13.5)
 ```
 
 ```{r}
@@ -738,8 +739,8 @@ wpp_age60
 ```{r}
 df_PSA001
 new_test_df_filter <- df_PSA001 %>% 
-    filter(sex != 'no')%>% 
-    filter(sex != 'na')
+    dplyr::filter(sex != 'no')%>% 
+    dplyr::filter(sex != 'na')
 new_test_df_filter
 ```
 
@@ -2619,14 +2620,14 @@ leading_author_bts_clean
 ```
 
 ```{r}
-library(vegan)
-# 计算变量的Simpson系数
-α_bts <- diversity(author_bts_clean, index = "simpson")
-α_ps2014 <- diversity(author_ps2014_clean, index = "simpson")
-α_wpd <- diversity(author_BTS$wpd, index = "simpson")
 
-α_ps2014_leading <- diversity(leading_author_ps2014_clean, index = "simpson")
-α_bts_leading <- diversity(leading_author_bts_clean, index = "simpson")
+# 计算变量的Simpson系数
+α_bts <- vegan::diversity(author_bts_clean, index = "simpson")
+α_ps2014 <- vegan::diversity(author_ps2014_clean, index = "simpson")
+α_wpd <- vegan::diversity(author_BTS$wpd, index = "simpson")
+
+α_ps2014_leading <- vegan::diversity(leading_author_ps2014_clean, index = "simpson")
+α_bts_leading <- vegan::diversity(leading_author_bts_clean, index = "simpson")
 
 # 输出结果
 α_ps2014
@@ -2638,10 +2639,10 @@ library(vegan)
 ```
 
 ##多样性t-test
-
+#多样性t-test类似于独立样本t检验，与一般的独立样本t-test的区别在于方差的计算方式
 #首先，计算多样性的方差,多样性t检验的方差如下：
 $$Var D=\frac{4N\left(N-1\right)\left(N-2\right)\sum p_{i}^{3}+2N\left ( N-1 \right)\sum p_{i}^{2} -2N\left(N-1\right)\left(2N-3\right)\left(\sum p_{i}^{2}\right )^{2}}{N^{2}\left(N-1\right)^{2}}$$ 
-#其次，计算独立样本t检验的t value, df, p
+#其次，计算独立样本t检验的t_value, df, p_value
 ```{r}
 # 定义计算方差的函数
 Var_D <- function(n) {
