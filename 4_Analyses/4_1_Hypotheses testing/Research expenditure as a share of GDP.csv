@@ -1,0 +1,71 @@
+country,R_D,country_map,continent
+Armenia,0.19,AM,Asia
+Austria,3.17,AT,Europe
+Azerbaijan,0.18,AZ,Asia
+Belarus,0.61,BY,Europe
+Belgium,2.82,BE,Europe
+Bosnia Herzegovina,0.2,BA,Europe
+Brunei_Darussalam,0.28,BN,Asia
+Bulgaria,0.77,BG,Europe
+Burundi,0.21,BI,Africa
+Canada,1.57,CA,North America
+China,2.19,CN,Asia
+China_Hong_Kong_SAR,0.86,HK,Asia
+China_Macao_SAR,0.2,MO,Asia
+Colombia,0.24,CO,South America
+Croatia,0.97,HR,Europe
+Cyprus,0.56,CY,Asia
+Czech Rep.,1.93,CZ,Europe
+Denmark,3.06,DK,Europe
+Egypt,0.72,EG,Africa
+Estonia,1.43,EE,Europe
+Finland,2.77,FI,Europe
+France,2.2,FR,Europe
+Gambia,0.07,GM,Africa
+Georgia,0.3,GE,Asia
+Germany,3.09,DE,Europe
+Greece,1.18,GR,Europe
+Hungary,1.55,HU,Europe
+Iceland,2.03,IS,Europe
+India,0.65,IN,Asia
+Indonesia,0.23,ID,Asia
+Iraq,0.04,IQ,Asia
+Ireland,1.15,IE,Europe
+Israel,4.95,IL,Asia
+Italy,1.4,IT,Europe
+Japan,3.26,JP,Asia
+Kazakhstan,0.12,KZ,Asia
+Korea_Rep.,4.53,KR,Asia
+Kuwait,0.06,KW,Asia
+Latvia,0.63,LV,Europe
+Lithuania,0.94,LT,Europe
+Luxembourg,1.24,LU,Europe
+Malta,0.57,MT,Europe
+Mauritania,0.01,MR,Africa
+Mauritius,0.35,MU,Africa
+Mexico,0.31,MX,North America
+Moldova_Rep.,0.25,MD,Europe
+Mongolia,0.1,MN,Asia
+Montenegro,0.37,ME,Europe
+Netherlands,2.16,NL,Europe
+North Macedonia,0.36,MK,Europe
+Norway,2.07,NO,Europe
+Oman,0.22,OM,Asia
+Peru,0.13,PE,South America
+Poland,1.21,PL,Europe
+Portugal,1.37,PT,Europe
+Qatar,0.51,QA,Asia
+Romania,0.51,RO,Europe
+Russian_Federation,0.99,RU,Europe
+Serbia,0.92,RS,Europe
+Slovakia,0.83,SK,Europe
+Slovenia,1.94,SI,Europe
+Spain,1.24,ES,Europe
+Sweden,3.34,SE,Europe
+Tajikistan,0.1,TJ,Asia
+Tunisia,0.6,TN,Africa
+UK,1.72,GB,Europe
+Ukraine,0.47,UA,Europe
+United States,2.84,US,North America
+United_Arab_Emirates,1.3,AE,Asia
+Uzbekistan,0.13,UZ,Asia

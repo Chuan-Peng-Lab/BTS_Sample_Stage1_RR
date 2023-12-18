@@ -1,0 +1,117 @@
+ country1,EPI_rank,country_map,continent
+Australia,3,AU,Oceania
+Canada,3,CA,North America
+New Zealand,3,NZ,Oceania
+United Kingdom,3,GB,Europe
+United States of America,3,US,North America
+Netherlands,6,NL,Europe
+Singapore,7,SG,Asia
+Austria,8,AT,Europe
+Norway,9,NO,Europe
+Denmark,10,DK,Europe
+Belgium,11,BE,Europe
+Sweden,12,SE,Europe
+Finland,13,FI,Europe
+Portugal,14,PT,Europe
+Germany,15,DE,Europe
+Croatia,16,HR,Europe
+South Africa,17,ZA,Africa
+Poland,18,PL,Europe
+Greece,19,GR,Europe
+Slovakia,20,SK,Europe
+Luxembourg,21,LU,Europe
+Romania,22,RO,Europe
+Hungary,23,HU,Europe
+Lithuania,24,LT,Europe
+Kenya,25,KE,Africa
+Bulgaria,26,BG,Europe
+Philippines,27,PH,Asia
+Czechia,28,CZ,Europe
+Malaysia,29,MY,Asia
+Latvia,30,LV,Europe
+Estonia,31,EE,Europe
+Serbia,32,RS,Europe
+Nigeria,33,NG,Africa
+Switzerland,34,CH,Europe
+Argentina,35,AR,South America
+"China, Hong Kong SAR",36,HK,Asia
+Italy,37,IT,Europe
+Spain,38,ES,Europe
+France,39,FR,Europe
+Ukraine,40,UA,Europe
+Republic of Korea,41,KR,Asia
+Costa Rica,42,CR,North America
+Cuba,43,CU,North America
+Belarus,44,BY,Europe
+Russian Federation,45,RU,Europe
+Ghana,46,GH,Africa
+Republic of Moldova,47,MD,Europe
+Paraguay,48,PY,South America
+Bolivia (Plurinational State of),49,BO,South America
+Chile,50,CL,South America
+Georgia,51,GE,Asia
+Albania,52,AL,Europe
+Honduras,53,HN,North America
+Uruguay,54,UY,South America
+El Salvador,55,SV,North America
+Peru,56,PE,South America
+India,57,IN,Asia
+Dominican Republic,58,DO,North America
+Lebanon,59,LB,Asia
+Uganda,60,UG,Africa
+Tunisia,61,TN,Africa
+Armenia,62,AM,Asia
+Brazil,63,BR,South America
+Guatemala,63,GT,North America
+Viet Nam,65,VN,Asia
+Nicaragua,66,NI,North America
+China,67,CN,Asia
+United Republic of Tanzania,68,TZ,Africa
+Turkey,69,TR,Asia
+Nepal,70,NP,Asia
+Bangladesh,71,BD,Asia
+Venezuela (Bolivarian Republic of),72,VE,South America
+Ethiopia,73,ET,Africa
+Iran (Islamic Republic of),74,IR,Asia
+Pakistan,75,PK,Asia
+Sri Lanka,76,LK,Asia
+Mongolia,77,MN,Asia
+Qatar,78,QA,Asia
+Israel,79,IL,Asia
+Panama,80,PA,North America
+Morocco,81,MA,Africa
+Colombia,82,CO,South America
+Algeria,83,DZ,Africa
+United Arab Emirates,84,AE,Asia
+Japan,85,JP,Asia
+Indonesia,86,ID,Asia
+Ecuador,87,EC,South America
+Syrian Arab Republic,88,SY,Asia
+Kuwait,89,KW,Asia
+Egypt,90,EG,Africa
+Mozambique,91,MZ,Africa
+Afghanistan,92,AF,Asia
+Mexico,93,MX,North America
+Uzbekistan,94,UZ,Asia
+Jordan,95,JO,Asia
+Kyrgyzstan,96,KG,Asia
+Azerbaijan,97,AZ,Asia
+Myanmar,98,MM,Asia
+Cambodia,99,KH,Asia
+South Sudan,100,SS,Africa
+Cameroon,101,CM,Africa
+Thailand,102,TH,Asia
+Haiti,103,HT,North America
+Kazakhstan,104,KZ,Asia
+Somalia,105,SO,Africa
+Oman,106,OM,Asia
+Saudi Arabia,107,SA,Asia
+Iraq,108,IQ,Asia
+Cote d'Ivoire,109,CI,Africa
+Angola,110,AO,Africa
+Tajikistan,111,TJ,Asia
+Rwanda,112,RW,Africa
+Libya,113,LY,Africa
+Yemen,114,YE,Asia
+Democratic Republic of the Congo,115,CD,Africa
+Lao People's Democratic Republic,116,LA,Asia
