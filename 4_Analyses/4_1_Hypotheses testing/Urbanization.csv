@@ -1,0 +1,216 @@
+﻿Country Code,Urbanization,country_map,continent
+ABW,44.052,AW,North America
+AFG,26.616,AF,Asia
+AGO,68.081,AO,Africa
+ALB,63.799,AL,Europe
+AND,87.811,AD,Europe
+ARE,87.543,AE,Asia
+ARG,92.347,AR,South America
+ARM,63.573,AM,Asia
+ASM,87.196,AS,Oceania
+ATG,24.346,AG,North America
+AUS,86.488,AU,Oceania
+AUT,59.256,AT,Europe
+AZE,57.17,AZ,Asia
+BDI,14.417,BI,Africa
+BEL,98.153,BE,Europe
+BEN,49.534,BJ,Africa
+BFA,31.877,BF,Africa
+BGD,39.711,BD,Asia
+BGR,76.363,BG,Europe
+BHR,89.743,BH,Asia
+BHS,83.492,BS,North America
+BIH,49.841,BA,Europe
+BLR,80.326,BY,Europe
+BLZ,46.396,BZ,North America
+BMU,100,BM,North America
+BOL,70.83,BO,South America
+BRA,87.555,BR,South America
+BRB,31.324,BB,North America
+BRN,78.854,BN,Asia
+BTN,43.686,BT,Asia
+BWA,72.224,BW,Africa
+CAF,43.12,CF,Africa
+CAN,81.752,CA,North America
+CHE,74.092,CH,Europe
+CHL,87.912,CL,South America
+CHN,63.56,CN,Asia
+CIV,52.661,CI,Africa
+CMR,58.733,CM,Africa
+COD,46.837,CD,Africa
+COG,68.736,CG,Africa
+COL,82.05,CO,South America
+COM,29.864,KM,Africa
+CPV,67.545,CV,Africa
+CRI,82.042,CR,North America
+CUB,77.401,CU,North America
+CUW,89.025,CW,North America
+CYM,100,KY,North America
+CYP,66.911,CY,Asia
+CZE,74.377,CZ,Europe
+DEU,77.648,DE,Europe
+DJI,78.38,DJ,Africa
+DMA,71.7,DM,North America
+DNK,88.367,DK,Europe
+DOM,83.848,DO,North America
+DZA,74.772,DZ,Africa
+ECU,64.57,EC,South America
+EGY,42.967,EG,Africa
+ERI,42.625,ER,Africa
+ESP,81.304,ES,Europe
+EST,69.609,EE,Europe
+ETH,22.661,ET,Africa
+FIN,85.681,FI,Europe
+FJI,58.229,FJ,Oceania
+FRA,81.509,FR,Europe
+FRO,42.779,FO,Europe
+FSM,23.217,FM,Oceania
+GAB,90.735,GA,Africa
+GBR,84.398,GB,Europe
+GEO,60.297,GE,Asia
+GHA,58.615,GH,Africa
+GIB,100,GI,Europe
+GIN,37.668,GN,Africa
+GMB,63.852,GM,Africa
+GNB,45.041,GW,Africa
+GNQ,74.01,GQ,Africa
+GRC,80.357,GR,Europe
+GRD,36.868,GD,North America
+GRL,87.727,GL,North America
+GTM,52.666,GT,North America
+GUM,95.091,GU,Oceania
+GUY,27.022,GY,South America
+HKG,100,HK,Asia
+HND,59.6,HN,North America
+HRV,58.219,HR,Europe
+HTI,58.82,HT,North America
+HUN,72.552,HU,Europe
+IDN,57.934,ID,Asia
+IMN,53.271,IM,Europe
+IND,35.872,IN,Asia
+IRL,64.183,IE,Europe
+IRN,76.807,IR,Asia
+IRQ,71.354,IQ,Asia
+ISL,93.992,IS,Europe
+ISR,92.763,IL,Asia
+ITA,71.657,IT,Europe
+JAM,57.008,JM,North America
+JOR,91.827,JO,Asia
+JPN,91.955,JP,Asia
+KAZ,57.99,KZ,Asia
+KEN,29.002,KE,Africa
+KGZ,37.461,KG,Asia
+KHM,25.114,KH,Asia
+KIR,57.058,KI,Oceania
+KNA,30.991,KN,North America
+KOR,81.427,KR,Asia
+KWT,100,KW,Asia
+LAO,37.592,LA,Asia
+LBN,89.262,LB,Asia
+LBR,53.065,LR,Africa
+LBY,81.302,LY,Africa
+LCA,19.05,LC,North America
+LIE,14.538,LI,Europe
+LKA,19.026,LK,Asia
+LSO,29.943,LS,Africa
+LTU,68.465,LT,Europe
+LUX,91.881,LU,Europe
+LVA,68.54,LV,Europe
+MAC,100,MO,Asia
+MAF,,MF,North America
+MAR,64.596,MA,Africa
+MCO,100,MC,Europe
+MDA,43.173,MD,Europe
+MDG,39.882,MG,Africa
+MDV,41.536,MV,Asia
+MEX,81.3,MX,North America
+MHL,78.52,MH,Oceania
+MKD,59.118,MK,Europe
+MLI,45.437,ML,Africa
+MLT,94.875,MT,Europe
+MMR,31.771,MM,Asia
+MNE,68.164,ME,Europe
+MNG,68.93,MN,Asia
+MNP,91.983,MP,Oceania
+MOZ,38.187,MZ,Africa
+MRT,56.923,MR,Africa
+MUS,40.81,MU,Africa
+MWI,17.98,MW,Africa
+MYS,78.214,MY,Asia
+NAM,53.956,NA,Africa
+NCL,72.325,NC,Oceania
+NER,16.894,NE,Africa
+NGA,53.521,NG,Africa
+NIC,59.556,NI,North America
+NLD,92.886,NL,Europe
+NOR,83.664,NO,Europe
+NPL,21.451,NP,Asia
+NRU,100,NR,Oceania
+NZL,86.884,NZ,Oceania
+OMN,87.75,OM,Asia
+PAK,37.731,PK,Asia
+PAN,69.141,PA,North America
+PER,78.708,PE,South America
+PHL,47.977,PH,Asia
+PLW,81.956,PW,Oceania
+PNG,13.582,PG,Oceania
+POL,60.134,PL,Europe
+PRI,93.61,PR,North America
+PRK,62.916,KP,Asia
+PRT,67.381,PT,Europe
+PRY,62.818,PY,South America
+PSE,77.291,PS,Asia
+PYF,62.17,PF,Oceania
+QAT,99.318,QA,Asia
+ROU,54.489,RO,Europe
+RUS,75.126,RU,Europe
+RWA,17.721,RW,Africa
+SAU,84.729,SA,Asia
+SDN,35.956,SD,Africa
+SEN,49.086,SN,Africa
+SGP,100,SG,Asia
+SLB,25.584,SB,Oceania
+SLE,43.831,SL,Africa
+SLV,74.767,SV,North America
+SMR,97.732,SM,Europe
+SOM,47.324,SO,Africa
+SRB,56.873,RS,Europe
+SSD,20.846,SS,Africa
+STP,75.755,ST,Africa
+SUR,66.307,SR,South America
+SVK,53.909,SK,Europe
+SVN,55.751,SI,Europe
+SWE,88.492,SE,Europe
+SWZ,24.576,SZ,Eswatini
+SXM,100,SX,North America
+SYC,58.396,SC,Africa
+SYR,56.769,SY,Asia
+TCA,94.047,TC,North America
+TCD,24.063,TD,Africa
+TGO,43.921,TG,Africa
+THA,52.889,TH,Asia
+TJK,27.968,TJ,Asia
+TKM,53.494,TM,Asia
+TLS,32.074,TL,Asia
+TON,23.125,TO,Oceania
+TTO,53.34,TT,North America
+TUN,70.214,TN,Africa
+TUR,77.022,TR,Asia
+TUV,65.527,TV,Oceania
+TZA,36.682,TZ,Africa
+UGA,26.159,UG,Africa
+UKR,69.919,UA,Europe
+URY,95.688,UY,South America
+USA,83.084,US,North America
+UZB,50.466,UZ,Asia
+VCT,53.875,VC,North America
+VEN,88.378,VE,South America
+VGB,49.331,VG,North America
+VIR,96.136,VI,North America
+VNM,38.766,VN,Asia
+VUT,25.816,VU,Oceania
+WSM,17.616,WS,Oceania
+YEM,39.188,YE,Asia
+ZAF,68.335,ZA,Africa
+ZMB,45.761,ZM,Africa
+ZWE,32.395,ZW,Africa

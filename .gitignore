@@ -1,0 +1,5 @@
+# ignore MacOS generated temp files:
+._*
+*/._*
+*/*/._*
+*/*/*/._*
