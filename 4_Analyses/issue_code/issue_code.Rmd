@@ -130,8 +130,15 @@ summary(urban_model_beta_zi_ps2014_new)
 
 ```{r}
 #urban_model_beta_zi_ps2014  <-        brms::prepare_predictions(urban_model_beta_zi_ps2014 ,nug=1e-06)
+# https://marginaleffects.com/vignettes/comparisons.html#manual-computation
+# in this tutorial, authors pointed out a four-step procedure:
+# Quantity
+# Grid
+# Average
+# Hypothesis
+# understand what does these four steps mean in our analysis is crucial.
 
-ame_beta_zi_urban_ps2014 <- urban_model_beta_zi_ps2014_new %>%
+ame_beta_zi_urban_ps2014 <- urban_model_beta_zi_ps2014_new$dpars %>%
   marginaleffects::avg_comparisons(variables = "Urbanization") %>% 
   posterior_draws()
 

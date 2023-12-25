@@ -3,3 +3,8 @@
 */._*
 */*/._*
 */*/*/._*
+
+# ignore r-related temp files
+.Rproj.user
+.Rhistory
+*/*/.Rhistory
