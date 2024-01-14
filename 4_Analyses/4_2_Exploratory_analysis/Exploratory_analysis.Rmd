@@ -30,6 +30,7 @@ library(ggthemes)
 #library(rstan)
 library(emmeans)
 library(bayestestR)
+library(brmsmargins)
 ```
 
 ```{r}
@@ -66,28 +67,10 @@ label_pp_tiny <- label_number(accuracy = 0.01, scale = 100,
 
 ```
 
-```{r}
-latitude_longitude <- read_csv("countries_codes_and_coordinates.csv")
-latitude_longitude
-latitude_longitude$Latitude <- gsub('"', '', latitude_longitude$Latitude)
-latitude_longitude$Longitude <- gsub('"', '', latitude_longitude$Longitude)
-# 检查数据类型
-class(latitude_longitude$Latitude)
-class(latitude_longitude$Longitude)
 
-# 如果不是数值型，转换为数值型
-latitude_longitude$Latitude <- as.numeric(latitude_longitude$Latitude)
-latitude_longitude$Longitude <- as.numeric(latitude_longitude$Longitude)
-latitude_longitude
-```
 
 ```{r}
 pddata <- read_csv("pddata.csv")
-pddata
-latitude_longitude_pd <- latitude_longitude %>%
-  filter(country_map %in% pddata$country_map)
-
-pddata <- merge(pddata, latitude_longitude_pd, by = "country_map", all = TRUE)
 pddata
 ```
 
@@ -98,12 +81,14 @@ pddata
 pddata %>% 
   count(percentage_sample == 0) %>% 
   mutate(prop = n / sum(n))
+standard_deviation <- sd(pddata$bts)
+standard_deviation
 ```
 
 
 ```{r}
 pd_model_beta_zi_bts <- brm(
- bf(bts| trials(total_bts) ~ pd+ gp(Latitude, Longitude),
+ bf(bts| trials(total_bts) ~ pd,
    phi ~ pd,
      zi ~ pd),
   data = pddata,
@@ -113,8 +98,7 @@ pd_model_beta_zi_bts <- brm(
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -125,27 +109,12 @@ pd_model_beta_zi_bts <- brm(
 tidy(pd_model_beta_zi_bts, effects = "fixed")
 ```
 
-```{r}
-ame_beta_zi_pd_bts <- 
-  emtrends(pd_model_beta_zi_bts,~pd,var = "pd")%>% 
-  gather_emmeans_draws()
-ame_beta_zi_pd_bts
-#summary(ame_beta_zi_pd_bts)
-#ame_beta_zi_pd_bts %>% median_hdi()
-#ame_beta_zi_pd_bts %>% mean_hdi()
-#ame_beta_zi_pd_bts %>% mode_hdi()
-```
 
-%>% 
-  gather_emmeans_draws()
-var = "pd",
 
-,epred=TRUE
 ```{r}
 ame_beta_zi_pd_bts <- pd_model_beta_zi_bts %>%
-  avg_comparisons(variables = "pd") %>% 
-  posterior_draws()
-
+  avg_comparisons(variables = "pd") %>% posterior_draws()
+ame_beta_zi_pd_bts
 ame_beta_zi_pd_bts %>% median_hdi(draw)
 
 ggplot(ame_beta_zi_pd_bts, aes(x = draw)) +
@@ -156,22 +125,13 @@ ggplot(ame_beta_zi_pd_bts, aes(x = draw)) +
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
-```{r}
-describe_posterior(ame_beta_zi_pd_bts,
-                   estimate = "median", dispersion = TRUE,
-                   ci = .95, ci_method = "hdi",
-                   test = "bf",
 
-                                   bf_prior = stan_model)
-fit_bayes_prior <- update(pd_model_beta_zi_bts,prior_PD = TRUE)
-bayes_sum_prior <- emmeans(fit_bayes_prior, ~ pd)
-bayesfactor_restricted(ame_beta_zi_pd_bts,prior=bayes_sum_prior, hypothesis=".value>0")
-```
+
 
 
 ```{r}
 ame_beta_zi_pd_bts <- na.omit(ame_beta_zi_pd_bts)
-result <- hypothesis(ame_beta_zi_pd_bts, ".value>0")
+result <- hypothesis(ame_beta_zi_pd_bts, "draw<0")
 result
 result$hypothesis$Estimate
 result$hypothesis$CI.Lower
@@ -181,7 +141,7 @@ result$hypothesis$Est.Error
 ```
 
 ```{r}
-model_ols1 <- lm(percentage_sample ~ pd,
+model_ols1 <- lm(bts ~ pd,
                  data = pddata)
 summary(model_ols1)
 ```
@@ -189,25 +149,24 @@ summary(model_ols1)
 #PS2014
 ```{r}
 pddata %>% 
-  count(ps2014 == 0) %>% 
+  count(ps == 0) %>% 
   mutate(prop = n / sum(n))
 pddata
 ```
 
 ```{r}
 pd_model_beta_zi_ps2014 <- brm(
-   bf(ps| trials(total_ps) ~ pd+ gp(Latitude, Longitude),
+   bf(ps| trials(total_ps) ~ pd,
    phi ~ pd,
      zi ~ pd),
   data = pddata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 2, seed = 1234,
+  cores = 4, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -219,16 +178,6 @@ tidy(pd_model_beta_zi_ps2014, effects = "fixed")
 
 ```
 
-```{r}
-ame_beta_zi_pd_ps2014 <- 
-  emtrends(pd_model_beta_zi_ps2014,~pd,var = "pd")%>% 
-  gather_emmeans_draws()
-ame_beta_zi_pd_ps2014
-#summary(ame_beta_zi_pd_bts)
-#ame_beta_zi_pd_bts %>% median_hdi()
-#ame_beta_zi_pd_bts %>% mean_hdi()
-#ame_beta_zi_pd_bts %>% mode_hdi()
-```
 
 
 ```{r}
@@ -246,17 +195,6 @@ ggplot(ame_beta_zi_pd_ps2014, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-describe_posterior(ame_beta_zi_pd_ps2014,
-                   estimate = "median", dispersion = TRUE,
-                   ci = .95, ci_method = "hdi",
-                   test = "bf",
-
-                                   bf_prior = stan_model)
-bayesfactor_restricted(ame_beta_zi_pd_ps2014, hypothesis=".value>0")
-
-
-```
 
 ```{r}
 result <- hypothesis(ame_beta_zi_pd_ps2014, "draw<0")
@@ -330,29 +268,22 @@ gdpdata
 gdpdata %>% 
   count(ps == 0) %>% 
   mutate(prop = n / sum(n))
-
-latitude_longitude_gdp <- latitude_longitude %>%
-  filter(country_map %in% gdpdata$country_map)
-
-gdpdata <- merge(gdpdata, latitude_longitude_gdp, by = "country_map", all = TRUE)
-gdpdata
 ```
 
 
 ```{r}
 gdp_model_beta_zi_bts <- brm(
-   bf(bts| trials(total_bts) ~ GDP_per_capita+ gp(Latitude, Longitude),
+   bf(bts| trials(total_bts) ~ GDP_per_capita,
    phi ~ GDP_per_capita,
      zi ~ GDP_per_capita),
   data = gdpdata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 2, seed = 1234,
+  cores = 4, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -401,25 +332,24 @@ model_ols2
 #PS2014
 ```{r}
 gdpdata %>% 
-  count(ps2014 == 0) %>% 
+  count(ps == 0) %>% 
   mutate(prop = n / sum(n))
 
 ```
 
 ```{r}
 gdp_model_beta_zi_ps2014 <- brm(
-  bf(ps| trials(total_ps) ~ GDP_per_capita+ gp(Latitude, Longitude),
+  bf(ps| trials(total_ps) ~ GDP_per_capita,
    phi ~ GDP_per_capita,
      zi ~ GDP_per_capita),
   data = gdpdata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 2, seed = 1234,
+  cores = 4, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -428,7 +358,6 @@ gdp_model_beta_zi_ps2014 <- brm(
   file = "gdp_model_beta_zi_ps2014"
 )
 tidy(gdp_model_beta_zi_ps2014, effects = "fixed")
-
 ```
 
 
@@ -516,29 +445,23 @@ rddata %>%
   count(percentage_sample == 0) %>% 
   mutate(prop = n / sum(n))
 
-latitude_longitude_rd <- latitude_longitude %>%
-  filter(country_map %in% rddata$country_map)
-
-rddata <- merge(rddata, latitude_longitude_rd, by = "country_map", all = TRUE)
-rddata
 ```
 
 
 
 ```{r}
 rd_model_beta_zi_bts <- brm(
-  bf(bts| trials(total_bts) ~ R_D+ gp(Latitude, Longitude),
+  bf(bts| trials(total_bts) ~ R_D,
    phi ~ R_D,
      zi ~ R_D),
   data = rddata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 2, seed = 1234,
+  cores = 4, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -580,18 +503,17 @@ result$hypothesis$Est.Error
 
 ```{r}
 rd_model_beta_zi_ps2014 <- brm(
-  bf(ps| trials(total_ps) ~ R_D+ gp(Latitude, Longitude),
+  bf(ps| trials(total_ps) ~ R_D,
    phi ~ R_D,
      zi ~ R_D),
   data = rddata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 2, seed = 1234,
+  cores = 4, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -680,16 +602,11 @@ universitydata %>%
   count(percentage_sample == 0) %>% 
   mutate(prop = n / sum(n))
 
-latitude_longitude_university <- latitude_longitude %>%
-  filter(country_map %in% universitydata$country_map)
-
-universitydata <- merge(universitydata, latitude_longitude_university, by = "country_map", all = TRUE)
-universitydata
 ```
 
 ```{r}
 university_model_beta_zi_bts <- brm(
-  bf(bts| trials(total_bts) ~ number_of_universities_per_capita+ gp(Latitude, Longitude),
+  bf(bts| trials(total_bts) ~ number_of_universities_per_capita,
    phi ~ number_of_universities_per_capita,
      zi ~ number_of_universities_per_capita),
   data = universitydata,
@@ -699,8 +616,7 @@ university_model_beta_zi_bts <- brm(
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -741,18 +657,17 @@ result$hypothesis$Est.Error
 
 ```{r}
 university_model_beta_zi_ps2014 <- brm(
-  bf(ps| trials(total_ps) ~ number_of_universities_per_capita+ gp(Latitude, Longitude),
+  bf(ps| trials(total_ps) ~ number_of_universities_per_capita,
    phi ~ number_of_universities_per_capita,
      zi ~ number_of_universities_per_capita),
   data = universitydata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 2, seed = 1234,
+  cores = 4, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -841,28 +756,21 @@ researcherdata
 researcherdata %>% 
   count(percentage_sample == 0) %>% 
   mutate(prop = n / sum(n))
-
-latitude_longitude_researcher <- latitude_longitude %>%
-  filter(country_map %in% researcherdata$country_map)
-
-researcherdata <- merge(researcherdata, latitude_longitude_researcher, by = "country_map", all = TRUE)
-researcherdata
 ```
 
 ```{r}
 researcher_model_beta_zi_bts <- brm(
-  bf(bts| trials(total_bts) ~ number_of_psychology_researchers_per_capita+ gp(Latitude, Longitude),
+  bf(bts| trials(total_bts) ~ number_of_psychology_researchers_per_capita,
    phi ~ number_of_psychology_researchers_per_capita,
      zi ~ number_of_psychology_researchers_per_capita),
   data = researcherdata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 2, seed = 1234,
+  cores = 4, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -878,8 +786,8 @@ tidy(researcher_model_beta_zi_bts, effects = "fixed")
 ame_beta_zi_researcher_bts <- researcher_model_beta_zi_bts %>%
   avg_comparisons(variables = "number_of_psychology_researchers_per_capita") %>% 
   posterior_draws()
-
-ame_beta_zi_researcher_bts %>% median_hdi(draw)
+ame_beta_zi_researcher_bts
+ame_beta_zi_researcher_bts %>% mean_hdi(draw, na.rm = TRUE)
 
 
 ggplot(ame_beta_zi_researcher_bts, aes(x = draw)) +
@@ -903,7 +811,7 @@ result$hypothesis$Est.Error
 
 ```{r}
 researcher_model_beta_zi_ps2014 <- brm(
-  bf(ps| trials(total_ps) ~ number_of_psychology_researchers_per_capita+ gp(Latitude, Longitude),
+  bf(ps| trials(total_ps) ~ number_of_psychology_researchers_per_capita,
    phi ~ number_of_psychology_researchers_per_capita,
      zi ~ number_of_psychology_researchers_per_capita),
   data = researcherdata,
@@ -913,8 +821,7 @@ researcher_model_beta_zi_ps2014 <- brm(
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -1006,18 +913,12 @@ edudata
 edudata %>% 
   count(percentage_sample == 0) %>% 
   mutate(prop = n / sum(n))
-
-latitude_longitude_edu <- latitude_longitude %>%
-  filter(country_map %in% edudata$country_map)
-
-edudata <- merge(edudata, latitude_longitude_edu, by = "country_map", all = TRUE)
-edudata
 ```
 
 
 ```{r}
 edu_model_beta_zi_bts <- brm(
-   bf(bts| trials(total_bts) ~ average_years_of_schooling+ gp(Latitude, Longitude),
+   bf(bts| trials(total_bts) ~ average_years_of_schooling,
    phi ~ average_years_of_schooling,
      zi ~ average_years_of_schooling),
   data = edudata,
@@ -1027,8 +928,7 @@ edu_model_beta_zi_bts <- brm(
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -1069,7 +969,7 @@ result$hypothesis$Est.Error
 
 ```{r}
 edu_model_beta_zi_ps2014 <- brm(
-  bf(ps| trials(total_ps) ~ average_years_of_schooling+ gp(Latitude, Longitude),
+  bf(ps| trials(total_ps) ~ average_years_of_schooling,
    phi ~ average_years_of_schooling,
      zi ~ average_years_of_schooling),
   data = edudata,
@@ -1079,8 +979,7 @@ edu_model_beta_zi_ps2014 <- brm(
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -1088,12 +987,9 @@ edu_model_beta_zi_ps2014 <- brm(
   backend = "cmdstanr",
   file = "edu_model_beta_zi_ps2014"
 )
-
-```
-
-```{r}
 tidy(edu_model_beta_zi_ps2014, effects = "fixed")
 ```
+
 
 
 ```{r}
@@ -1174,18 +1070,12 @@ urbandata
 urbandata %>% 
   count(percentage_sample == 0) %>% 
   mutate(prop = n / sum(n))
-
-latitude_longitude_urban <- latitude_longitude %>%
-  filter(country_map %in% urbandata$country_map)
-
-urbandata <- merge(urbandata, latitude_longitude_urban, by = "country_map", all = TRUE)
-urbandata
 ```
 
 
 ```{r}
 urban_model_beta_zi_bts <- brm(
-  bf(bts| trials(total_bts) ~ Urbanization+ gp(Latitude, Longitude),
+  bf(bts| trials(total_bts) ~ Urbanization,
    phi ~ Urbanization,
      zi ~ Urbanization),
   data = urbandata,
@@ -1195,8 +1085,7 @@ urban_model_beta_zi_bts <- brm(
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -1233,20 +1122,18 @@ result$hypothesis$Est.Error
 ```
 
 ```{r}
-urbandata  <- prepare_predictions(urbandata, nug=1e6)
 urban_model_beta_zi_ps2014 <- brm(
-  bf(ps| trials(total_ps) ~ Urbanization+ gp(Latitude, Longitude),
+  bf(ps| trials(total_ps) ~ Urbanization,
    phi ~ Urbanization,
      zi ~ Urbanization),
   data = urbandata,
   family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 100, warmup = 50,
+  chains = 4, iter = 2000, warmup = 1000,
   cores = 4, seed = 1234,
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
-  methods= "brmsfit",
+            prior(normal(0, 1), class = b)),
+  
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
   
@@ -1256,29 +1143,8 @@ urban_model_beta_zi_ps2014 <- brm(
 tidy(urban_model_beta_zi_ps2014, effects = "fixed")
 ```
 
-```{r}
-
-```
 
 ```{r}
-ame_beta_zi_urban_ps2014 <- 
-  emmeans(urban_model_beta_zi_ps2014,~ Urbanization,epred = TRUE,
-          re_formula = NULL) %>% 
-  contrast(method = "revpairwise") %>% 
-  gather_emmeans_draws()
-ame_beta_zi_urban_ps2014
-ame_beta_zi_urban_ps2014 %>% median_hdi()
-```
-
-prepare_predictions(urban_model_beta_zi_ps2014,nug=1e-1)
-prepare_predictions(urban_model_beta_zi_ps2014,sample_new_levels="gaussian", nug=1e-1)
-sample_new_levels
-
-urban_model_beta_zi_ps2014  <- prepare_predictions(urban_model_beta_zi_ps2014, nug=1e-7)
-
-
-```{r}
-urban_model_beta_zi_ps2014  <- prepare_predictions(urban_model_beta_zi_ps2014, nug=1e6)
 ame_beta_zi_urban_ps2014 <- urban_model_beta_zi_ps2014 %>%
   avg_comparisons(variables = "Urbanization") %>% 
   posterior_draws()
@@ -1356,30 +1222,23 @@ gidata
 gidata %>% 
   count(percentage_sample == 0) %>% 
   mutate(prop = n / sum(n))
-
-latitude_longitude_gi <- latitude_longitude %>%
-  filter(country_map %in% gidata$country_map)
-
-gidata <- merge(gidata, latitude_longitude_gi, by = "country_map", all = TRUE)
-gidata
 ```
 
 
 
 ```{r}
 gi_model_beta_zi_bts <- brm(
-   bf(bts| trials(total_bts) ~ GI+ gp(Latitude, Longitude),
+   bf(bts| trials(total_bts) ~ GI,
    phi ~ GI,
      zi ~ GI),
   data = gidata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 2, seed = 1234,
+  cores = 4, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -1418,7 +1277,7 @@ result$hypothesis$Evid.Ratio
 
 ```{r}
 gi_model_beta_zi_ps2014 <- brm(
-  bf(ps| trials(total_ps) ~ GI+ gp(Latitude, Longitude),
+  bf(ps| trials(total_ps) ~ GI,
    phi ~ GI,
      zi ~ GI),
   data = gidata,
@@ -1428,8 +1287,7 @@ gi_model_beta_zi_ps2014 <- brm(
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -1518,18 +1376,12 @@ networkdata
 networkdata %>% 
   count(percentage_sample == 0) %>% 
   mutate(prop = n / sum(n))
-
-latitude_longitude_network <- latitude_longitude %>%
-  filter(country_map %in% networkdata$country_map)
-
-networkdata <- merge(networkdata, latitude_longitude_network, by = "country_map", all = TRUE)
-networkdata
 ```
 
 
 ```{r}
 network_model_beta_zi_bts <- brm(
-   bf(bts| trials(total_bts) ~ Network_2021+ gp(Latitude, Longitude),
+   bf(bts| trials(total_bts) ~ Network_2021,
    phi ~ Network_2021,
      zi ~ Network_2021),
   data = networkdata,
@@ -1539,8 +1391,7 @@ network_model_beta_zi_bts <- brm(
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -1579,7 +1430,7 @@ result$hypothesis$Est.Error
 
 ```{r}
 network_model_beta_zi_ps2014 <- brm(
- bf(ps| trials(total_ps) ~ Network_2021+ gp(Latitude, Longitude),
+ bf(ps| trials(total_ps) ~ Network_2021,
    phi ~ Network_2021,
      zi ~ Network_2021),
   data = networkdata,
@@ -1589,8 +1440,7 @@ network_model_beta_zi_ps2014 <- brm(
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -1598,12 +1448,9 @@ network_model_beta_zi_ps2014 <- brm(
   backend = "cmdstanr",
   file = "network_model_beta_zi_ps2014"
 )
-
-```
-
-```{r}
 tidy(network_model_beta_zi_ps2014, effects = "fixed")
 ```
+
 
 ```{r}
 ame_beta_zi_network_ps2014 <- network_model_beta_zi_ps2014 %>%
@@ -1682,18 +1529,12 @@ lddata
 lddata %>% 
   count(percentage_sample == 0) %>% 
   mutate(prop = n / sum(n))
-
-latitude_longitude_ld <- latitude_longitude %>%
-  filter(country_map %in% lddata$country_map)
-
-lddata <- merge(lddata, latitude_longitude_ld, by = "country_map", all = TRUE)
-lddata
 ```
 
 
 ```{r}
 ld1_model_beta_zi_bts <- brm(
-  bf(bts| trials(total_bts) ~ lp1+ gp(Latitude, Longitude),
+  bf(bts| trials(total_bts) ~ lp1,
    phi ~ lp1,
      zi ~ lp1),
   data = lddata,
@@ -1703,8 +1544,7 @@ ld1_model_beta_zi_bts <- brm(
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -1743,7 +1583,7 @@ result$hypothesis$Est.Error
 
 ```{r}
 ld1_model_beta_zi_ps2014 <- brm(
-  bf(ps| trials(total_ps) ~ lp1+ gp(Latitude, Longitude),
+  bf(ps| trials(total_ps) ~ lp1,
    phi ~ lp1,
      zi ~ lp1),
   data = lddata,
@@ -1753,8 +1593,7 @@ ld1_model_beta_zi_ps2014 <- brm(
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -1762,12 +1601,9 @@ ld1_model_beta_zi_ps2014 <- brm(
   backend = "cmdstanr",
   file = "ld1_model_beta_zi_ps2014"
 )
-
-```
-
-```{r}
 tidy(ld1_model_beta_zi_ps2014, effects = "fixed")
 ```
+
 
 ```{r}
 ame_beta_zi_ld1_ps2014 <- ld1_model_beta_zi_ps2014 %>%
@@ -1879,9 +1715,6 @@ ame_beta_zi_ld2_bts %>%mode_hdi()
 ```
 
 
-  emmeans(~ condition) %>%
-  gather_emmeans_draws() %>%
-
 ```{r}
 ame_beta_zi_ld2_bts <- ld2_model_beta_zi_bts %>%
   avg_comparisons(variables = "lp2") %>% 
@@ -1977,17 +1810,12 @@ englishdata %>%
   count(percentage_sample == 0) %>% 
   mutate(prop = n / sum(n))
 
-latitude_longitude_english <- latitude_longitude %>%
-  filter(country_map %in% englishdata$country_map)
-
-englishdata <- merge(englishdata, latitude_longitude_english, by = "country_map", all = TRUE)
-englishdata
 ```
 
 
 ```{r}
 english_model_beta_zi_bts <- brm(
-  bf(bts| trials(total_bts) ~ EPI_rank+ gp(Latitude, Longitude),
+  bf(bts| trials(total_bts) ~ EPI_rank,
    phi ~ EPI_rank,
      zi ~ EPI_rank),
   data = englishdata,
@@ -1998,8 +1826,7 @@ english_model_beta_zi_bts <- brm(
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -2038,7 +1865,7 @@ result$hypothesis$Est.Error
 
 ```{r}
 english_model_beta_zi_ps2014 <- brm(
-  bf(ps| trials(total_ps) ~ EPI_rank+ gp(Latitude, Longitude),
+  bf(ps| trials(total_ps) ~ EPI_rank,
    phi ~ EPI_rank,
      zi ~ EPI_rank),
   data = englishdata,
@@ -2048,8 +1875,7 @@ english_model_beta_zi_ps2014 <- brm(
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -2057,12 +1883,9 @@ english_model_beta_zi_ps2014 <- brm(
   backend = "cmdstanr",
   file = "english_model_beta_zi_ps2014"
 )
-
-```
-
-```{r}
 tidy(english_model_beta_zi_ps2014, effects = "fixed")
 ```
+
 
 ```{r}
 ame_beta_zi_english_ps2014 <- english_model_beta_zi_ps2014 %>%
@@ -2161,12 +1984,13 @@ KE_urbanization %>%
 ```
 
 ```{r}
+
 KE_urbanization_model_beta_zi <- brm(
-  bf(Ruggeri_KE ~ KE_UP_2020,
+  bf(Ruggeri_KE| trials(total_KE) ~ KE_UP_2020,
      phi ~ KE_UP_2020,
      zi ~ KE_UP_2020),
   data = KE_urbanization,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   backend = "cmdstanr",
@@ -2223,11 +2047,11 @@ CN_urbanization %>%
 
 ```{r}
 CN_urbanization_model_beta_zi <- brm(
-  bf(Ruggeri_CN ~ CN_UP_2020,
+  bf(Ruggeri_CN| trials(total_CN) ~ CN_UP_2020,
      phi ~ CN_UP_2020,
      zi ~ CN_UP_2020),
   data = CN_urbanization,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   backend = "cmdstanr",
@@ -2297,7 +2121,7 @@ O
 
 ```{r}
 US_urbanization_model_beta_zi <- brm(
-  bf(Ruggeri_US_size| trials(size) ~ US_UP_2020,
+  bf(Ruggeri_US| trials(total_US) ~ US_UP_2020,
    phi ~ US_UP_2020,
      zi ~ US_UP_2020),
   data = US_urbanization,
@@ -2363,7 +2187,7 @@ CN_internet_model_beta_zi <- brm(
      phi ~ Internet_CN_2016,
      zi ~ Internet_CN_2016),
   data = CN_internet,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
@@ -2424,7 +2248,7 @@ NG_internet_model_beta_zi <- brm(
      phi ~ Internet_NG_2022,
      zi ~ Internet_NG_2022),
   data = NG_internet,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   backend = "cmdstanr",
@@ -2484,7 +2308,7 @@ US_internet_model_beta_zi <- brm(
      phi ~ Internet_US_2018,
      zi ~ Internet_US_2018),
   data = US_internet,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 200000, warmup = 100000,
   cores = 2, seed = 1234,
   backend = "cmdstanr",
@@ -2545,7 +2369,7 @@ NG_EPI_model_beta_zi <- brm(
      phi ~ EPI_NG_2022,
      zi ~ EPI_NG_2022),
   data = NG_EPI,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   backend = "cmdstanr",
@@ -2607,7 +2431,7 @@ CN_EPI_model_beta_zi <- brm(
      phi ~ EPI_CN_2022,
      zi ~ EPI_CN_2022),
   data = CN_EPI,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   backend = "cmdstanr",
@@ -2668,7 +2492,7 @@ NL_EPI_model_beta_zi <- brm(
      phi ~ EPI_NL_2022,
      zi ~ EPI_NL_2022),
   data = NL_EPI,
-  family = zero_inflated_beta(),
+  family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   backend = "cmdstanr",
