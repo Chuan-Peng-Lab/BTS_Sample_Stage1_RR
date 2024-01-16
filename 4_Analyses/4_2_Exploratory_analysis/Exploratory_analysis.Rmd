@@ -1,7 +1,7 @@
 ---
 title: "Exploratory_analysis"
-author: "grit"
-date: "2023/10/2"
+author: "Weibiao Liu"
+date: "2024/01/17"
 output: html_document
 ---
 
@@ -12,25 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)        # ggplot, dplyr, %>%, and friends
 library(brms)             # Bayesian modeling through Stan
-library(tidybayes)        # Manipulate Stan objects in a tidy way
-library(broom)            # Convert model objects to data frames
-library(broom.mixed)      # Convert brms model objects to data frames
-#library(vdemdata)         # Use data from the Varieties of Democracy (V-Dem) project
-library(betareg)          # Run beta regression models
-library(extraDistr)       # Use extra distributions like dprop()
-library(ggdist)           # Special geoms for posterior distributions
-library(gghalves)         # Special half geoms
-library(ggbeeswarm)       # Special distribution-shaped point jittering
-library(ggrepel)          # Automatically position labels
-library(patchwork)        # Combine ggplot objects
-library(scales)           # Format numbers in nice ways
 library(marginaleffects)  # Calculate marginal effects for regression models
-library(modelsummary)     # Create side-by-side regression tables
-library(ggthemes)
-#library(rstan)
-library(emmeans)
-library(bayestestR)
-library(brmsmargins)
+library(tidybayes)        # Manipulate Stan objects in a tidy way
+library(patchwork)        # Combine ggplot objects
 ```
 
 ```{r}
@@ -67,219 +51,24 @@ label_pp_tiny <- label_number(accuracy = 0.01, scale = 100,
 
 ```
 
+######1.Country-level relationship between proportion of sample and socioeconomic/cultural factors for traditional studies (using PS2014 as an example) and big team science (using PSA 001 as an example)
 
-
-```{r}
-pddata <- read_csv("pddata.csv")
-pddata
-```
-
-
-
-
-```{r}
-pddata %>% 
-  count(percentage_sample == 0) %>% 
-  mutate(prop = n / sum(n))
-standard_deviation <- sd(pddata$bts)
-standard_deviation
-```
-
-
-```{r}
-pd_model_beta_zi_bts <- brm(
- bf(bts| trials(total_bts) ~ pd,
-   phi ~ pd,
-     zi ~ pd),
-  data = pddata,
-  family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 2000, warmup = 1000,
-  cores = 4, seed = 1234,
-  
-  # regularising priors
-  prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b)),
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
-  backend = "cmdstanr",
-  file = "pd_model_beta_zi_bts"
-)
-tidy(pd_model_beta_zi_bts, effects = "fixed")
-```
-
-
-
-```{r}
-ame_beta_zi_pd_bts <- pd_model_beta_zi_bts %>%
-  avg_comparisons(variables = "pd") %>% posterior_draws()
-ame_beta_zi_pd_bts
-ame_beta_zi_pd_bts %>% median_hdi(draw)
-
-ggplot(ame_beta_zi_pd_bts, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Cultural distance", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
-```
-
-
-
-
-```{r}
-ame_beta_zi_pd_bts <- na.omit(ame_beta_zi_pd_bts)
-result <- hypothesis(ame_beta_zi_pd_bts, "draw<0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
-
-```{r}
-model_ols1 <- lm(bts ~ pd,
-                 data = pddata)
-summary(model_ols1)
-```
-
-#PS2014
-```{r}
-pddata %>% 
-  count(ps == 0) %>% 
-  mutate(prop = n / sum(n))
-pddata
-```
-
-```{r}
-pd_model_beta_zi_ps2014 <- brm(
-   bf(ps| trials(total_ps) ~ pd,
-   phi ~ pd,
-     zi ~ pd),
-  data = pddata,
-  family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 2000, warmup = 1000,
-  cores = 4, seed = 1234,
-  
-  # regularising priors
-  prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b)),
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
-  backend = "cmdstanr",
-  file = "pd_model_beta_zi_ps2014"
-)
-tidy(pd_model_beta_zi_ps2014, effects = "fixed")
-
-```
-
-
-
-```{r}
-ame_beta_zi_pd_ps2014 <- pd_model_beta_zi_ps2014 %>%
-  avg_comparisons(variables = "pd") %>% 
-  posterior_draws()
-ame_beta_zi_pd_ps2014 %>% median_hdi(draw)
-
-ggplot(ame_beta_zi_pd_ps2014, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Cultural distance", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
-```
-
-
-```{r}
-result <- hypothesis(ame_beta_zi_pd_ps2014, "draw<0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-
-```
-
-```{r}
-model_ols1 <- lm(ps2014 ~ pd,
-                 data = pddata)
-summary(model_ols1)
-```
-
-##心理距离画图
-```{r}
-combined_data1 <- rbind(
-  transform(pddata, source = "PS2014", value = ps2014),
-  transform(pddata, source = "PSA001", value = percentage_sample)
-)
-# Create the plot
-pd1 <- ggplot(combined_data1, aes(x = pd, y = value, color = source)) +
-  
- geom_point(size = 6, alpha = 0.6) +
-  geom_smooth(method ="lm",size = 2) +
-  scale_color_brewer(palette = 'Set1') +
- scale_color_manual(name = "Data source", 
-                    values = c("#377EB8","#E41A1C"), 
-                    labels = c("Traditional studies", "BTS")) +
-
-  ylab("Proportion of sample") +
-  xlab("Culture distance from United States") +
-  theme(axis.text = element_text(size = 20),
-        axis.title = element_text(size = 24),
-        panel.background = element_rect(fill = "white"),
-        axis.line = element_line(color = "black"),
-        aspect.ratio = 1,
-        legend.position = "right",  # 设置图例位置为顶部
-        legend.text = element_text(size = 18),  # 设置图例文本字体大小
-        legend.title = element_text(size = 20)) +
-  xlim(c(0, 0.20)) +
-  ylim(c(-0.30, 1)) +
-  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
-
-# Adding the label
-pd1 <- pd1 +
-  annotate("text", x = 0.018, y = 0.955, 
-           label = expression("US"), size = 6) +
-  annotate("text", x = 0.018, y = 0.235, 
-           label = expression("US"), size = 6)
-#翻转X轴
-pd1 <- pd1 + scale_x_reverse()
-# Print the plot
-pd1
-
-# Save the plot as a JPEG image
-ggsave(filename = "PD.jpg", plot = pd1, device = "jpg", width = 12, height = 12)
-```
-
-
-
-
-##GDP_per_capita
+####_1.1GDP_per_capita
 ```{r}
 gdpdata <- read_csv("gdpdata.csv")
 gdpdata
-gdpdata %>% 
-  count(ps == 0) %>% 
-  mutate(prop = n / sum(n))
 ```
 
-
+##BTS
 ```{r}
-gdp_model_beta_zi_bts <- brm(
+gdp_model_beta_zi_bts <- brms::brm(
    bf(bts| trials(total_bts) ~ GDP_per_capita,
    phi ~ GDP_per_capita,
      zi ~ GDP_per_capita),
   data = gdpdata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 4, seed = 1234,
+  cores = 2, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
@@ -297,13 +86,13 @@ tidy(gdp_model_beta_zi_bts, effects = "fixed")
 
 ```{r}
 ame_beta_zi_gdp_bts <- gdp_model_beta_zi_bts %>%
-  avg_comparisons(variables = "GDP_per_capita") %>% 
-  posterior_draws()
+  marginaleffects::avg_comparisons(variables = "GDP_per_capita") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_gdp_bts %>% tidybayes::median_hdi(draw)
 
-ame_beta_zi_gdp_bts %>% median_hdi(draw)
-
-
-ggplot(ame_beta_zi_gdp_bts, aes(x = draw)) +
+result <-  brms::hypothesis(ame_beta_zi_gdp_bts, "draw>0")
+result
+ggplot2::ggplot(ame_beta_zi_gdp_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
   scale_x_continuous(labels = label_pp) +
@@ -312,33 +101,9 @@ ggplot(ame_beta_zi_gdp_bts, aes(x = draw)) +
   theme_clean()
 ```
 
+##PS2014
 ```{r}
-result <- hypothesis(ame_beta_zi_gdp_bts, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
-
-
-```{r}
-model_ols2 <- lm(percentage_sample ~ gdp,
-                 data = gdpdata)
-model_ols2
-```
-
-#PS2014
-```{r}
-gdpdata %>% 
-  count(ps == 0) %>% 
-  mutate(prop = n / sum(n))
-
-```
-
-```{r}
-gdp_model_beta_zi_ps2014 <- brm(
+gdp_model_beta_zi_ps2014 <- brms::brm(
   bf(ps| trials(total_ps) ~ GDP_per_capita,
    phi ~ GDP_per_capita,
      zi ~ GDP_per_capita),
@@ -360,15 +125,13 @@ gdp_model_beta_zi_ps2014 <- brm(
 tidy(gdp_model_beta_zi_ps2014, effects = "fixed")
 ```
 
-
-
-
 ```{r}
 ame_beta_zi_gdp_ps2014 <- gdp_model_beta_zi_ps2014 %>%
-  avg_comparisons(variables = "GDP_per_capita") %>% 
-  posterior_draws()
-ame_beta_zi_gdp_ps2014 %>% median_hdi(draw)
-
+  marginaleffects::avg_comparisons(variables = "GDP_per_capita") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_gdp_ps2014 %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_gdp_ps2014, "draw>0")
+result
 ggplot(ame_beta_zi_gdp_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
@@ -378,86 +141,23 @@ ggplot(ame_beta_zi_gdp_ps2014, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_gdp_ps2014, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
 
-```{r}
-model_ols1 <- lm(ps2014 ~ GDP_per_capita,
-                 data = gdpdata)
-summary(model_ols1)
-```
-
-##人均GDP画图
-```{r}  
-combined_data2 <- rbind(
-  transform(gdpdata, source = "PS2014", value = ps2014),
-  transform(gdpdata, source = "PSA001", value = percentage_sample)
-)
-# Create the plot
-gdp1 <- ggplot(combined_data2, aes(x = GDP_per_capita, y = value, color = source)) +
-  
- geom_point(size = 6, alpha = 0.6) +
-  geom_smooth(method ="lm",size = 2) +
-  scale_color_brewer(palette = 'Set1') +
- scale_color_manual(name = "Data source", 
-                    values = c("#377EB8","#E41A1C"), 
-                    labels = c("Traditional studies", "BTS"))+
-  
-  ylab("Proportion of sample") +
-  xlab("GDP per capita") +
-  theme(axis.text = element_text(size = 20),
-        axis.title = element_text(size = 24),
-        panel.background = element_rect(fill = "white"),
-        axis.line = element_line(color = "black"),
-        aspect.ratio = 1,
-        legend.position = "right",  # 设置图例位置为顶部
-        legend.text = element_text(size = 18),  # 设置图例文本字体大小
-        legend.title = element_text(size = 20)) +
-  xlim(c(0, 15)) +
-  ylim(c(-0.2, 1)) +
-  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
-
-# Adding the label
-gdp1 <- gdp1 +
-  annotate("text", x = 6.43, y = 0.955, 
-           label = expression("US"), size = 6) +
-  annotate("text", x = 6.43, y = 0.235, 
-           label = expression("US"), size = 6)
-gdp1
-
-# Save the plot as a JPEG image
-ggsave(filename = "GDP.jpg", plot = gdp1, device = "jpg", width = 12, height = 12)
-```
-
-
-##03_R&D_investment
+##1.2_R&D_investment
 ```{r}
 rddata <- read_csv("rddata.csv")
 rddata
-rddata %>% 
-  count(percentage_sample == 0) %>% 
-  mutate(prop = n / sum(n))
-
 ```
 
-
-
+##BTS
 ```{r}
-rd_model_beta_zi_bts <- brm(
+rd_model_beta_zi_bts <- brms::brm(
   bf(bts| trials(total_bts) ~ R_D,
    phi ~ R_D,
      zi ~ R_D),
   data = rddata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 4, seed = 1234,
+  cores = 2, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
@@ -475,11 +175,11 @@ tidy(rd_model_beta_zi_bts, effects = "fixed")
 
 ```{r}
 ame_beta_zi_rd_bts <- rd_model_beta_zi_bts %>%
-  avg_comparisons(variables = "R_D") %>% 
-  posterior_draws()
-
-ame_beta_zi_rd_bts %>% median_hdi(draw)
-
+  marginaleffects::avg_comparisons(variables = "R_D") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_rd_bts %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_rd_bts, "draw>0")
+result
 
 ggplot(ame_beta_zi_rd_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -490,26 +190,16 @@ ggplot(ame_beta_zi_rd_bts, aes(x = draw)) +
   theme_clean()
 ```
 
+##PS2014
 ```{r}
-parallel::detectCores()
-result <- hypothesis(ame_beta_zi_rd_bts, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
-
-```{r}
-rd_model_beta_zi_ps2014 <- brm(
+rd_model_beta_zi_ps2014 <- brms::brm(
   bf(ps| trials(total_ps) ~ R_D,
    phi ~ R_D,
      zi ~ R_D),
   data = rddata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 4, seed = 1234,
+  cores = 2, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
@@ -522,15 +212,15 @@ rd_model_beta_zi_ps2014 <- brm(
   file = "rd_model_beta_zi_ps2014"
 )
 tidy(rd_model_beta_zi_ps2014, effects = "fixed")
-
 ```
 
 ```{r}
 ame_beta_zi_rd_ps2014 <- rd_model_beta_zi_ps2014 %>%
-  avg_comparisons(variables = "R_D") %>% 
-  posterior_draws()
-ame_beta_zi_rd_ps2014 %>% median_hdi(draw)
-
+  marginaleffects::avg_comparisons(variables = "R_D") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_rd_ps2014 %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_rd_ps2014, "draw>0")
+result
 ggplot(ame_beta_zi_rd_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
@@ -540,72 +230,16 @@ ggplot(ame_beta_zi_rd_ps2014, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_rd_ps2014, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
 
-#R&D_investment画图
-```{r}  
-# 拟合线性回归模型并计算置信区间
-combined_data3 <- rbind(
-  transform(rddata, source = "PS2014", value = ps2014),
-  transform(rddata, source = "PSA001", value = percentage_sample)
-)
-# Create the plot
-RD1 <- ggplot(combined_data3, aes(x = R_D, y = value, color = source)) +
-  
- geom_point(size = 6, alpha = 0.6) +
-  geom_smooth(method ="lm",size = 2) +
-  scale_color_brewer(palette = 'Set1') +
-scale_color_manual(name = "Data source", 
-                    values = c("#377EB8","#E41A1C"), 
-                    labels = c("Traditional studies", "BTS"))+
-  ylab("Proportion of sample") +
-  xlab("Research expenditure as a share of GDP") +
-  theme(axis.text = element_text(size = 20),
-        axis.title = element_text(size = 24),
-        panel.background = element_rect(fill = "white"),
-        axis.line = element_line(color = "black"),
-        aspect.ratio = 1,
-        legend.position = "right",  # 设置图例位置为顶部
-        legend.text = element_text(size = 18),  # 设置图例文本字体大小
-        legend.title = element_text(size = 20)) +
-  xlim(c(0, 3.5)) +
-  ylim(c(-0.14, 1)) +
-  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
-
-# Adding the label
-RD1 <- RD1 +
-  annotate("text", x = 2.55, y = 0.955, 
-           label = expression("US"), size = 6) +
-  annotate("text", x = 2.55, y = 0.235, 
-           label = expression("US"), size = 6)
-
-# Print the plot
-RD1
-
-# Save the plot as a JPEG image
-ggsave(filename = "RD.jpg", plot = RD1, device = "jpg", width = 12, height = 12)
-```
-
-##04_Number of universities per 100000 people
+##1.3_Number of universities per 100000 people
 ```{r}
 universitydata <- read_csv("universitydata.csv")
 universitydata
-universitydata %>% 
-  count(percentage_sample == 0) %>% 
-  mutate(prop = n / sum(n))
-
 ```
 
+##BTS
 ```{r}
-university_model_beta_zi_bts <- brm(
+university_model_beta_zi_bts <- brms::brm(
   bf(bts| trials(total_bts) ~ number_of_universities_per_capita,
    phi ~ number_of_universities_per_capita,
      zi ~ number_of_universities_per_capita),
@@ -625,16 +259,16 @@ university_model_beta_zi_bts <- brm(
   file = "university_model_beta_zi_bts"
 )
 tidy(university_model_beta_zi_bts, effects = "fixed")
-
 ```
 
 ```{r}
 ame_beta_zi_university_bts <- university_model_beta_zi_bts %>%
-  avg_comparisons(variables = "number_of_universities_per_capita") %>% 
-  posterior_draws()
+  marginaleffects::avg_comparisons(variables = "number_of_universities_per_capita") %>% 
+  marginaleffects::posterior_draws()
 
-ame_beta_zi_university_bts %>% median_hdi(draw)
-
+ame_beta_zi_university_bts %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_university_bts, "draw>0")
+result
 
 ggplot(ame_beta_zi_university_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -645,25 +279,16 @@ ggplot(ame_beta_zi_university_bts, aes(x = draw)) +
   theme_clean()
 ```
 
+##PS2014
 ```{r}
-result <- hypothesis(ame_beta_zi_university_bts, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
-
-```{r}
-university_model_beta_zi_ps2014 <- brm(
+university_model_beta_zi_ps2014 <- brms::brm(
   bf(ps| trials(total_ps) ~ number_of_universities_per_capita,
    phi ~ number_of_universities_per_capita,
      zi ~ number_of_universities_per_capita),
   data = universitydata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 4, seed = 1234,
+  cores = 2, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
@@ -681,11 +306,12 @@ tidy(university_model_beta_zi_ps2014, effects = "fixed")
 
 ```{r}
 ame_beta_zi_university_ps2014 <- university_model_beta_zi_ps2014 %>%
-  avg_comparisons(variables = "number_of_universities_per_capita") %>% 
-  posterior_draws()
+  marginaleffects::avg_comparisons(variables = "number_of_universities_per_capita") %>% 
+  marginaleffects::posterior_draws()
 
-ame_beta_zi_university_ps2014 %>% median_hdi(draw)
-
+ame_beta_zi_university_ps2014 %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_university_ps2014, "draw>0")
+result
 
 ggplot(ame_beta_zi_university_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -696,77 +322,23 @@ ggplot(ame_beta_zi_university_ps2014, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_university_ps2014, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
-
-
-##人均大学数量画图
-```{r}
-combined_data1 <- rbind(
-  transform(universitydata, source = "PS2014", value = ps2014),
-  transform(universitydata, source = "PSA001", value = percentage_sample)
-)
-# Create the plot
-university <- ggplot(combined_data1, aes(x = number_of_universities_per_capita, y = value, color = source)) +
-  
- geom_point(size = 6, alpha = 0.6) +
-  geom_smooth(method ="lm",size = 2) +
-  scale_color_brewer(palette = 'Set1') +
- scale_color_manual(name = "Data source", 
-                    values = c("#377EB8","#E41A1C"), 
-                    labels = c("Traditional studies", "BTS")) +
-
-  ylab("Proportion of sample") +
-  xlab("Number of universities per 100000 people") +
-  theme(axis.text = element_text(size = 20),
-        axis.title = element_text(size = 24),
-        panel.background = element_rect(fill = "white"),
-        axis.line = element_line(color = "black"),
-        aspect.ratio = 1,
-        legend.position = "right",  # 设置图例位置为顶部
-        legend.text = element_text(size = 18),  # 设置图例文本字体大小
-        legend.title = element_text(size = 20)) +
-  xlim(c(0, 54)) +
-  ylim(c(-0.10, 1)) +
-  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
-
-# Adding the label
-university <- university +
-  annotate("text", x = 5, y = 0.955, 
-           label = expression("US"), size = 6) +
-  annotate("text", x = 5, y = 0.235, 
-           label = expression("US"), size = 6)
-# Print the plot
-university
-# Save the plot as a JPEG image
-ggsave(filename = "university.jpg", plot = university, device = "jpg", width = 12, height = 12)
-```
 
 ##number_of_psychology_researchers_per_capita
 ```{r}
 researcherdata <- read_csv("researcherdata.csv")
 researcherdata
-researcherdata %>% 
-  count(percentage_sample == 0) %>% 
-  mutate(prop = n / sum(n))
 ```
 
+##BTS
 ```{r}
-researcher_model_beta_zi_bts <- brm(
+researcher_model_beta_zi_bts <- brms::brm(
   bf(bts| trials(total_bts) ~ number_of_psychology_researchers_per_capita,
    phi ~ number_of_psychology_researchers_per_capita,
      zi ~ number_of_psychology_researchers_per_capita),
   data = researcherdata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 4, seed = 1234,
+  cores = 2, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
@@ -784,11 +356,12 @@ tidy(researcher_model_beta_zi_bts, effects = "fixed")
 
 ```{r}
 ame_beta_zi_researcher_bts <- researcher_model_beta_zi_bts %>%
-  avg_comparisons(variables = "number_of_psychology_researchers_per_capita") %>% 
-  posterior_draws()
-ame_beta_zi_researcher_bts
-ame_beta_zi_researcher_bts %>% mean_hdi(draw, na.rm = TRUE)
+  marginaleffects::avg_comparisons(variables = "number_of_psychology_researchers_per_capita") %>% 
+  marginaleffects::posterior_draws()
 
+ame_beta_zi_researcher_bts %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_researcher_bts, "draw>0")
+result
 
 ggplot(ame_beta_zi_researcher_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -799,18 +372,9 @@ ggplot(ame_beta_zi_researcher_bts, aes(x = draw)) +
   theme_clean()
 ```
 
+##PS2014
 ```{r}
-result <- hypothesis(ame_beta_zi_researcher_bts, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
-
-```{r}
-researcher_model_beta_zi_ps2014 <- brm(
+researcher_model_beta_zi_ps2014 <- brms::brm(
   bf(ps| trials(total_ps) ~ number_of_psychology_researchers_per_capita,
    phi ~ number_of_psychology_researchers_per_capita,
      zi ~ number_of_psychology_researchers_per_capita),
@@ -835,11 +399,12 @@ tidy(researcher_model_beta_zi_ps2014, effects = "fixed")
 
 ```{r}
 ame_beta_zi_researcher_ps2014 <- researcher_model_beta_zi_ps2014 %>%
-  avg_comparisons(variables = "number_of_psychology_researchers_per_capita") %>% 
-  posterior_draws()
+  marginaleffects::avg_comparisons(variables = "number_of_psychology_researchers_per_capita") %>% 
+  marginaleffects::posterior_draws()
 
-ame_beta_zi_researcher_ps2014 %>% median_hdi(draw)
-
+ame_beta_zi_researcher_ps2014 %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_researcher_ps2014, "draw>0")
+result
 
 ggplot(ame_beta_zi_researcher_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -850,81 +415,23 @@ ggplot(ame_beta_zi_researcher_ps2014, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_researcher_ps2014, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
 
 
-##人均心理学研究者数量画图
-```{r}
-combined_data1 <- rbind(
-  transform(researcherdata, source = "PS2014", value = ps2014),
-  transform(researcherdata, source = "PSA001", value = percentage_sample)
-)
-# Create the plot
-researcher <- ggplot(combined_data1, aes(x = number_of_psychology_researchers_per_capita, y = value, color = source)) +
-  
- geom_point(size = 6, alpha = 0.6) +
-  geom_smooth(method ="lm",size = 2) +
-  scale_color_brewer(palette = 'Set1') +
- scale_color_manual(name = "Data source", 
-                    values = c("#377EB8","#E41A1C"), 
-                    labels = c("Traditional studies", "BTS")) +
-
-  ylab("Proportion of sample") +
-  xlab("Number of psychology researchers per 100000 people") +
-  theme(axis.text = element_text(size = 20),
-        axis.title = element_text(size = 24),
-        panel.background = element_rect(fill = "white"),
-        axis.line = element_line(color = "black"),
-        aspect.ratio = 1,
-        legend.position = "right",  # 设置图例位置为顶部
-        legend.text = element_text(size = 18),  # 设置图例文本字体大小
-        legend.title = element_text(size = 20)) +
-  xlim(c(0, 200)) +
-  ylim(c(-0.14, 1)) +
-  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
-
-# Adding the label
-researcher <- researcher +
-  annotate("text", x = 50, y = 0.955, 
-           label = expression("US"), size = 6) +
-  annotate("text", x = 50, y = 0.235, 
-           label = expression("US"), size = 6)
-# Print the plot
-researcher
-# Save the plot as a JPEG image
-ggsave(filename = "researcher.jpg", plot = researcher, device = "jpg", width = 12, height = 12)
-```
-
-
-
-
-##Education_data
+##_1.5_average_years_of_schooling
 ```{r}
 edudata <- read_csv("Education_data.csv")
 edudata
-edudata %>% 
-  count(percentage_sample == 0) %>% 
-  mutate(prop = n / sum(n))
 ```
 
-
 ```{r}
-edu_model_beta_zi_bts <- brm(
+edu_model_beta_zi_bts <- brms::brm(
    bf(bts| trials(total_bts) ~ average_years_of_schooling,
    phi ~ average_years_of_schooling,
      zi ~ average_years_of_schooling),
   data = edudata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 4, seed = 1234,
+  cores = 2, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
@@ -937,16 +444,16 @@ edu_model_beta_zi_bts <- brm(
   file = "edu_model_beta_zi_bts"
 )
 tidy(edu_model_beta_zi_bts, effects = "fixed")
-
 ```
 
 ```{r}
 ame_beta_zi_edu_bts <- edu_model_beta_zi_bts %>%
-  avg_comparisons(variables = "average_years_of_schooling") %>% 
-  posterior_draws()
+  marginaleffects::avg_comparisons(variables = "average_years_of_schooling") %>% 
+  marginaleffects::posterior_draws()
 
-ame_beta_zi_edu_bts %>% median_hdi(draw)
-
+ame_beta_zi_edu_bts %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_edu_bts, "draw>0")
+result
 
 ggplot(ame_beta_zi_edu_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -957,25 +464,16 @@ ggplot(ame_beta_zi_edu_bts, aes(x = draw)) +
   theme_clean()
 ```
 
+##PS2014
 ```{r}
-result <- hypothesis(ame_beta_zi_edu_bts, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
-
-```{r}
-edu_model_beta_zi_ps2014 <- brm(
+edu_model_beta_zi_ps2014 <- brms::brm(
   bf(ps| trials(total_ps) ~ average_years_of_schooling,
    phi ~ average_years_of_schooling,
      zi ~ average_years_of_schooling),
   data = edudata,
   family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 4000, warmup = 2000,
-  cores = 4, seed = 1234,
+  chains = 4, iter = 2000, warmup = 1000,
+  cores = 2, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
@@ -991,12 +489,13 @@ tidy(edu_model_beta_zi_ps2014, effects = "fixed")
 ```
 
 
-
 ```{r}
 ame_beta_zi_edu_ps2014 <- edu_model_beta_zi_ps2014 %>%
-  avg_comparisons(variables = "average_years_of_schooling") %>% 
-  posterior_draws()
-ame_beta_zi_edu_ps2014 %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "average_years_of_schooling") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_edu_ps2014 %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_edu_ps2014, "draw>0")
+result
 
 ggplot(ame_beta_zi_edu_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -1007,74 +506,16 @@ ggplot(ame_beta_zi_edu_ps2014, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_edu_ps2014, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
 
-##受教育程度画图
-```{r}  
-# 拟合线性回归模型并计算置信区间
-combined_data9 <- rbind(
-  transform(edudata, source = "PS2014", value = ps2014),
-  transform(edudata, source = "PSA001", value = percentage_sample)
-)
-# Create the plot
-education1 <- ggplot(combined_data9, aes(x = average_years_of_schooling, y = value, color = source)) +
-  
- geom_point(size = 6, alpha = 0.6) +
-  geom_smooth(method ="lm",size = 2) +
-  scale_color_brewer(palette = 'Set1') +
- scale_color_manual(name = "Data source", 
-                    values = c("#377EB8","#E41A1C"), 
-                    labels = c("Traditional studies", "BTS"))+
-    
-  ylab("Proportion of sample") +
-  xlab("Average years of formal education\nfor individuals aged 15-64") +
-  theme(axis.text = element_text(size = 20),
-        axis.title = element_text(size = 24),
-        panel.background = element_rect(fill = "white"),
-        axis.line = element_line(color = "black"),
-        aspect.ratio = 1,
-        legend.position = "right",  # 设置图例位置为顶部
-        legend.text = element_text(size = 18),  # 设置图例文本字体大小
-        legend.title = element_text(size = 20)) +
-  xlim(c(0, 15)) +
-  ylim(c(-0.25, 1)) +
-  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
-
-# Adding the annotations
-education1 <- education1 +
-  annotate("text", x = 12.1, y = 0.955, 
-           label = expression("US"), size = 6) +
-  annotate("text", x = 12.1, y = 0.235, 
-           label = expression("US"), size = 6)
-
-# Print the plot
-education1
-
-# Save the plot as a JPEG image
-ggsave(filename = "education.jpg", plot = education1, device = "jpg", width = 12, height = 12)
-```
-
-
-##Urbanization_data
+##1.6_Urbanization
 ```{r}
 urbandata <- read_csv("Urbanization_data.csv")
 urbandata
-urbandata %>% 
-  count(percentage_sample == 0) %>% 
-  mutate(prop = n / sum(n))
 ```
 
-
+##BTS
 ```{r}
-urban_model_beta_zi_bts <- brm(
+urban_model_beta_zi_bts <- brms::brm(
   bf(bts| trials(total_bts) ~ Urbanization,
    phi ~ Urbanization,
      zi ~ Urbanization),
@@ -1098,9 +539,11 @@ tidy(urban_model_beta_zi_bts, effects = "fixed")
 
 ```{r}
 ame_beta_zi_urban_bts <- urban_model_beta_zi_bts %>%
-  avg_comparisons(variables = "Urbanization") %>% 
-  posterior_draws()
-ame_beta_zi_urban_bts %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "Urbanization") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_urban_bts %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_urban_bts, "draw>0")
+result
 
 ggplot(ame_beta_zi_urban_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -1111,25 +554,16 @@ ggplot(ame_beta_zi_urban_bts, aes(x = draw)) +
   theme_clean()
 ```
 
+##PS2014
 ```{r}
-result <- hypothesis(ame_beta_zi_urban_bts, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
-
-```{r}
-urban_model_beta_zi_ps2014 <- brm(
+urban_model_beta_zi_ps2014 <- brms::brm(
   bf(ps| trials(total_ps) ~ Urbanization,
    phi ~ Urbanization,
      zi ~ Urbanization),
   data = urbandata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 4, seed = 1234,
+  cores = 2, seed = 1234,
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
             prior(normal(0, 1), class = b)),
@@ -1146,9 +580,11 @@ tidy(urban_model_beta_zi_ps2014, effects = "fixed")
 
 ```{r}
 ame_beta_zi_urban_ps2014 <- urban_model_beta_zi_ps2014 %>%
-  avg_comparisons(variables = "Urbanization") %>% 
-  posterior_draws()
-ame_beta_zi_urban_ps2014 %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "Urbanization") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_urban_ps2014 %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_urban_ps2014, "draw>0")
+result
 
 ggplot(ame_beta_zi_urban_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -1159,82 +595,23 @@ ggplot(ame_beta_zi_urban_ps2014, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_urban_ps2014, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
 
-#城市化画图
-```{r}  
-# 拟合线性回归模型并计算置信区间
-combined_data8 <- rbind(
-  transform(urbandata, source = "PS2014", value = ps2014),
-  transform(urbandata, source = "PSA001", value = percentage_sample)
-)
-# Create the plot
-UP1 <- ggplot(combined_data8, aes(x = Urbanization, y = value, color = source)) +
-  
- geom_point(size = 6, alpha = 0.6) +
-  geom_smooth(method ="lm",size = 2) +
-  scale_color_brewer(palette = 'Set1') +
- scale_color_manual(name = "Data source", 
-                    values = c("#377EB8","#E41A1C"), 
-                    labels = c("Traditional studies", "BTS"))+
-    
-  ylab("Proportion of sample") +
-  xlab("Proportion of urban population") +
-  theme(axis.text = element_text(size = 20),
-        axis.title = element_text(size = 24),
-        panel.background = element_rect(fill = "white"),
-        axis.line = element_line(color = "black"),
-        aspect.ratio = 1,
-        legend.position = "right",  # 设置图例位置为顶部
-        legend.text = element_text(size = 18),  # 设置图例文本字体大小
-        legend.title = element_text(size = 20)) +
-  xlim(c(0, 1)) +
-  ylim(c(-0.25, 1)) +
-  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
-
-# Adding the annotations
-UP1 <- UP1 +
-  annotate("text", x = 0.75, y = 0.955, 
-           label = expression("US"), size = 6) +
-  annotate("text", x = 0.75, y = 0.235, 
-           label = expression("US"), size = 6)
-
-# Print the plot
-UP1
-
-# Save the plot as a JPEG image
-ggsave(filename = "UP.jpg", plot = UP1, device = "jpg", width = 12, height = 12)
-```
-
-
-##Globalization
+##1.7_Globalization
 ```{r}
 gidata <- read_csv("gidata.csv")
 gidata
-gidata %>% 
-  count(percentage_sample == 0) %>% 
-  mutate(prop = n / sum(n))
 ```
 
-
-
+##BTS
 ```{r}
-gi_model_beta_zi_bts <- brm(
+gi_model_beta_zi_bts <- brms::brm(
    bf(bts| trials(total_bts) ~ GI,
    phi ~ GI,
      zi ~ GI),
   data = gidata,
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
-  cores = 4, seed = 1234,
+  cores = 2, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
@@ -1252,9 +629,11 @@ tidy(gi_model_beta_zi_bts, effects = "fixed")
 
 ```{r}
 ame_beta_zi_gi_bts <- gi_model_beta_zi_bts %>%
-  avg_comparisons(variables = "GI") %>% 
-  posterior_draws()
-ame_beta_zi_gi_bts %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "GI") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_gi_bts %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_gi_bts, "draw>0")
+result
 
 ggplot(ame_beta_zi_gi_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -1265,18 +644,9 @@ ggplot(ame_beta_zi_gi_bts, aes(x = draw)) +
   theme_clean()
 ```
 
+##PS2014
 ```{r}
-result <- hypothesis(ame_beta_zi_gi_bts, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$Est.Error
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-```
-
-```{r}
-gi_model_beta_zi_ps2014 <- brm(
+gi_model_beta_zi_ps2014 <- brms::brm(
   bf(ps| trials(total_ps) ~ GI,
    phi ~ GI,
      zi ~ GI),
@@ -1295,18 +665,17 @@ gi_model_beta_zi_ps2014 <- brm(
   backend = "cmdstanr",
   file = "gi_model_beta_zi_ps2014"
 )
-
-```
-
-```{r}
 tidy(gi_model_beta_zi_ps2014, effects = "fixed")
 ```
 
+
 ```{r}
 ame_beta_zi_gi_ps2014 <- gi_model_beta_zi_ps2014 %>%
-  avg_comparisons(variables = "GI") %>% 
-  posterior_draws()
-ame_beta_zi_gi_ps2014 %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "GI") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_gi_ps2014 %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_gi_ps2014, "draw>0")
+result
 
 ggplot(ame_beta_zi_gi_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -1317,70 +686,16 @@ ggplot(ame_beta_zi_gi_ps2014, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_gi_ps2014, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$Est.Error
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-```
 
-#全球化系数画图
-```{r}  
-# 拟合线性回归模型并计算置信区间
-combined_data4 <- rbind(
-  transform(gidata, source = "PS2014", value = ps2014),
-  transform(gidata, source = "PSA001", value = percentage_sample)
-)
-# Create the plot
-GI1 <- ggplot(combined_data4, aes(x = GI, y = value, color = source)) +
- geom_point(size = 6, alpha = 0.6) +
-  geom_smooth(method ="lm",size = 2) +
-  scale_color_brewer(palette = 'Set1') +
- scale_color_manual(name = "Data source", 
-                    values = c("#377EB8","#E41A1C"), 
-                    labels = c("Traditional studies", "BTS"))+
-  ylab("Proportion of sample") +
-  xlab("Globalization Index") +
-  theme(axis.text = element_text(size = 20),
-        axis.title = element_text(size = 24),
-        panel.background = element_rect(fill = "white"),
-        axis.line = element_line(color = "black"),
-        aspect.ratio = 1,
-        legend.position = "right",  # 设置图例位置为顶部
-        legend.text = element_text(size = 18),  # 设置图例文本字体大小
-        legend.title = element_text(size = 20)) +
-  xlim(c(0, 100)) +
-  ylim(c(-0.15, 1)) +
-  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
-
-# Adding the annotations
-GI1 <- GI1 +
-  annotate("text", x = 73.8, y = 0.955, 
-           label = expression("US"), size = 6) +
-  annotate("text", x = 73.8, y = 0.235, 
-           label = expression("US"), size = 6)
-# Print the plot
-GI1
-
-# Save the plot as a JPEG image
-ggsave(filename = "GI.jpg", plot = GI1, device = "jpg", width = 12, height = 12)
-```
-
-##network
+##1.8_Internet penetration rate
 ```{r}
 networkdata <- read_csv("networkdata.csv")
 networkdata
-networkdata %>% 
-  count(percentage_sample == 0) %>% 
-  mutate(prop = n / sum(n))
 ```
 
-
+##BTS
 ```{r}
-network_model_beta_zi_bts <- brm(
+network_model_beta_zi_bts <- brms::brm(
    bf(bts| trials(total_bts) ~ Network_2021,
    phi ~ Network_2021,
      zi ~ Network_2021),
@@ -1405,9 +720,11 @@ tidy(network_model_beta_zi_bts, effects = "fixed")
 
 ```{r}
 ame_beta_zi_network_bts <- network_model_beta_zi_bts %>%
-  avg_comparisons(variables = "Network_2021") %>% 
-  posterior_draws()
-ame_beta_zi_network_bts %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "Network_2021") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_network_bts %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_network_bts, "draw>0")
+result
 
 ggplot(ame_beta_zi_network_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -1418,18 +735,10 @@ ggplot(ame_beta_zi_network_bts, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_network_bts, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
 
+##PS2014
 ```{r}
-network_model_beta_zi_ps2014 <- brm(
+network_model_beta_zi_ps2014 <- brms::brm(
  bf(ps| trials(total_ps) ~ Network_2021,
    phi ~ Network_2021,
      zi ~ Network_2021),
@@ -1451,12 +760,13 @@ network_model_beta_zi_ps2014 <- brm(
 tidy(network_model_beta_zi_ps2014, effects = "fixed")
 ```
 
-
 ```{r}
 ame_beta_zi_network_ps2014 <- network_model_beta_zi_ps2014 %>%
-  avg_comparisons(variables = "Network_2021") %>% 
-  posterior_draws()
-ame_beta_zi_network_ps2014 %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "Network_2021") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_network_ps2014 %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_network_ps2014, "draw>0")
+result
 
 ggplot(ame_beta_zi_network_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -1467,73 +777,106 @@ ggplot(ame_beta_zi_network_ps2014, aes(x = draw)) +
   theme_clean()
 ```
 
+
+####1.9_cultural distance
 ```{r}
-result <- hypothesis(ame_beta_zi_network_ps2014, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
+pddata <- read_csv("pddata.csv")
+pddata
 ```
 
-#互联网普及率画图
-```{r}  
-# 拟合线性回归模型并计算置信区间
-combined_data5 <- rbind(
-  transform(networkdata, source = "PS2014", value = ps2014),
-  transform(networkdata, source = "PSA001", value = percentage_sample)
+##BTS
+```{r}
+pd_model_beta_zi_bts <- brms::brm(
+ bf(bts| trials(total_bts) ~ pd,
+   phi ~ pd,
+     zi ~ pd),
+  data = pddata,
+  family = zero_inflated_beta_binomial(),
+  chains = 4, iter = 2000, warmup = 1000,
+  cores = 2, seed = 1234,
+  
+  # regularising priors
+  prior = c(prior(normal(0, 1), class = Intercept),
+            prior(normal(0, 1), class = b)),
+  
+  # tune the mcmc sampler
+  control = list(adapt_delta = 0.99),
+  
+  backend = "cmdstanr",
+  file = "pd_model_beta_zi_bts"
 )
-# Create the plot
-Network1 <- ggplot(combined_data5, aes(x = Network_2021, y = value, color = source)) +
-  
- geom_point(size = 6, alpha = 0.6) +
-  geom_smooth(method ="lm",size = 2) +
-  scale_color_brewer(palette = 'Set1') +
- scale_color_manual(name = "Data source", 
-                    values = c("#377EB8","#E41A1C"), 
-                    labels = c("Traditional studies", "BTS"))+
-  
-  ylab("Proportion of sample") +
-  xlab("Proportion of population using the internet") +
-  theme(axis.text = element_text(size = 20),
-        axis.title = element_text(size = 24),
-        panel.background = element_rect(fill = "white"),
-        axis.line = element_line(color = "black"),
-        aspect.ratio = 1,
-        legend.position = "right",  # 设置图例位置为顶部
-        legend.text = element_text(size = 18),  # 设置图例文本字体大小
-        legend.title = element_text(size = 20)) +
-  xlim(c(0, 1)) +
-  ylim(c(-0.18, 1)) +
-  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
-
-# Adding the annotations
-Network1 <- Network1 +
-  annotate("text", x = 0.843, y = 0.955, 
-           label = expression("US"), size = 6) +
-  annotate("text", x = 0.843, y = 0.235, 
-           label = expression("US"), size = 6)
-
-Network1
-
-# Save the plot as a JPEG image
-ggsave(filename = "Network.jpg", plot = Network1, device = "jpg", width = 12, height = 12)
+tidy(pd_model_beta_zi_bts, effects = "fixed")
 ```
 
-##Linguistic distance from the United States
-#lp1
+```{r}
+ame_beta_zi_pd_bts <- pd_model_beta_zi_bts %>%
+  marginaleffects::avg_comparisons(variables = "pd") %>%    marginaleffects::posterior_draws()
+ame_beta_zi_pd_bts %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_pd_bts, "draw<0")
+result
+
+ggplot(ame_beta_zi_pd_bts, aes(x = draw)) +
+  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
+               fill = "#bc3032") +
+  scale_x_continuous(labels = label_pp) +
+  labs(x = "Average marginal effect of Cultural distance", y = NULL,
+       caption = "80% and 95% credible intervals shown in black") +
+  theme_clean()
+```
+
+###PS2014
+```{r}
+pd_model_beta_zi_ps2014 <- brms::brm(
+   bf(ps| trials(total_ps) ~ pd,
+   phi ~ pd,
+     zi ~ pd),
+  data = pddata,
+  family = zero_inflated_beta_binomial(),
+  chains = 4, iter = 1000, warmup = 500,
+  cores = 2, seed = 1234,
+  
+  # regularising priors
+  prior = c(prior(normal(0, 1), class = Intercept),
+            prior(normal(0, 1), class = b)),
+  
+  # tune the mcmc sampler
+  control = list(adapt_delta = 0.99),
+  
+  backend = "cmdstanr",
+  file = "pd_model_beta_zi_ps2014"
+)
+tidy(pd_model_beta_zi_ps2014, effects = "fixed")
+
+```
+
+```{r}
+ame_beta_zi_pd_ps2014 <- pd_model_beta_zi_ps2014 %>%
+  marginaleffects::avg_comparisons(variables = "pd") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_pd_ps2014 %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_pd_ps2014, "draw<0")
+result
+
+ggplot(ame_beta_zi_pd_ps2014, aes(x = draw)) +
+  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
+               fill = "#bc3032") +
+  scale_x_continuous(labels = label_pp) +
+  labs(x = "Average marginal effect of Cultural distance", y = NULL,
+       caption = "80% and 95% credible intervals shown in black") +
+  theme_clean()
+```
+
+
+##1.10Linguistic distance
+##lp1
 ```{r}
 lddata <- read_csv("lddata.csv")
 lddata
-lddata %>% 
-  count(percentage_sample == 0) %>% 
-  mutate(prop = n / sum(n))
 ```
 
-
+##BTS
 ```{r}
-ld1_model_beta_zi_bts <- brm(
+ld1_model_beta_zi_bts <- brms::brm(
   bf(bts| trials(total_bts) ~ lp1,
    phi ~ lp1,
      zi ~ lp1),
@@ -1553,14 +896,15 @@ ld1_model_beta_zi_bts <- brm(
   file = "ld1_model_beta_zi_bts"
 )
 tidy(ld1_model_beta_zi_bts, effects = "fixed")
-
 ```
 
 ```{r}
 ame_beta_zi_ld1_bts <- ld1_model_beta_zi_bts %>%
-  avg_comparisons(variables = "lp1") %>% 
-  posterior_draws()
-ame_beta_zi_ld1_bts %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "lp1") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_ld1_bts %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_ld1_bts, "draw<0")
+result
 
 ggplot(ame_beta_zi_ld1_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -1571,18 +915,9 @@ ggplot(ame_beta_zi_ld1_bts, aes(x = draw)) +
   theme_clean()
 ```
 
+##PS2014
 ```{r}
-result <- hypothesis(ame_beta_zi_ld1_bts, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
-
-```{r}
-ld1_model_beta_zi_ps2014 <- brm(
+ld1_model_beta_zi_ps2014 <- brms::brm(
   bf(ps| trials(total_ps) ~ lp1,
    phi ~ lp1,
      zi ~ lp1),
@@ -1607,9 +942,11 @@ tidy(ld1_model_beta_zi_ps2014, effects = "fixed")
 
 ```{r}
 ame_beta_zi_ld1_ps2014 <- ld1_model_beta_zi_ps2014 %>%
-  avg_comparisons(variables = "lp1") %>% 
-  posterior_draws()
-ame_beta_zi_ld1_ps2014 %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "lp1") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_ld1_ps2014 %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_ld1_ps2014, "draw<0")
+result
 
 ggplot(ame_beta_zi_ld1_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -1620,77 +957,21 @@ ggplot(ame_beta_zi_ld1_ps2014, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_ld1_ps2014, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
-
-#语言距离画图1
-```{r}
-# 拟合线性回归模型并计算置信区间
-combined_data6 <- rbind(
-  transform(lddata, source = "PS2014", value = ps2014),
-  transform(lddata, source = "PSA001", value = percentage_sample)
-)
-# Create the plot
-ld1 <- ggplot(combined_data6, aes(x = lp1, y = value, color = source)) +
-  
- geom_point(size = 6, alpha = 0.6) +
-  geom_smooth(method ="lm",size = 2) +
-  scale_color_brewer(palette = 'Set1') +
-scale_color_manual(name = "Data source", 
-                    values = c("#377EB8","#E41A1C"), 
-                    labels = c("Traditional studies", "BTS"))+
-  ylab("Proportion of sample") +
-  xlab("Linguistic distance from United States\n(from English)") +
-  theme(axis.text = element_text(size = 20),
-        axis.title = element_text(size = 24),
-        panel.background = element_rect(fill = "white"),
-        axis.line = element_line(color = "black"),
-        aspect.ratio = 1,
-        legend.position = "right",  # 设置图例位置为顶部
-        legend.text = element_text(size = 18),  # 设置图例文本字体大小
-        legend.title = element_text(size = 20)) +
-  xlim(c(0, 3.5)) +
-  ylim(c(-0.25, 1)) +
-  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
-
-# Adding the label
-ld1 <- ld1 +
-  annotate("text", x = 0.30, y = 0.955, 
-           label = expression("US"), size = 6) +
-  annotate("text", x = 0.30, y = 0.235, 
-           label = expression("US"), size = 6)
-
-#翻转X轴
-ld1 <- ld1 + scale_x_reverse()
-# Print the plot
-ld1
-
-# Save the plot as a JPEG image
-ggsave(filename = "LD.jpg", plot = ld1, device = "jpg", width = 12, height = 12)
-```
 
 ##lp2
 ```{r}
-ld2_model_beta_zi_bts <- brm(
-  bf(bts| trials(total_bts) ~ lp2+ gp(Latitude, Longitude),
+ld2_model_beta_zi_bts <- brms::brm(
+  bf(bts| trials(total_bts) ~ lp2,
    phi ~ lp2,
      zi ~ lp2),
   data = lddata,
   family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 200, warmup = 100,
+  chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
   control = list(adapt_delta = 0.99),
@@ -1703,24 +984,13 @@ tidy(ld2_model_beta_zi_bts, effects = "fixed")
 ```
 
 ```{r}
-ame_beta_zi_ld2_bts <- 
-  emtrends(ld2_model_beta_zi_bts,~lp2,var = "lp2",)%>% 
-  gather_emmeans_draws()
-
-ame_beta_zi_ld2_bts
-summary(ame_beta_zi_ld2_bts)
-ame_beta_zi_ld2_bts %>% median_qi()
-ame_beta_zi_ld2_bts %>% mean_qi()
-ame_beta_zi_ld2_bts %>%mode_hdi()
-```
-
-
-```{r}
 ame_beta_zi_ld2_bts <- ld2_model_beta_zi_bts %>%
-  avg_comparisons(variables = "lp2") %>% 
-  posterior_draws()
-ame_beta_zi_ld2_bts %>% median_hdi(draw)
-ame_beta_zi_ld2_bts
+  marginaleffects::avg_comparisons(variables = "lp2") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_ld2_bts %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_ld2_bts, "draw < 0")
+result
+
 ggplot(ame_beta_zi_ld2_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
                fill = "#bc3032") +
@@ -1730,33 +1000,21 @@ ggplot(ame_beta_zi_ld2_bts, aes(x = draw)) +
   theme_clean()
 ```
 
+##ld2
+##BTS
 ```{r}
-ame_beta_zi_ld2_bts <- na.omit(ame_beta_zi_ld2_bts)
-
-result <- hypothesis(ame_beta_zi_ld2_bts, ".value< 0")
-
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
-
-```{r}
-ld2_model_beta_zi_ps2014 <- brm(
-  bf(ps| trials(total_ps) ~ lp2+ gp(Latitude, Longitude),
+ld2_model_beta_zi_ps2014 <- brms::brm(
+  bf(ps| trials(total_ps) ~ lp2,
    phi ~ lp2,
      zi ~ lp2),
   data = lddata,
   family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 40, warmup = 20,
-  cores = 4, seed = 1234,
+  chains = 4, iter = 2000, warmup = 1000,
+  cores = 2, seed = 1234,
   
   # regularising priors
   prior = c(prior(normal(0, 1), class = Intercept),
-            prior(normal(0, 1), class = b),
-            prior(exponential(2), class = sdgp)),
+            prior(normal(0, 1), class = b)),
   
   # tune the mcmc sampler
  control = list(adapt_delta = 0.99),
@@ -1767,20 +1025,14 @@ ld2_model_beta_zi_ps2014 <- brm(
 tidy(ld2_model_beta_zi_ps2014, effects = "fixed")
 ```
 
-```{r}
-ame_beta_zi_ld2_ps2014 <- 
-  emmeans(ld2_model_beta_zi_ps2014,~ lp2,epred = TRUE,
-          re_formula = NULL) %>% 
-  gather_emmeans_draws()
-ame_beta_zi_ld2_ps2014
-ame_beta_zi_ld2_ps2014 %>% median_hdi()
-```
 
 ```{r}
 ame_beta_zi_ld2_ps2014 <- ld2_model_beta_zi_ps2014 %>%
-  avg_comparisons(variables = "lp2") %>% 
-  posterior_draws()
-ame_beta_zi_ld2_ps2014 %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "lp2") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_ld2_ps2014 %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_ld2_ps2014, "draw<0")
+result
 
 ggplot(ame_beta_zi_ld2_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -1791,30 +1043,16 @@ ggplot(ame_beta_zi_ld2_ps2014, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_ld2_ps2014, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
 
-
-##englishdata
+##_1.11English Proficiency rank
 ```{r}
 englishdata <- read_csv("englishdata.csv")
 englishdata
-englishdata %>% 
-  count(percentage_sample == 0) %>% 
-  mutate(prop = n / sum(n))
-
 ```
 
-
+##BTS
 ```{r}
-english_model_beta_zi_bts <- brm(
+english_model_beta_zi_bts <- brms::brm(
   bf(bts| trials(total_bts) ~ EPI_rank,
    phi ~ EPI_rank,
      zi ~ EPI_rank),
@@ -1840,9 +1078,11 @@ tidy(english_model_beta_zi_bts, effects = "fixed")
 
 ```{r}
 ame_beta_zi_english_bts <- english_model_beta_zi_bts %>%
-  avg_comparisons(variables = "EPI_rank") %>% 
-  posterior_draws()
-ame_beta_zi_english_bts %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "EPI_rank") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_english_bts %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_english_bts, "draw<0")
+result
 
 ggplot(ame_beta_zi_english_bts, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -1853,18 +1093,10 @@ ggplot(ame_beta_zi_english_bts, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_english_bts, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
-```
 
+##PS2014
 ```{r}
-english_model_beta_zi_ps2014 <- brm(
+english_model_beta_zi_ps2014 <- brms::brm(
   bf(ps| trials(total_ps) ~ EPI_rank,
    phi ~ EPI_rank,
      zi ~ EPI_rank),
@@ -1889,9 +1121,11 @@ tidy(english_model_beta_zi_ps2014, effects = "fixed")
 
 ```{r}
 ame_beta_zi_english_ps2014 <- english_model_beta_zi_ps2014 %>%
-  avg_comparisons(variables = "EPI_rank") %>% 
-  posterior_draws()
-ame_beta_zi_english_ps2014 %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "EPI_rank") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_english_ps2014 %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_english_ps2014, "draw<0")
+result
 
 ggplot(ame_beta_zi_english_ps2014, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -1902,19 +1136,438 @@ ggplot(ame_beta_zi_english_ps2014, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_english_ps2014, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-result$hypothesis$Est.Error
+##GDP_per_capita drawing
+```{r}  
+combined_data2 <- rbind(
+  transform(gdpdata, source = "PS2014", value = ps2014),
+  transform(gdpdata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+gdp1 <- ggplot(combined_data2, aes(x = GDP_per_capita, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "Big team science"))+
+  
+  ylab("Proportion of sample") +
+  xlab("GDP per capita") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  
+        legend.text = element_text(size = 18),  
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 150)) +
+  ylim(c(-0.2, 0.5)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+gdp1 <- gdp1 +
+  annotate("text", x = 64.3, y = 0.455, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 64.3, y = 0.235, 
+           label = expression("US"), size = 6)
+gdp1
+# Save the plot as a JPEG image
+#ggsave(filename = "GDP.jpg", plot = gdp1, device = "jpg", width = 12, height = 12)
 ```
 
-#英语熟练度画图
+#R&D_investment drawing
 ```{r}  
-# 拟合线性回归模型并计算置信区间
+combined_data3 <- rbind(
+  transform(rddata, source = "PS2014", value = ps2014),
+  transform(rddata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+RD1 <- ggplot(combined_data3, aes(x = R_D, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "Big team science"))+
+  ylab("Proportion of sample") +
+  xlab("Research expenditure as a share of GDP") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right", 
+        legend.text = element_text(size = 18),  
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 3.5)) +
+  ylim(c(-0.14, 0.5)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+RD1 <- RD1 +
+  annotate("text", x = 2.55, y = 0.455, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 2.55, y = 0.235, 
+           label = expression("US"), size = 6)
+
+# Print the plot
+RD1
+
+# Save the plot as a JPEG image
+#ggsave(filename = "RD.jpg", plot = RD1, device = "jpg", width = 12, height = 12)
+```
+
+##number_of_universities_per_capita drawing
+```{r}
+combined_data1 <- rbind(
+  transform(universitydata, source = "PS2014", value = ps2014),
+  transform(universitydata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+university <- ggplot(combined_data1, aes(x = number_of_universities_per_capita, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "Big team science")) +
+
+  ylab("Proportion of sample") +
+  xlab("Number of universities per 100000 people") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  
+        legend.text = element_text(size = 18),  
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 54)) +
+  ylim(c(-0.10, 0.5)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+university <- university +
+  annotate("text", x = 5, y = 0.455, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 5, y = 0.235, 
+           label = expression("US"), size = 6)
+# Print the plot
+university
+# Save the plot as a JPEG image
+#ggsave(filename = "university.jpg", plot = university, device = "jpg", width = 12, height = 12)
+```
+
+##number_of_psychology_researchers_per_capita drawing
+```{r}
+combined_data1 <- rbind(
+  transform(researcherdata, source = "PS2014", value = ps2014),
+  transform(researcherdata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+researcher <- ggplot(combined_data1, aes(x = number_of_psychology_researchers_per_capita, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "Big team science")) +
+
+  ylab("Proportion of sample") +
+  xlab("Number of psychology researchers per 100000 people") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  
+        legend.text = element_text(size = 18),  
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 200)) +
+  ylim(c(-0.14, 0.5)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+researcher <- researcher +
+  annotate("text", x = 50, y = 0.455, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 50, y = 0.235, 
+           label = expression("US"), size = 6)
+# Print the plot
+researcher
+# Save the plot as a JPEG image
+ggsave(filename = "researcher.jpg", plot = researcher, device = "jpg", width = 12, height = 12)
+```
+
+##average_years_of_schooling drawing
+```{r}  
+combined_data9 <- rbind(
+  transform(edudata, source = "PS2014", value = ps2014),
+  transform(edudata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+education1 <- ggplot(combined_data9, aes(x = average_years_of_schooling, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "Big team science"))+
+    
+  ylab("Proportion of sample") +
+  xlab("Average years of formal education\nfor individuals aged 15-64") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right", 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 15)) +
+  ylim(c(-0.25, 0.5)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the annotations
+education1 <- education1 +
+  annotate("text", x = 12.1, y = 0.455, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 12.1, y = 0.235, 
+           label = expression("US"), size = 6)
+
+# Print the plot
+education1
+
+# Save the plot as a JPEG image
+#ggsave(filename = "education.jpg", plot = education1, device = "jpg", width = 12, height = 12)
+```
+
+##Urbanization drawing
+```{r}  
+combined_data8 <- rbind(
+  transform(urbandata, source = "PS2014", value = ps2014),
+  transform(urbandata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+UP1 <- ggplot(combined_data8, aes(x = Urbanization, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "Big team science"))+
+    
+  ylab("Proportion of sample") +
+  xlab("Proportion of urban population") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  
+        legend.text = element_text(size = 18),  
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 100)) +
+  ylim(c(-0.25, 0.5)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the annotations
+UP1 <- UP1 +
+  annotate("text", x = 75, y = 0.455, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 75, y = 0.235, 
+           label = expression("US"), size = 6)
+
+# Print the plot
+UP1
+
+# Save the plot as a JPEG image
+#ggsave(filename = "UP.jpg", plot = UP1, device = "jpg", width = 12, height = 12)
+```
+
+##Globalization_Index drawing
+```{r}  
+combined_data4 <- rbind(
+  transform(gidata, source = "PS2014", value = ps2014),
+  transform(gidata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+GI1 <- ggplot(combined_data4, aes(x = GI, y = value, color = source)) +
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "Big team science"))+
+  ylab("Proportion of sample") +
+  xlab("Globalization Index") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right", 
+        legend.text = element_text(size = 18),  
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 100)) +
+  ylim(c(-0.15, 0.5)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the annotations
+GI1 <- GI1 +
+  annotate("text", x = 73.8, y = 0.455, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 73.8, y = 0.235, 
+           label = expression("US"), size = 6)
+# Print the plot
+GI1
+
+# Save the plot as a JPEG image
+#ggsave(filename = "GI.jpg", plot = GI1, device = "jpg", width = 12, height = 12)
+```
+
+##Internet penetration rate drawing
+```{r}  
+combined_data5 <- rbind(
+  transform(networkdata, source = "PS2014", value = ps2014),
+  transform(networkdata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+Network1 <- ggplot(combined_data5, aes(x = Network_2021, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "Big team science"))+
+  
+  ylab("Proportion of sample") +
+  xlab("Proportion of population using the internet") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  
+        legend.text = element_text(size = 18),  
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 100)) +
+  ylim(c(-0.18, 0.5)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the annotations
+Network1 <- Network1 +
+  annotate("text", x = 84.3, y = 0.455, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 84.3, y = 0.235, 
+           label = expression("US"), size = 6)
+
+Network1
+
+# Save the plot as a JPEG image
+# ggsave(filename = "Network.jpg", plot = Network1, device = "jpg", width = 12, height = 12)
+```
+
+##cultural distance drawing
+```{r}
+combined_data1 <- rbind(
+  transform(pddata, source = "PS2014", value = ps2014),
+  transform(pddata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+pd1 <- ggplot(combined_data1, aes(x = pd, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+ scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "Big team science")) +
+
+  ylab("Proportion of sample") +
+  xlab("Culture distance from United States") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  
+        legend.text = element_text(size = 18),  
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 0.20)) +
+  ylim(c(-0.30, 0.5)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+pd1 <- pd1 +
+  annotate("text", x = 0.018, y = 0.455, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 0.018, y = 0.235, 
+           label = expression("US"), size = 6)
+#turn over X-axis
+pd1 <- pd1 + scale_x_reverse()
+# Print the plot
+pd1
+
+# Save the plot as a JPEG image
+# ggsave(filename = "PD.jpg", plot = pd1, device = "jpg", width = 12, height = 12)
+```
+
+##Linguistic_distance_1 drawing
+```{r}
+combined_data6 <- rbind(
+  transform(lddata, source = "PS2014", value = ps2014),
+  transform(lddata, source = "PSA001", value = percentage_sample)
+)
+# Create the plot
+ld1 <- ggplot(combined_data6, aes(x = lp1, y = value, color = source)) +
+  
+ geom_point(size = 6, alpha = 0.6) +
+  geom_smooth(method ="lm",size = 2) +
+  scale_color_brewer(palette = 'Set1') +
+scale_color_manual(name = "Data source", 
+                    values = c("#377EB8","#E41A1C"), 
+                    labels = c("Traditional studies", "Big team science"))+
+  ylab("Proportion of sample") +
+  xlab("Linguistic distance from United States\n(from English)") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1,
+        legend.position = "right",  
+        legend.text = element_text(size = 18),  
+        legend.title = element_text(size = 20)) +
+  xlim(c(0, 3.5)) +
+  ylim(c(-0.25, 0.5)) +
+  guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
+
+# Adding the label
+ld1 <- ld1 +
+  annotate("text", x = 0.28, y = 0.455, 
+           label = expression("US"), size = 6) +
+  annotate("text", x = 0.28, y = 0.235, 
+           label = expression("US"), size = 6)
+
+# turn over X-axis
+ld1 <- ld1 + scale_x_reverse()
+# Print the plot
+ld1
+
+# Save the plot as a JPEG image
+#ggsave(filename = "LD.jpg", plot = ld1, device = "jpg", width = 12, height = 12)
+```
+
+##English Proficiency Index rank drawing
+```{r}  
 combined_data7 <- rbind(
   transform(englishdata, source = "PS2014", value = ps2014),
   transform(englishdata, source = "PSA001", value = percentage_sample)
@@ -1927,7 +1580,7 @@ EPI1 <- ggplot(combined_data7, aes(x = EPI_rank, y = value, color = source)) +
   scale_color_brewer(palette = 'Set1') +
  scale_color_manual(name = "Data source", 
                     values = c("#377EB8","#E41A1C"), 
-                    labels = c("Traditional studies", "BTS"))+
+                    labels = c("Traditional studies", "Big team science"))+
     
   ylab("Proportion of sample") +
   xlab("English Proficiency Index") +
@@ -1940,52 +1593,49 @@ EPI1 <- ggplot(combined_data7, aes(x = EPI_rank, y = value, color = source)) +
         legend.text = element_text(size = 18),  # 设置图例文本字体大小
         legend.title = element_text(size = 20)) +
   xlim(c(0, 120)) +
-  ylim(c(-0.25, 1)) +
+  ylim(c(-0.25, 0.5)) +
   guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
 
 # Adding the annotations
 EPI1 <- EPI1 +
-  annotate("text", x = 11.5, y = 0.955, 
+  annotate("text", x = 11.5, y = 0.455, 
            label = expression("US"), size = 6) +
   annotate("text", x = 11.5, y = 0.235, 
            label = expression("US"), size = 6)
 
-#翻转X轴
+# turn over X-axis
 EPI1 <- EPI1 + scale_x_reverse()
 # Print the plot
 EPI1
 
 # Save the plot as a JPEG image
-ggsave(filename = "EPI.jpg", plot = EPI1, device = "jpg", width = 12, height = 12)
+# ggsave(filename = "EPI.jpg", plot = EPI1, device = "jpg", width = 12, height = 12)
 ```
 
+##Merge the figures
 ```{r}  
-# 将11个图形横向左右排列
-combined_plot1 <-  gdp1+ RD1+university+  researcher+education1+UP1+GI1+ Network1 + pd1+ld1+EPI1 + 
-  plot_layout(ncol = 2) + # 设置两列布局
-plot_annotation(tag_levels ="A",
+# Arrange 11 graphics horizontally, left and right
+combined_plot1 <- gdp1+ RD1+university+  researcher+education1+UP1+GI1+ Network1 + pd1+ld1+EPI1 + 
+  patchwork::plot_layout(ncol = 3) + 
+patchwork::plot_annotation(tag_levels ="A",
                   theme = theme(plot.title = element_text(size = 26)))
 
-# Save the plot as a JPEG image
-ggsave(filename = "Exploratory_analyses.pdf", plot = combined_plot1, device = "pdf", width = 18, height = 30)
+# Save the plot as a PDF image
+ggsave(filename = "Exploratory_analyses.pdf", plot = combined_plot1, device = "pdf", width = 24, height = 20)
 ```
 
+######_2.Relation between the proportion of each state’s/province’s sample in big team science (using Ruggeri et al. (2022) as an example) and Urbanization/Internet penetration rate/English Proficiency in Kenya/Nigeria, China, and United States/Netherlands. 
 
-##KE_urbanization
+##2.1_Urbanization 
+##2.1.1_KE_urbanization
 ```{r}
 KE_urbanization <- read_csv("KE_urbanization.csv")
 KE_urbanization
 ```
 
-```{r}
-KE_urbanization %>% 
-  count(Ruggeri_KE == 0) %>% 
-  mutate(prop = n / sum(n))
-```
 
 ```{r}
-
-KE_urbanization_model_beta_zi <- brm(
+KE_urbanization_model_beta_zi <- brms::brm(
   bf(Ruggeri_KE| trials(total_KE) ~ KE_UP_2020,
      phi ~ KE_UP_2020,
      zi ~ KE_UP_2020),
@@ -1997,15 +1647,16 @@ KE_urbanization_model_beta_zi <- brm(
   file = "KE_urbanization_model_beta_zi "
 )
 tidy(KE_urbanization_model_beta_zi, effects = "fixed")
-
 ```
 
 
 ```{r}
 ame_beta_zi_KE_urbanization <- KE_urbanization_model_beta_zi %>%
-  avg_comparisons(variables = "KE_UP_2020") %>% 
-  posterior_draws()
-ame_beta_zi_KE_urbanization %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "KE_UP_2020") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_KE_urbanization %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_KE_urbanization, "draw>0")
+result
 
 ggplot(ame_beta_zi_KE_urbanization, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -2016,37 +1667,15 @@ ggplot(ame_beta_zi_KE_urbanization, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_KE_urbanization, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$Est.Error
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-```
-
-```{r}
-model_ols1 <- lm(Ruggeri_KE ~ KE_UP_2020,
-                 data = KE_urbanization)
-summary(model_ols1)
-```
-
-
-##CN_urbanization
+##2.1.2_CN_urbanization
 ```{r}
 CN_urbanization <- read_csv("CN_urbanization.csv")
 CN_urbanization
 ```
 
-```{r}
-CN_urbanization %>% 
-  count(Ruggeri_CN == 0) %>% 
-  mutate(prop = n / sum(n))
-```
 
 ```{r}
-CN_urbanization_model_beta_zi <- brm(
+CN_urbanization_model_beta_zi <- brms::brm(
   bf(Ruggeri_CN| trials(total_CN) ~ CN_UP_2020,
      phi ~ CN_UP_2020,
      zi ~ CN_UP_2020),
@@ -2061,12 +1690,13 @@ tidy(CN_urbanization_model_beta_zi, effects = "fixed")
 
 ```
 
-
 ```{r}
 ame_beta_zi_CN_urbanization <- CN_urbanization_model_beta_zi %>%
-  avg_comparisons(variables = "CN_UP_2020") %>% 
-  posterior_draws()
-ame_beta_zi_CN_urbanization %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "CN_UP_2020") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_CN_urbanization %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_CN_urbanization, "draw>0")
+result
 
 ggplot(ame_beta_zi_CN_urbanization, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -2077,50 +1707,14 @@ ggplot(ame_beta_zi_CN_urbanization, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_CN_urbanization, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$Est.Error
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-```
-
-```{r}
-model_ols1 <- lm(Ruggeri_CN ~ CN_UP_2020,
-                 data = CN_urbanization)
-summary(model_ols1)
-```
-
-
-##US_urbanization
+##2.1.3_US_urbanization
 ```{r}
 US_urbanization <- read_csv("US_urbanization.csv")
 US_urbanization
 ```
 
 ```{r}
-US_urbanization %>% 
-  count(Ruggeri_US == 0) %>% 
-  mutate(prop = n / sum(n))
-```
-
-```{r}
-#过度离散的O检验
-variance <- var(US_urbanization$Ruggeri_US_size)
-mean <- mean(US_urbanization$Ruggeri_US_size)
-sum <- sum(US_urbanization$Ruggeri_US_size)
-variance
-mean 
-sum
-O <- sqrt(sum-1)*2*(variance-mean)/mean
-O
-```
-
-
-```{r}
-US_urbanization_model_beta_zi <- brm(
+US_urbanization_model_beta_zi <- brms::brm(
   bf(Ruggeri_US| trials(total_US) ~ US_UP_2020,
    phi ~ US_UP_2020,
      zi ~ US_UP_2020),
@@ -2138,9 +1732,11 @@ tidy(US_urbanization_model_beta_zi, effects = "fixed")
 
 ```{r}
 ame_beta_zi_US_urbanization <- US_urbanization_model_beta_zi %>%
-  avg_comparisons(variables = "US_UP_2020") %>% 
-  posterior_draws()
-ame_beta_zi_US_urbanization %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "US_UP_2020") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_US_urbanization %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_US_urbanization, "draw>0")
+result
 
 ggplot(ame_beta_zi_US_urbanization, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -2151,39 +1747,55 @@ ggplot(ame_beta_zi_US_urbanization, aes(x = draw)) +
   theme_clean()
 ```
 
+##2.2_Internet penetration rate
+##2.2.1_NG_internet
 ```{r}
-result <- hypothesis(ame_beta_zi_US_urbanization, "draw>0")
+NG_internet <- read_csv("NG_internet.csv")
+NG_internet
+```
+
+```{r}
+NG_internet_model_beta_zi <- brms::brm(
+  bf(Ruggeri_NG| trials(total_NG) ~ Internet_NG_2022,
+     phi ~ Internet_NG_2022,
+     zi ~ Internet_NG_2022),
+  data = NG_internet,
+  family = zero_inflated_beta_binomial(),
+  chains = 4, iter = 2000, warmup = 1000,
+  cores = 2, seed = 1234,
+  backend = "cmdstanr",
+  file = "NG_internet_model_beta_zi "
+)
+tidy(NG_internet_model_beta_zi, effects = "fixed")
+
+```
+
+```{r}
+ame_beta_zi_NG_internet <- NG_internet_model_beta_zi %>%
+  marginaleffects::avg_comparisons(variables = "Internet_NG_2022") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_NG_internet %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_NG_internet, "draw<0")
 result
-result$hypothesis$Estimate
-result$hypothesis$Est.Error
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
+
+ggplot(ame_beta_zi_NG_internet, aes(x = draw)) +
+  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
+               fill = "#bc3032") +
+  scale_x_continuous(labels = label_pp) +
+  labs(x = "Average marginal effect of NG_internet", y = NULL,
+       caption = "80% and 95% credible intervals shown in black") +
+  theme_clean()
 ```
 
-```{r}
-model_ols1 <- lm(Ruggeri_US ~ US_UP_2020,
-                 data = US_urbanization)
-summary(model_ols1)
-```
-
-
-##CN_internet
+##2.2.2_CN_internet
 ```{r}
 CN_internet <- read_csv("CN_internet.csv")
 CN_internet
 ```
 
 ```{r}
-CN_internet %>% 
-  count(Ruggeri_CN == 0) %>% 
-  mutate(prop = n / sum(n))
-
-```
-
-```{r}
-CN_internet_model_beta_zi <- brm(
-  bf(Ruggeri_CN ~ Internet_CN_2016,
+CN_internet_model_beta_zi <- brms::brm(
+  bf(Ruggeri_CN| trials(total_CN) ~ Internet_CN_2016,
      phi ~ Internet_CN_2016,
      zi ~ Internet_CN_2016),
   data = CN_internet,
@@ -2198,12 +1810,13 @@ tidy(CN_internet_model_beta_zi, effects = "fixed")
 
 ```
 
-
 ```{r}
 ame_beta_zi_CN_internet <- CN_internet_model_beta_zi %>%
-  avg_comparisons(variables = "Internet_CN_2016") %>% 
-  posterior_draws()
-ame_beta_zi_CN_internet %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "Internet_CN_2016") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_CN_internet %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_CN_internet, "draw>0")
+result
 
 ggplot(ame_beta_zi_CN_internet, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -2214,117 +1827,34 @@ ggplot(ame_beta_zi_CN_internet, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_CN_internet, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$Est.Error
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-
-```
-
-```{r}
-model_ols1 <- lm(Ruggeri_CN ~ Internet_CN_2016,
-                 data = CN_internet)
-summary(model_ols1)
-```
-
-##NG_internet
-```{r}
-NG_internet <- read_csv("NG_internet.csv")
-NG_internet
-```
-
-```{r}
-NG_internet %>% 
-  count(Ruggeri_NG == 0) %>% 
-  mutate(prop = n / sum(n))
-```
-```{r}
-NG_internet_model_beta_zi <- brm(
-  bf(Ruggeri_NG ~ Internet_NG_2022,
-     phi ~ Internet_NG_2022,
-     zi ~ Internet_NG_2022),
-  data = NG_internet,
-  family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 2000, warmup = 1000,
-  cores = 2, seed = 1234,
-  backend = "cmdstanr",
-  file = "NG_internet_model_beta_zi "
-)
-tidy(NG_internet_model_beta_zi, effects = "fixed")
-
-```
-
-
-```{r}
-ame_beta_zi_NG_internet <- NG_internet_model_beta_zi %>%
-  avg_comparisons(variables = "Internet_NG_2022") %>% 
-  posterior_draws()
-ame_beta_zi_NG_internet %>% median_hdi(draw)
-
-ggplot(ame_beta_zi_NG_internet, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of NG_internet", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
-```
-
-```{r}
-result <- hypothesis(ame_beta_zi_NG_internet, "draw<0")
-result
-result$hypothesis$Estimate
-result$hypothesis$Est.Error
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-```
-
-```{r}
-model_ols1 <- lm(Ruggeri_NG ~ Internet_NG_2022,
-                 data = NG_internet)
-summary(model_ols1)
-```
-
-
-##US_internet
+##2.2.3_US_internet
 ```{r}
 US_internet <- read_csv("US_internet.csv")
 US_internet
 ```
 
 ```{r}
-US_internet %>% 
-  count(Ruggeri_US == 0) %>% 
-  mutate(prop = n / sum(n))
-```
-```{r}
-US_internet_model_beta_zi <- brm(
-  bf(Ruggeri_US ~ Internet_US_2018,
+US_internet_model_beta_zi <- brms::brm(
+  bf(Ruggeri_US| trials(total_US) ~ Internet_US_2018,
      phi ~ Internet_US_2018,
      zi ~ Internet_US_2018),
   data = US_internet,
   family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 200000, warmup = 100000,
+  chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   backend = "cmdstanr",
   file = "US_internet_model_beta_zi "
 )
 tidy(US_internet_model_beta_zi, effects = "fixed")
-
 ```
-
 
 ```{r}
 ame_beta_zi_US_internet <- US_internet_model_beta_zi %>%
-  avg_comparisons(variables = "Internet_US_2018") %>% 
-  posterior_draws()
-ame_beta_zi_US_internet
-ame_beta_zi_US_internet %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "Internet_US_2018") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_US_internet %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_US_internet, "draw>0")
+result
 
 ggplot(ame_beta_zi_US_internet, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -2334,38 +1864,16 @@ ggplot(ame_beta_zi_US_internet, aes(x = draw)) +
        caption = "80% and 95% credible intervals shown in black") +
   theme_clean()
 ```
-
-```{r}
-ame_beta_zi_US_internet %>% mean_hdi(draw)
-result <- hypothesis(ame_beta_zi_US_internet, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$Est.Error
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-```
-
-```{r}
-model_ols1 <- lm(Ruggeri_US ~ Internet_US_2018,
-                 data = US_internet)
-summary(model_ols1)
-```
-
-##NG_EPI
+##2.3_English Proficiency
+##2.3.1_NG_EPI
 ```{r}
 NG_EPI <- read_csv("NG_EPI.csv")
 NG_EPI
 ```
 
 ```{r}
-NG_EPI %>% 
-  count(Ruggeri_NG == 0) %>% 
-  mutate(prop = n / sum(n))
-```
-```{r}
-NG_EPI_model_beta_zi <- brm(
-  bf(Ruggeri_NG ~ EPI_NG_2022,
+NG_EPI_model_beta_zi <- brms::brm(
+  bf(Ruggeri_NG| trials(total_NG) ~ EPI_NG_2022,
      phi ~ EPI_NG_2022,
      zi ~ EPI_NG_2022),
   data = NG_EPI,
@@ -2376,15 +1884,15 @@ NG_EPI_model_beta_zi <- brm(
   file = "NG_EPI_model_beta_zi "
 )
 tidy(NG_EPI_model_beta_zi, effects = "fixed")
-
 ```
-
 
 ```{r}
 ame_beta_zi_NG_EPI <- NG_EPI_model_beta_zi %>%
-  avg_comparisons(variables = "EPI_NG_2022") %>% 
-  posterior_draws()
-ame_beta_zi_NG_EPI %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "EPI_NG_2022") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_NG_EPI %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_NG_EPI, "draw<0")
+result
 
 ggplot(ame_beta_zi_NG_EPI, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -2395,39 +1903,15 @@ ggplot(ame_beta_zi_NG_EPI, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_NG_EPI, "draw<0")
-result
-result$hypothesis$Estimate
-result$hypothesis$Est.Error
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-```
-
-```{r}
-model_ols1 <- lm(Ruggeri_NG ~ EPI_NG_2022,
-                 data = NG_EPI)
-summary(model_ols1)
-```
-
-
-
-##CN_EPI
+##2.3.2_CN_EPI
 ```{r}
 CN_EPI <- read_csv("CN_EPI.csv")
 CN_EPI
 ```
 
 ```{r}
-CN_EPI %>% 
-  count(Ruggeri_CN == 0) %>% 
-  mutate(prop = n / sum(n))
-```
-
-```{r}
-CN_EPI_model_beta_zi <- brm(
-  bf(Ruggeri_CN ~ EPI_CN_2022,
+CN_EPI_model_beta_zi <- brms::brm(
+  bf(Ruggeri_CN| trials(total_CN) ~ EPI_CN_2022,
      phi ~ EPI_CN_2022,
      zi ~ EPI_CN_2022),
   data = CN_EPI,
@@ -2438,15 +1922,15 @@ CN_EPI_model_beta_zi <- brm(
   file = "CN_EPI_model_beta_zi"
 )
 tidy(CN_EPI_model_beta_zi, effects = "fixed")
-
 ```
-
 
 ```{r}
 ame_beta_zi_CN_EPI <- CN_EPI_model_beta_zi %>%
-  avg_comparisons(variables = "EPI_CN_2022") %>% 
-  posterior_draws()
-ame_beta_zi_CN_EPI %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "EPI_CN_2022") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_CN_EPI %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_CN_EPI, "draw<0")
+result
 
 ggplot(ame_beta_zi_CN_EPI, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -2457,38 +1941,15 @@ ggplot(ame_beta_zi_CN_EPI, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_CN_EPI, "draw<0")
-result
-result$hypothesis$Estimate
-result$hypothesis$Est.Error
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
-```
-
-```{r}
-model_ols1 <- lm(Ruggeri_CN ~ EPI_CN_2022,
-                 data = CN_EPI)
-summary(model_ols1)
-```
-
-
-##NL_EPI
+##2.3.3_NL_EPI
 ```{r}
 NL_EPI <- read_csv("NL_EPI.csv")
 NL_EPI
 ```
 
 ```{r}
-NL_EPI %>% 
-  count(Ruggeri_NL == 0) %>% 
-  mutate(prop = n / sum(n))
-```
-
-```{r}
-NL_EPI_model_beta_zi <- brm(
-  bf(Ruggeri_NL ~ EPI_NL_2022,
+NL_EPI_model_beta_zi <- brms::brm(
+  bf(Ruggeri_NL| trials(total_NL) ~ EPI_NL_2022,
      phi ~ EPI_NL_2022,
      zi ~ EPI_NL_2022),
   data = NL_EPI,
@@ -2499,15 +1960,15 @@ NL_EPI_model_beta_zi <- brm(
   file = "NL_EPI_model_beta_zi "
 )
 tidy(NL_EPI_model_beta_zi, effects = "fixed")
-
 ```
-
 
 ```{r}
 ame_beta_zi_NL_EPI <- NL_EPI_model_beta_zi %>%
-  avg_comparisons(variables = "EPI_NL_2022") %>% 
-  posterior_draws()
-ame_beta_zi_NL_EPI %>% median_hdi(draw)
+  marginaleffects::avg_comparisons(variables = "EPI_NL_2022") %>% 
+  marginaleffects::posterior_draws()
+ame_beta_zi_NL_EPI %>% tidybayes::median_hdi(draw)
+result <- brms::hypothesis(ame_beta_zi_NL_EPI, "draw>0")
+result
 
 ggplot(ame_beta_zi_NL_EPI, aes(x = draw)) +
   stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
@@ -2518,39 +1979,111 @@ ggplot(ame_beta_zi_NL_EPI, aes(x = draw)) +
   theme_clean()
 ```
 
-```{r}
-result <- hypothesis(ame_beta_zi_NL_EPI, "draw>0")
-result
-result$hypothesis$Estimate
-result$hypothesis$Est.Error
-result$hypothesis$CI.Lower
-result$hypothesis$CI.Upper
-result$hypothesis$Evid.Ratio
+
+### Mapping Urbanization by state/province in Kenya, China, and the United States
+
+##Kenya drawing (Urbanization)
+```{r}  
+model <- lm(Ruggeri_KE_pro ~ KE_UP_2020, data = KE_urbanization)
+predict_data_KE <- data.frame(KE_UP_2020 = KE_urbanization$KE_UP_2020, Ruggeri_KE_pro = KE_urbanization$Ruggeri_KE_pro )
+predict_data_KE$predicted <- predict(model, newdata = predict_data_KE)
+predict_data_KE$lower <- predict(model, newdata = KE_urbanization, interval = "confidence")[, "lwr"]
+predict_data_KE$upper <- predict(model, newdata = KE_urbanization, interval = "confidence")[, "upr"]
+
+KE_UP <- ggplot(data = KE_urbanization, aes(y = Ruggeri_KE_pro, x = KE_UP_2020, color = "#E41A1C")) +
+  geom_point(stat = "identity", position = "identity", size = 6) +
+  geom_line(data = predict_data_KE, aes(y = predicted), color = "#E41A1C", size = 2) +
+  geom_ribbon(data = predict_data_KE, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
+  ylab("Proportion of sample in big team science") +
+  xlab("Proportion of urban population\nby province in Kenya") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1) +
+  xlim(c(0, 1)) +
+  ylim(c(-0.23, 0.9)) +
+  guides(color = FALSE)
+
+KE_UP 
+# Save the plot as a pdf image
+#ggsave(filename = " KE_UP.pdf", plot = KE_UP, device = "jpg", width = 12, height = 12)
 ```
 
-```{r}
-model_ols1 <- lm(Ruggeri_NL ~ EPI_NL_2022,
-                 data = NL_EPI)
-summary(model_ols1)
+
+##China drawing (Urbanization)
+```{r}  
+model <- lm(Ruggeri_CN_pro ~ CN_UP_2020, data = CN_urbanization)
+predict_data_CN <- data.frame(CN_UP_2020= CN_urbanization$CN_UP_2020, Ruggeri_CN_pro = CN_urbanization$Ruggeri_CN_pro )
+predict_data_CN$predicted <- predict(model, newdata = predict_data_CN)
+predict_data_CN$lower <- predict(model, newdata = CN_urbanization, interval = "confidence")[, "lwr"]
+predict_data_CN$upper <- predict(model, newdata = CN_urbanization, interval = "confidence")[, "upr"]
+
+CN_UP <- ggplot(data = CN_urbanization, aes(y = Ruggeri_CN_pro, x = CN_UP_2020, color = "#E41A1C")) +
+  geom_point(stat = "identity", position = "identity", size = 6) +
+  geom_line(data = predict_data_CN, aes(y = predicted), color = "#E41A1C", size = 2) +
+  geom_ribbon(data = predict_data_CN, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
+  ylab("Proportion of sample in big team science") +
+  xlab("Proportion of urban population\nby province in China") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1) +
+  xlim(c(0, 1)) +
+  ylim(c(-0.03, 0.2)) +
+  guides(color = FALSE)
+
+CN_UP 
+# Save the plot as a pdf image
+# ggsave(filename = "CN_UP.jpg", plot = CN_UP, device = "pdf", width = 12, height = 12)
 ```
 
+##the United States drawing (Urbanization)
+```{r}  
+model <- lm(Ruggeri_US_pro ~ US_UP_2020, data = US_urbanization)
+predict_data_US <- data.frame(US_UP_2020= US_urbanization$US_UP_2020, Ruggeri_US_pro = US_urbanization$Ruggeri_US_pro )
+predict_data_US$predicted <- predict(model, newdata = predict_data_US)
+predict_data_US$lower <- predict(model, newdata = US_urbanization, interval = "confidence")[, "lwr"]
+predict_data_US$upper <- predict(model, newdata = US_urbanization, interval = "confidence")[, "upr"]
 
-###尼日利亚、中国、美国的互联网普及率按省份画图
-##尼日利亚按省份画图(互联网普及率)
+US_UP <- ggplot(data = US_urbanization, aes(y = Ruggeri_US_pro, x = US_UP_2020, color = "#E41A1C")) +
+  geom_point(stat = "identity", position = "identity", size = 6) +
+  geom_line(data = predict_data_US, aes(y = predicted), color = "#E41A1C", size = 2) +
+  geom_ribbon(data = predict_data_US, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
+  ylab("Proportion of sample in big team science") +
+  xlab("Proportion of urban population\nby state in United States") +
+  theme(axis.text = element_text(size = 20),
+        axis.title = element_text(size = 24),
+        panel.background = element_rect(fill = "white"),
+        axis.line = element_line(color = "black"),
+        aspect.ratio = 1) +
+  xlim(c(0, 1)) +
+  ylim(c(-0.036, 0.2)) +
+  guides(color = FALSE)
+
+US_UP 
+# Save the plot as a pdf image
+# ggsave(filename = " US_UP.jpg", plot = US_UP, device = "pdf", width = 12, height = 12)
+```
+
+### Mapping Internet penetration rate by state/province in Nigeria, China, and the United States
+
+##Nigeria drawing (Internet penetration rate)
 ```{r}  
 # 拟合线性回归模型并计算置信区间
-model <- lm(Ruggeri_NG ~ Internet_NG_2022, data = NG_internet)
-predict_data_NG <- data.frame(Internet_NG_2022 = NG_internet$Internet_NG_2022, Ruggeri_NG = NG_internet$Ruggeri_NG )
+model <- lm(Ruggeri_NG_pro ~ Internet_NG_2022, data = NG_internet)
+predict_data_NG <- data.frame(Internet_NG_2022 = NG_internet$Internet_NG_2022, Ruggeri_NG_pro = NG_internet$Ruggeri_NG_pro )
 predict_data_NG$predicted <- predict(model, newdata = predict_data_NG)
 predict_data_NG$lower <- predict(model, newdata = NG_internet, interval = "confidence")[, "lwr"]
 predict_data_NG$upper <- predict(model, newdata = NG_internet, interval = "confidence")[, "upr"]
 
 # 绘制散点图和回归线
-NG_IPR <- ggplot(data = NG_internet, aes(y = Ruggeri_NG, x = Internet_NG_2022, color = "#E41A1C")) +
+NG_IPR <- ggplot(data = NG_internet, aes(y = Ruggeri_NG_pro, x = Internet_NG_2022, color = "#E41A1C")) +
   geom_point(stat = "identity", position = "identity", size = 6) +
   geom_line(data = predict_data_NG, aes(y = predicted), color = "#E41A1C", size = 2) +
   geom_ribbon(data = predict_data_NG, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
-  ylab("Proportion of sample in BTS") +
+  ylab("Proportion of sample in big team science") +
   xlab("Proportion of active Internet\nby state in Nigeria") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
@@ -2566,22 +2099,21 @@ NG_IPR
 ggsave(filename = "NG_IPR.jpg", plot = NG_IPR, device = "jpg", width = 12, height = 12)
 ```
 
-
-##中国按省份画图(互联网普及率)
+##China drawing (Internet penetration rate)
 ```{r}  
 # 拟合线性回归模型并计算置信区间
-model <- lm(Ruggeri_CN ~ Internet_CN_2016, data = CN_internet)
-predict_data_CN <- data.frame(Internet_CN_2016= CN_internet$Internet_CN_2016, Ruggeri_CN = CN_internet$Ruggeri_CN )
+model <- lm(Ruggeri_CN_pro ~ Internet_CN_2016, data = CN_internet)
+predict_data_CN <- data.frame(Internet_CN_2016= CN_internet$Internet_CN_2016, Ruggeri_CN_pro = CN_internet$Ruggeri_CN_pro )
 predict_data_CN$predicted <- predict(model, newdata = predict_data_CN)
 predict_data_CN$lower <- predict(model, newdata = CN_internet, interval = "confidence")[, "lwr"]
 predict_data_CN$upper <- predict(model, newdata = CN_internet, interval = "confidence")[, "upr"]
 
 # 绘制散点图和回归线
-CN_IPR <- ggplot(data = CN_internet, aes(y = Ruggeri_CN, x = Internet_CN_2016, color = "#E41A1C")) +
+CN_IPR <- ggplot(data = CN_internet, aes(y = Ruggeri_CN_pro, x = Internet_CN_2016, color = "#E41A1C")) +
   geom_point(stat = "identity", position = "identity", size = 6) +
   geom_line(data = predict_data_CN, aes(y = predicted), color = "#E41A1C", size = 2) +
   geom_ribbon(data = predict_data_CN, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
-  ylab("Proportion of sample in BTS") +
+  ylab("Proportion of sample in big team science") +
   xlab("Proportion of population using the internet\nby province in china") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
@@ -2594,24 +2126,22 @@ CN_IPR <- ggplot(data = CN_internet, aes(y = Ruggeri_CN, x = Internet_CN_2016, c
 
 CN_IPR
 # Save the plot as a JPEG image
-ggsave(filename = "CN_IPR.jpg", plot = CN_IPR, device = "jpg", width = 12, height = 12)
+#ggsave(filename = "CN_IPR.jpg", plot = CN_IPR, device = "jpg", width = 12, height = 12)
 ```
 
-##美国按省份画图(互联网普及率)
+##the United States drawing (Internet penetration rate)
 ```{r}  
-# 拟合线性回归模型并计算置信区间
-model <- lm(Ruggeri_US ~ Internet_US_2018, data = US_internet)
-predict_data_US <- data.frame(Internet_US_2018= US_internet$Internet_US_2018, Ruggeri_US = US_internet$Ruggeri_US )
+model <- lm(Ruggeri_US_pro ~ Internet_US_2018, data = US_internet)
+predict_data_US <- data.frame(Internet_US_2018= US_internet$Internet_US_2018, Ruggeri_US_pro = US_internet$Ruggeri_US_pro )
 predict_data_US$predicted <- predict(model, newdata = predict_data_US)
 predict_data_US$lower <- predict(model, newdata = US_internet, interval = "confidence")[, "lwr"]
 predict_data_US$upper <- predict(model, newdata = US_internet, interval = "confidence")[, "upr"]
 
-# 绘制散点图和回归线
-US_IPR <- ggplot(data = US_internet, aes(y = Ruggeri_US, x = Internet_US_2018, color = "#E41A1C")) +
+US_IPR <- ggplot(data = US_internet, aes(y = Ruggeri_US_pro, x = Internet_US_2018, color = "#E41A1C")) +
   geom_point(stat = "identity", position = "identity", size = 6) +
   geom_line(data = predict_data_US, aes(y = predicted), color = "#E41A1C", size = 2) +
   geom_ribbon(data = predict_data_US, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
-  ylab("Proportion of sample in BTS") +
+  ylab("Proportion of sample in big team science") +
   xlab("Proportion of population using the internet\nby state in United States") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
@@ -2624,26 +2154,26 @@ US_IPR <- ggplot(data = US_internet, aes(y = Ruggeri_US, x = Internet_US_2018, c
 
 US_IPR
 # Save the plot as a JPEG image
-ggsave(filename = "US_IPR.jpg", plot = US_IPR, device = "jpg", width = 12, height = 12)
+#ggsave(filename = "US_IPR.jpg", plot = US_IPR, device = "jpg", width = 12, height = 12)
 ```
 
 
-###尼日利亚、中国、荷兰的英语熟练度按省份画图
-##尼日利亚按省份画图(英语熟练度)
+### Mapping English Proficiency by state/province in Nigeria, China, and Netherlands
+
+##Nigeria drawing (English Proficiency)
 ```{r}  
-# 拟合线性回归模型并计算置信区间
-model <- lm(Ruggeri_NG ~ EPI_NG_2022, data = NG_EPI)
-predict_data_NG <- data.frame(EPI_NG_2022 = NG_EPI$EPI_NG_2022, Ruggeri_NG = NG_EPI$Ruggeri_NG )
+model <- lm(Ruggeri_NG_pro ~ EPI_NG_2022, data = NG_EPI)
+predict_data_NG <- data.frame(EPI_NG_2022 = NG_EPI$EPI_NG_2022, Ruggeri_NG_pro = NG_EPI$Ruggeri_NG_pro )
+
 predict_data_NG$predicted <- predict(model, newdata = predict_data_NG)
 predict_data_NG$lower <- predict(model, newdata = NG_EPI, interval = "confidence")[, "lwr"]
 predict_data_NG$upper <- predict(model, newdata = NG_EPI, interval = "confidence")[, "upr"]
 
-# 绘制散点图和回归线
-NG_EPI <- ggplot(data = NG_EPI, aes(y = Ruggeri_NG, x = EPI_NG_2022, color = "#E41A1C")) +
+NG_EPI <- ggplot(data = NG_EPI, aes(y = Ruggeri_NG_pro, x = EPI_NG_2022, color = "#E41A1C")) +
   geom_point(stat = "identity", position = "identity", size = 6) +
   geom_line(data = predict_data_NG, aes(y = predicted), color = "#E41A1C", size = 2) +
   geom_ribbon(data = predict_data_NG, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
-  ylab("Proportion of sample in BTS") +
+  ylab("Proportion of sample in big team science") +
   xlab("English Proficiency of Nigeria by state") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
@@ -2653,30 +2183,27 @@ NG_EPI <- ggplot(data = NG_EPI, aes(y = Ruggeri_NG, x = EPI_NG_2022, color = "#E
   xlim(c(470, 670)) +
   ylim(c(-0.13, 0.67)) +
   guides(color = FALSE)
-#翻转X轴
+#turn over X-axis
 NG_EPI <- NG_EPI + scale_x_reverse()
 
 NG_EPI 
 # Save the plot as a JPEG image
-ggsave(filename = " NG_EPI.jpg", plot = NG_EPI, device = "jpg", width = 12, height = 12)
+# ggsave(filename = " NG_EPI.jpg", plot = NG_EPI, device = "jpg", width = 12, height = 12)
 ```
 
-
-##中国按省份画图（英语熟练度）
+##China drawing (English Proficiency)
 ```{r}  
-# 拟合线性回归模型并计算置信区间
-model <- lm(Ruggeri_CN ~ EPI_CN_2022, data = CN_EPI)
-predict_data_CN <- data.frame(EPI_CN_2022 = CN_EPI$EPI_CN_2022, Ruggeri_CN = CN_EPI$Ruggeri_CN )
+model <- lm(Ruggeri_CN_pro ~ EPI_CN_2022, data = CN_EPI)
+predict_data_CN <- data.frame(EPI_CN_2022 = CN_EPI$EPI_CN_2022, Ruggeri_CN_pro = CN_EPI$Ruggeri_CN_pro )
 predict_data_CN$predicted <- predict(model, newdata = predict_data_CN)
 predict_data_CN$lower <- predict(model, newdata = CN_EPI, interval = "confidence")[, "lwr"]
 predict_data_CN$upper <- predict(model, newdata = CN_EPI, interval = "confidence")[, "upr"]
 
-# 绘制散点图和回归线
-CN_EPI <- ggplot(data = CN_EPI, aes(y = Ruggeri_CN, x = EPI_CN_2022, color = "#E41A1C")) +
+CN_EPI <- ggplot(data = CN_EPI, aes(y = Ruggeri_CN_pro, x = EPI_CN_2022, color = "#E41A1C")) +
   geom_point(stat = "identity", position = "identity", size = 6) +
   geom_line(data = predict_data_CN, aes(y = predicted), color = "#E41A1C", size = 2) +
   geom_ribbon(data = predict_data_CN, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
-  ylab("Proportion of sample in BTS") +
+  ylab("Proportion of sample in big team science") +
   xlab("English Proficiency of China by province") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
@@ -2687,7 +2214,7 @@ CN_EPI <- ggplot(data = CN_EPI, aes(y = Ruggeri_CN, x = EPI_CN_2022, color = "#E
   ylim(c(-0.13, 0.67)) +
   guides(color = FALSE)
 
-#翻转X轴
+#turn over X-axis
 CN_EPI <- CN_EPI + scale_x_reverse()
 
 CN_EPI 
@@ -2695,21 +2222,20 @@ CN_EPI
 ggsave(filename = " CN_EPI.jpg", plot = CN_EPI, device = "jpg", width = 12, height = 12)
 ```
 
-##荷兰按省画图（英语熟练度）
+##Netherlands drawing (English Proficiency)
 ```{r}  
-# 拟合线性回归模型并计算置信区间
-model <- lm(Ruggeri_NL ~ EPI_NL_2022, data = NL_EPI)
-predict_data_NL <- data.frame(EPI_NL_2022 = NL_EPI$EPI_NL_2022, Ruggeri_NL = NL_EPI$Ruggeri_NL )
+
+model <- lm(Ruggeri_NL_pro ~ EPI_NL_2022, data = NL_EPI)
+predict_data_NL <- data.frame(EPI_NL_2022 = NL_EPI$EPI_NL_2022, Ruggeri_NL_pro = NL_EPI$Ruggeri_NL_pro )
 predict_data_NL$predicted <- predict(model, newdata = predict_data_NL)
 predict_data_NL$lower <- predict(model, newdata = NL_EPI, interval = "confidence")[, "lwr"]
 predict_data_NL$upper <- predict(model, newdata = NL_EPI, interval = "confidence")[, "upr"]
 
-# 绘制散点图和回归线
-NL_EPI <- ggplot(data = NL_EPI, aes(y = Ruggeri_NL, x = EPI_NL_2022, color = "#E41A1C")) +
+NL_EPI <- ggplot(data = NL_EPI, aes(y = Ruggeri_NL_pro, x = EPI_NL_2022, color = "#E41A1C")) +
   geom_point(stat = "identity", position = "identity", size = 6) +
   geom_line(data = predict_data_NL, aes(y = predicted), color = "#E41A1C", size = 2) +
   geom_ribbon(data = predict_data_NL, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
-  ylab("Proportion of sample in BTS") +
+  ylab("Proportion of sample in big team science") +
   xlab("English Proficiency of Netherlands by state") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
@@ -2719,7 +2245,7 @@ NL_EPI <- ggplot(data = NL_EPI, aes(y = Ruggeri_NL, x = EPI_NL_2022, color = "#E
   xlim(c(0, 32)) +
   ylim(c(-0.18, 0.67)) +
   guides(color = FALSE)
-#翻转X轴
+#turn over X-axis
 NL_EPI <- NL_EPI + scale_x_reverse()
 
 NL_EPI 
@@ -2727,105 +2253,13 @@ NL_EPI
 ggsave(filename = " NL_EPI.jpg", plot = NL_EPI, device = "jpg", width = 12, height = 12)
 ```
 
-###尼日利亚、中国、美国的城市化按省份画图
-##尼日利亚按省份画图(城市化)
-```{r}  
-# 拟合线性回归模型并计算置信区间
-model <- lm(Ruggeri_KE ~ KE_UP_2020, data = KE_urbanization)
-predict_data_KE <- data.frame(KE_UP_2020 = KE_urbanization$KE_UP_2020, Ruggeri_KE = KE_urbanization$Ruggeri_KE )
-predict_data_KE$predicted <- predict(model, newdata = predict_data_KE)
-predict_data_KE$lower <- predict(model, newdata = KE_urbanization, interval = "confidence")[, "lwr"]
-predict_data_KE$upper <- predict(model, newdata = KE_urbanization, interval = "confidence")[, "upr"]
-
-# 绘制散点图和回归线
-KE_UP <- ggplot(data = KE_urbanization, aes(y = Ruggeri_KE, x = KE_UP_2020, color = "#E41A1C")) +
-  geom_point(stat = "identity", position = "identity", size = 6) +
-  geom_line(data = predict_data_KE, aes(y = predicted), color = "#E41A1C", size = 2) +
-  geom_ribbon(data = predict_data_KE, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
-  ylab("Proportion of sample in BTS") +
-  xlab("Proportion of urban population\nby province in Kenya") +
-  theme(axis.text = element_text(size = 20),
-        axis.title = element_text(size = 24),
-        panel.background = element_rect(fill = "white"),
-        axis.line = element_line(color = "black"),
-        aspect.ratio = 1) +
-  xlim(c(0, 1)) +
-  ylim(c(-0.23, 0.9)) +
-  guides(color = FALSE)
-
-KE_UP 
-# Save the plot as a pdf image
-ggsave(filename = " KE_UP.pdf", plot = KE_UP, device = "jpg", width = 12, height = 12)
-```
-
-
-##中国按省份画图(城市化)
-```{r}  
-# 拟合线性回归模型并计算置信区间
-model <- lm(Ruggeri_CN ~ CN_UP_2020, data = CN_urbanization)
-predict_data_CN <- data.frame(CN_UP_2020= CN_urbanization$CN_UP_2020, Ruggeri_CN = CN_urbanization$Ruggeri_CN )
-predict_data_CN$predicted <- predict(model, newdata = predict_data_CN)
-predict_data_CN$lower <- predict(model, newdata = CN_urbanization, interval = "confidence")[, "lwr"]
-predict_data_CN$upper <- predict(model, newdata = CN_urbanization, interval = "confidence")[, "upr"]
-
-# 绘制散点图和回归线
-CN_UP <- ggplot(data = CN_urbanization, aes(y = Ruggeri_CN, x = CN_UP_2020, color = "#E41A1C")) +
-  geom_point(stat = "identity", position = "identity", size = 6) +
-  geom_line(data = predict_data_CN, aes(y = predicted), color = "#E41A1C", size = 2) +
-  geom_ribbon(data = predict_data_CN, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
-  ylab("Proportion of sample in BTS") +
-  xlab("Proportion of urban population\nby province in China") +
-  theme(axis.text = element_text(size = 20),
-        axis.title = element_text(size = 24),
-        panel.background = element_rect(fill = "white"),
-        axis.line = element_line(color = "black"),
-        aspect.ratio = 1) +
-  xlim(c(0, 1)) +
-  ylim(c(-0.03, 0.2)) +
-  guides(color = FALSE)
-
-CN_UP 
-# Save the plot as a pdf image
-ggsave(filename = "CN_UP.jpg", plot = CN_UP, device = "pdf", width = 12, height = 12)
-```
-
-##美国按省份画图(城市化)
-
-```{r}  
-# 拟合线性回归模型并计算置信区间
-model <- lm(Ruggeri_US ~ US_UP_2020, data = US_urbanization)
-predict_data_US <- data.frame(US_UP_2020= US_urbanization$US_UP_2020, Ruggeri_US = US_urbanization$Ruggeri_US )
-predict_data_US$predicted <- predict(model, newdata = predict_data_US)
-predict_data_US$lower <- predict(model, newdata = US_urbanization, interval = "confidence")[, "lwr"]
-predict_data_US$upper <- predict(model, newdata = US_urbanization, interval = "confidence")[, "upr"]
-
-# 绘制散点图和回归线
-US_UP <- ggplot(data = US_urbanization, aes(y = Ruggeri_US, x = US_UP_2020, color = "#E41A1C")) +
-  geom_point(stat = "identity", position = "identity", size = 6) +
-  geom_line(data = predict_data_US, aes(y = predicted), color = "#E41A1C", size = 2) +
-  geom_ribbon(data = predict_data_US, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
-  ylab("Proportion of sample in BTS") +
-  xlab("Proportion of urban population\nby state in United States") +
-  theme(axis.text = element_text(size = 20),
-        axis.title = element_text(size = 24),
-        panel.background = element_rect(fill = "white"),
-        axis.line = element_line(color = "black"),
-        aspect.ratio = 1) +
-  xlim(c(0, 1)) +
-  ylim(c(-0.036, 0.2)) +
-  guides(color = FALSE)
-
-US_UP 
-# Save the plot as a pdf image
-ggsave(filename = " US_UP.jpg", plot = US_UP, device = "pdf", width = 12, height = 12)
-```
 
 
 ```{r}  
-# 将两个图形横向左右排列
+# Arrange 9 graphics horizontally, left and right
 combined_plot2 <- KE_UP + CN_UP + US_UP + NG_IPR + CN_IPR + US_IPR + NG_EPI + CN_EPI + NL_EPI+
-  plot_layout(ncol = 3) + # 设置两列布局
-plot_annotation(tag_levels ="A",
+  patchwork::plot_layout(ncol = 3) + 
+patchwork::plot_annotation(tag_levels ="A",
                   theme = theme(plot.title = element_text(size = 26)))
 
 combined_plot2
