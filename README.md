@@ -12,20 +12,17 @@ This repo is data, code, and related materials of "Assessing diversity and repre
 │       └── Collection of Big Team Science in Psych Sci.txt
 ├── 3_Data extraction
 │   └── 3_1_Code_manual
-│       └── BTS_Subj_Code_Manual_lwb_20230923.docx
+│   │   ├──BTS_sample_Code_Manual (in Chinese).docx
+│   │   ├──BTS_sample_Code_Manual_20240116 (in English).docx       
 ├── 4_Analayses
 │   ├── 4_1_Hypotheses testing
-│   │   ├── Average_years_of_schooling.csv
+│   │   ├── Hypotheses_testing_BTS_Sample_Stage1_RR.Rmd
 │   │   ├── ...
 │   │   
 │   ├── 4_2_Exploratory_analysis
+│   │   ├── Exploratory_analysis_BTS_Sample_Stage1_RR.Rmd
 │   │   ├── ...
-│   │   
-│   └── issue_code
-│       ├── Urbanization_data.csv
-│       ├── countries_codes_and_coordinates.csv
-│       ├── issue_code.Rmd
-│       └── urban_model_beta_zi_ps2014.rds
+
 ├── 5_Reports
 │   └── stage2
 └── README.md
