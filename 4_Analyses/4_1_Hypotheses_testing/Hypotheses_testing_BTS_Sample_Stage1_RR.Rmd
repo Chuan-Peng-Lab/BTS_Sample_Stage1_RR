@@ -1,5 +1,5 @@
 ---
-title: "Notebook_Data_Analysis_BTS_Sample_Stage1_RR"
+title: "Hypotheses_testing_BTS_Sample_Stage1_RR"
 author: "Weibiao Liu"
 date: "2024-01-17"
 output: html_document
@@ -342,7 +342,7 @@ wppdata3
 ```
 
 ```{r}
-wppdata3$ps2014 <- NA  
+wppdata3$ps2014 <- 0  
 wppdata3$ps2014[wppdata3 $continent == "Europe"] <- 0.000216  
 wppdata3$ps2014[wppdata3 $country_map == "US"] <- 0.952011  
 wppdata3$ps2014[wppdata3 $country_map == "ZA"] <- 0.043042 
@@ -935,7 +935,7 @@ uniondata
 
 ```{r}
 
-uniondata$ps2014 <- NA  
+uniondata$ps2014 <- 0  
 uniondata$ps2014[uniondata$continent == "Europe"] <- 0.000216  
 uniondata$ps2014[uniondata$country_map == "US"] <- 0.952011  
 uniondata$ps2014[uniondata$country_map == "ZA"] <- 0.043042
@@ -1020,7 +1020,7 @@ pp2 <- pp1 + inset_element(zoom_plt, 0.3, 0.4, 0.9, 1)+
 
 pp2
 
-  ggsave(filename = "PSA_Population_percentage_by_Country_enlarge.pdf", plot = pp2,  dpi = 300)
+  #ggsave(filename = "PSA_Population_percentage_by_Country_enlarge.pdf", plot = pp2,  dpi = 300)
 ```
 
 ```{r}
@@ -1029,7 +1029,7 @@ pp3 <-
 ggplot(data = uniondata, aes(x = percentage_pop, y = ps2014, color = Country_groups)) +
    geom_point(stat = "identity", position = "identity", size = 9) +
   geom_rect(aes(xmin=0, xmax=0.045, ymin=0, ymax=0.045), fill= NA,color="grey80", size = 1)+
-  geom_text_repel(data = uniondata, aes(label = country_map), max.overlaps=3,label.padding=1,
+  geom_text_repel(data = uniondata, aes(label = country_map), max.overlaps=10,label.padding=1,
                   segment.color = NA, family = "sans", size = 9, color = "black") +
   xlab("Proportion of population") +
   ylab("Proportion of sample from traditional studies") +
@@ -1100,7 +1100,7 @@ pp4 <- pp3 + inset_element(zoom_plt1, 0.3, 0.4, 0.9, 1)+
       plot.title = element_text( size = 12, color = "black", hjust = 0.5, margin = margin(5,0,10,0)), ))
 pp4
 
-  ggsave(filename = "PS2014_&_World_Population_by_Country_enlarge.pdf", plot = pp4,  dpi = 300)
+  #ggsave(filename = "PS2014_&_World_Population_by_Country_enlarge.pdf", plot = pp4,  dpi = 300)
 ```
 
 ```{r}  
@@ -1111,7 +1111,7 @@ plot_annotation(tag_levels = list(c('A', '','B', '')), theme=theme(plot.tag = el
 
 combined_plot_people
 # Save the plot as a pdf image
-ggsave(filename = "people_analyses.pdf", plot = combined_plot_people, device = "pdf", width = 24, height = 12)
+ggsave(filename = "Figure 4.pdf", plot = combined_plot_people, device = "pdf", width = 24, height = 12)
 ```
 
 
