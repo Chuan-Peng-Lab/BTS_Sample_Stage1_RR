@@ -1,13 +1,12 @@
 ---
-title: "Exploratory_analysis"
+title: "Exploratory_analysis_BTS_Sample_Stage1_RR"
 author: "Weibiao Liu"
-date: "2024/01/17"
+date: "2024/01/26"
 output: html_document
 ---
+This is an [R Markdown](http://rmarkdown.rstudio.com) file for Exploratory analysis of data analyses in the protocol of a meta research which aims at surveying sample characteristics of big team science in psychology. 
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+In this script, we will use data from PSA 001 project [Jones et al., 2021, *Nature Human Behavior*](https://doi.org/10.1038/s41562-020-01007-2), and partial articles published in psychological science in 2014 [Red et al., 2018, *Proceedings of the National Academy of Sciences*](https://doi.org/10.1073/pnas.1721165115), and Ruggeri et al. (2022)[*Nature Human Behavior*](https://doi.org/10.1038/s41562-022-01392-w) to exemplify the analyses that we are going to use in our this project.
 
 ```{r}
 library(tidyverse)        # ggplot, dplyr, %>%, and friends
@@ -15,6 +14,20 @@ library(brms)             # Bayesian modeling through Stan
 library(marginaleffects)  # Calculate marginal effects for regression models
 library(tidybayes)        # Manipulate Stan objects in a tidy way
 library(patchwork)        # Combine ggplot objects
+library(ggrepel)          # Automatically position labels
+library(scales)           # Format numbers in nice ways
+library(collapse) 
+
+library(broom)            # Convert model objects to data frames
+library(broom.mixed)      # Convert brms model objects to data frames
+library(extraDistr)       # Use extra distributions like dprop()
+library(ggdist)           # Special geoms for posterior distributions
+library(gghalves)         # Special half geoms
+library(ggbeeswarm)       # Special distribution-shaped point jittering
+
+library(modelsummary)     # Create side-by-side regression tables
+library(ggthemes)
+
 ```
 
 ```{r}

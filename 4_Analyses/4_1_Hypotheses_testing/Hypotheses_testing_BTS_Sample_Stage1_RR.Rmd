@@ -1,15 +1,15 @@
 ---
 title: "Hypotheses_testing_BTS_Sample_Stage1_RR"
 author: "Weibiao Liu"
-date: "2024-01-17"
+date: "2024-01-26"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+This is an [R Markdown](http://rmarkdown.rstudio.com) file for Hypotheses testing of data analyses in the protocol of a meta research which aims at surveying sample characteristics of big team science in psychology. 
 
-## Libraries
+In this script, we will use data from PSA 001 project [Jones et al., 2021, *Nature Human Behavior*](https://doi.org/10.1038/s41562-020-01007-2) and Partial articles published in psychological science in 2014 [Red et al., 2018, *Proceedings of the National Academy of Sciences*](https://doi.org/10.1073/pnas.1721165115) to exemplify the analyses that we are going to use in our this project.
+
+## load libraries.
 ```{r}
 library(extrafont)
 library(ggplot2)
@@ -33,7 +33,6 @@ library(vegan)# Calculate Simpson's diversity index
 ## Import Data
 ```{r}
 df <- read.csv("psa001_ind.csv")
-df
 ```
 
 ```{r}
@@ -302,15 +301,10 @@ df <- df %>%
 
 ```{r}
 df <- dplyr::select(df, user_id, age,sex,country_map)
-
 df <- dplyr::distinct(df)
-df
 df_PSA001 <- df %>% 
   dplyr::group_by(country_map) %>% 
   summarise(n = n())
-
-df_PSA001
-
 
 df_PSA001 <- df_PSA001  %>% dplyr::arrange(-n)
 
@@ -319,19 +313,11 @@ df_PSA001
 ```
 
 
+
 ```{r}
 wppdata <- read_csv("WPP2022.csv")
-wppdata
-```
-
-```{r}
 wppdata1 <- subset(wppdata, select = c("country_map","continent", "pop"))
 wppdata2 <- dplyr::mutate(.data = wppdata1, percentage_pop = pop/7909295.151) 
-wppdata2
-```
-
-
-```{r}
 wppdata3 <- wppdata2 %>% dplyr::left_join(df_PSA001, by = "country_map")
 #Merge data from Taiwan Province with data from mainland China
 sum_of_cn <- sum(wppdata3$percentage_pop[wppdata3$country_map %in% c("CN", "TW")])
@@ -392,13 +378,12 @@ df_PSA001_country
 world_map <- map_data(map = "world")
 world_map$region <- iso.alpha(world_map$region)
 world_map <- subset(world_map, region != "AQ")
-world_map
 
 world_map_new <- world_map
 
 #Add 180 to the data of column "columnname" and store it in df_New
 world_map_new$long <- ifelse(world_map$long >= -180 & world_map_new$long <= -30, world_map$long + 360, world_map_new$long)
-world_map_new
+
 max_map <- max(world_map_new$long)
 min_map <- min(world_map_new$long)
 max_map
@@ -522,7 +507,7 @@ country_people
 country_PS2014 + country_PSA001 +country_people +  patchwork::plot_layout(ncol = 1, nrow = 3, 
                                  heights = c(4,4))+
 patchwork::plot_annotation(tag_levels = 'A')
-ggplot2::ggsave("Geographical_distribution_of_samples.pdf", width = 9, height = 13.5)
+ggplot2::ggsave("Figure 2.pdf", width = 9, height = 13.5)
 ```
 
 
@@ -661,7 +646,7 @@ author_ps2014
 author_ps2014 + author_psa001 + country_people + patchwork::plot_layout(ncol = 1, nrow = 3, heights = c(4, 4)) +
   patchwork::plot_annotation(tag_levels = 'A')  
 
-ggplot2::ggsave("Geographical_distribution_of_authors.pdf", width = 9, height = 13.5)
+ggplot2::ggsave("Figure 5.pdf", width = 9, height = 13.5)
 ```
 
 ```{r}
@@ -723,7 +708,7 @@ author_ps2014_leading
 author_ps2014_leading + author_bts_leading + country_people + patchwork::plot_layout(ncol = 1, nrow = 3, heights = c(4, 4)) +
   patchwork::plot_annotation(tag_levels = 'A')  
 
-ggplot2::ggsave("Geographical_distribution_of_first_corresponding_authors.pdf", width = 9, height = 13.5)
+ggplot2::ggsave("Figure 6.pdf", width = 9, height = 13.5)
 ```
 
 ```{r}
@@ -732,11 +717,9 @@ wpp_age60
 ```
 
 ```{r}
-df
 new_test_df_filter <- df %>% 
     dplyr::filter(sex != 'no')%>% 
     dplyr::filter(sex != 'na')
-new_test_df_filter
 ```
 
 
@@ -766,90 +749,171 @@ df_PSA001_Age
 ```
 
 #age_simulation
-```{r}
-df_rad2018 <- read.csv("Rad_2018_suppl.csv") %>%
-  dplyr::mutate(male_num = as.numeric(male_num),
-                female_num = as.numeric(female_num)) %>%
-  dplyr::filter(!is.na(male_num)) %>%
-  dplyr::select(1:2, 15:16) %>%
-  dplyr::mutate(prop = male_num/(male_num + female_num),
-                deviation = prop - 0.5,
-                dev_abs = abs(deviation)) %>%
-  dplyr::arrange(dev_abs)
-
-effect_size <- bootES::bootES(df_rad2018$dev_abs, plot=TRUE)
-df_rad2018
-```
-## Re-addressing the age bin issue
-This time, we tried to conduct a simulation using the logic as we generate age count data from the mean and SD data extracted from papers.
-
-The simulation will use N as 1200 so that it will reveal the sensitivity of the sample size that resulted from sex ratio data.
-
-```{r sensitivity analysis by mean age, eval=FALSE}
-## First, we get a reasonable  mean age range by using PSA 001's data
-# get the SD of age from PSA001
-df_PSA001_CN_SD <- df_PSA001 %>%
-  dplyr::filter(Countries == "CHN") %>%
-  dplyr::summarise(SD = sd(Age)) %>%
-  dplyr::pull(SD)
-
-df_PSA001_CN_M <- df_PSA001 %>%
-  dplyr::filter(Countries == "CHN") %>%
-  dplyr::summarise(M = mean(Age)) %>%
-  dplyr::pull(M)
-df_PSA001_CN_SD
-df_PSA001_CN_M
-```
-
 ##Generate simulated data using normal distribution based on age mean and standard deviation
-```{r sensitivity analysis by mean age, eval=FALSE}
-
-#df_PS01_M <- c(20.3,68.57,22.66,20.59,18.63,22.2,23.7,19.4,   22,   33)
-#df_PS01_SD <- c(1.2,10.87,1.12, 2.06 ,1.39 ,3.8,  4.4, 1.7, 3.53,10.2 )
-#N  <-         c(398,  21 , 663,  97  , 97   ,20 ,62,    30 ,  45, 476)
-
-df_PS01_M <- 33
-
-df_PS01_SD <-10.2
-Sim_Sens_mult <- function(Mean1, SD1, sampe_N=476){
+```{r define BF for Multinomial test, message=FALSE, warning=FALSE}
+BayesMultiNomial <- function(dataset, factor, observed, expected, default_prior = TRUE, prior = NA){
+  # datase - the input dataframe
+  # factor - column name of the factor,
+  # observed - column name of the column contains counts information for the observed,
+  # expected - column name of the column contains counts information for the expected,
+  # default_prior - whether use the default, defused prior
+  # prior - priors defined by users
   
-  # Generate data with N = 1200
-  # 0~17, 18~25, 26~40, 41~60, 61~
-  ageData1 <- round((pnorm(c(5,10,15,20,25,30,35,40,45,50,55,60), mean = Mean1, sd =SD1) * sampe_N))
+  fact_level <- dataset %>% dplyr::select(all_of(factor)) %>% dplyr::pull()
+  observed_data <- dataset %>% dplyr::select(all_of(observed)) %>% dplyr::pull()
+  names(observed_data) <- fact_level
+  expected_data <- dataset %>% dplyr::select(all_of(expected)) %>% dplyr::pull()
+  n_levels <- length(observed_data)
+  
+  
+  if (default_prior & all(is.na(prior))) {
+    prior <- rep(1, n_levels)
+  } else{
+    if (is.character(prior)){
+      prior <- dataset %>% dplyr::select(all_of(prior)) %>% dplyr::pull()
+    } else if (is.array(prior)){
+      prior <-  prior
+    } else if (is.numeric(prior)){
+      prior <-  prior
+    } else{
+      print("prior much a column of the input data or a vector")
+    }
+  }
+  
+  alphas <- prior
+  counts <- observed_data
+  thetas <- expected_data
+  
+  if(sum(thetas) != 1) {
+    thetas <- thetas/sum(thetas)
+    }
+  
+  expected <- setNames(sum(counts)*thetas, names(counts))
+  
+  lbeta.xa <- sum(lgamma(alphas + counts)) - lgamma(sum(alphas + counts))
+  lbeta.a  <- sum(lgamma(alphas)) - lgamma(sum(alphas))
 
-    # create a dataframe with ageData1 and ageData2:
-  sim_age_df <- setNames(data.frame(matrix(ncol = 3, nrow = 13)), c("ageBins", "sim1"))
+  if (any(rowSums(cbind(thetas, counts)) == 0)) {
+    LogBF10 <- (lbeta.xa-lbeta.a)
+  } else {
+    LogBF10 <- (lbeta.xa-lbeta.a) + (0 - sum(counts * log(thetas))) 
+  }
+
+  BF <- data.frame(LogBF10 = LogBF10,
+                   BF10    = exp(LogBF10),
+                   BF01    = 1/exp(LogBF10))
+
+  return(list(BF       = BF,
+              expected = expected))
+  
+}
+```
+
+```{r}
+
+Sim_Sens_mult <- function(Mean1, diff_age, SD1, SD2, sampe_N) {
+  
+  # get the mean of difference
+  Mean2 <- Mean1 + diff_age
+
+  # Generate data with N
+  ageData1 <- round((pnorm(c(5,10,15,20,25,30,35,40,45,50,55,60), mean = Mean1, sd = SD1) * sampe_N))
+  ageData2 <- round((pnorm(c(5,10,15,20,25,30,35,40,45,50,55,60), mean = Mean2, sd = SD2) * sampe_N))
+  
+  # create a dataframe with ageData1 and ageData2:
+  sim_age_df <- setNames(data.frame(matrix(ncol = 3, nrow = 13)), c("ageBins", "sim1", "sim2"))
   sim_age_df$ageBins <- c("<=4", "5~9", "10~14", "15~19","20~24", "25~29", "30~34", "35~39","40~44", "45~49", "50~54", "55~59",">=60")
   sim_age_df$sim1[0:12] <- ageData1
+  sim_age_df$sim2[0:12] <- ageData2
   
-  return(sim_age_df)
+  # create a dataframe with ageData1 and ageData2:
+  sim_age_df <- setNames(data.frame(matrix(ncol = 3, nrow = 13)), c("ageBins", "sim1", "sim2"))
+  sim_age_df$ageBins <- c("<=4", "5~9", "10~14", "15~19","20~24", "25~29", "30~34", "35~39","40~44", "45~49", "50~54", "55~59",">=60")
+  sim_age_df$sim1[0:12] <- ageData1
+  sim_age_df$sim2[0:12] <- ageData2
+  
+  sim_age_df <- sim_age_df %>%
+    dplyr::mutate(sim1_new = sim1 - lag(sim1),
+                  sim1_new = ifelse(is.na(sim1_new), sim1, sim1_new),
+                  sim2_new = sim2 - lag(sim2),
+                  sim2_new = ifelse(is.na(sim2_new), sim2, sim2_new),
+                  # fill NA and zeros with 1 to avoid the error for Bayesian multinomial test
+                  sim1_new = ifelse((is.na(sim1_new) | sim1_new == 0), 1, sim1_new),
+                  sim2_new = ifelse((is.na(sim2_new) | sim2_new == 0), 1, sim2_new),
+                  ageBins = factor(ageBins, levels = c("<=4", "5~9", "10~14", "15~19","20~24", "25~29", "30~34", "35~39","40~44", "45~49", "50~54", "55~59",">=60"))) %>%
+    dplyr::select(ageBins, sim1_new, sim2_new) %>%
+    dplyr::rename(obs = sim1_new,
+                  expected = sim2_new)
+  
+  tmp_BF <- BayesMultiNomial(sim_age_df, 
+                              factor = 'ageBins', 
+                              observed = 'obs', 
+                              expected = 'expected')
+  
+  return(tmp_BF)
 }
 
+# Your data
+df_PS2014_M <- c(20.3,  22.66, 20.59, 18.63, 22.2, 23.7, 19.4, 22, 33)
+df_PS2014_SD <- c(1.2,  1.12, 2.06, 1.39, 3.8, 4.4, 1.7, 3.53, 10.2)
+sampe_N <- c(398,  663, 97 , 97 , 20 , 62, 30 , 450, 476)
 
-tmp <- Sim_Sens_mult(Mean1=df_PS01_M, 
-             
-              SD1=df_PS01_SD, 
-           
-              sampe_N= 476)
-tmp
-## record results
-#sim_age_diff <- seq(0, 2, 0.05)
+# Simulate for each set of parameters
+results <- lapply(1:length(df_PS2014_M), function(i) {
+  Sim_Sens_mult(Mean1 = df_PS2014_M[i], 
+                diff_age = 0, 
+                SD1 = df_PS2014_SD[i], 
+                SD2 = df_PS2014_SD[i], 
+                sampe_N = sampe_N[i])
+})
 
+# Extract and display results
+for (i in seq_along(results)) {
+  cat(sprintf("Results for set %d:\n", i))
+  print(results[[i]])
+  cat("\n")
+}
+df1 <- data.frame(results)
+df1
+new_df <- df1[, c(4, 8, 12, 16, 20, 24, 28, 32, 36)]
+colnames(new_df) <- c("simulation1", "simulation2", "simulation3","simulation4", "simulation5", "simulation6","simulation7", "simulation8", "simulation9")
+new_df
 
-#rm('sim_MNtest')
-#sim_MNtest <- data.frame(matrix(nrow = length(sim_age_diff), ncol = 3))
-
-
-#sim_MNtest
-#write.csv(df1, file = "df010_simulation.csv", row.names = FALSE)
+#write.csv(df1, file = "df_simulation.csv", row.names = FALSE)
 ```
-
 
 ```{r}
+age_simulation <- data.frame(
+      c(new_df[, 1] * 0.650753769, new_df[, 1] *0.349246231),
+      c(new_df[, 2] * 0.549019608, new_df[, 2] *0.450980392),
+      c(new_df[, 3] * 0.618556701, new_df[, 3] *0.381443299),
+      c(new_df[, 4] * 0.546391753, new_df[, 4] *0.453608247),
+      c(new_df[, 5] * 0.55, new_df[, 5] *0.45),
+      c(new_df[, 6] * 0.677419355, new_df[, 6] *0.322580645),
+      c(new_df[, 7] * 0.666666667, new_df[, 7] *0.333333333),
+      c(new_df[, 8] * 0.495555556, new_df[, 8] *0.504444444),
+      c(new_df[, 9] * 0.329831933, new_df[, 9] *0.670168067)
+      )
+colnames(age_simulation) <- c("simulation1", "simulation2", "simulation3","simulation4", "simulation5", "simulation6","simulation7", "simulation8", "simulation9")
+custom_order <- c(1, 14, 2, 15, 3, 16, 4,17, 5,18,6,19,7,20,8,21,9,22,10,23,11,24,12,25,13,26)
+age_simulation <- age_simulation[custom_order, ]
+age_simulation <- data.frame(rowSums(age_simulation[, c("simulation1", "simulation2", "simulation3","simulation4", "simulation5", "simulation6","simulation7", "simulation8", "simulation9")]))
+colnames(age_simulation) <- c("age_ps2014")
+total_age_ps2014 <- sum(age_simulation$age_ps2014)
+age_simulation$Proportion <- age_simulation$age_ps2014*100 / total_age_ps2014
 
-age_simulation <- read_csv("df_simulation60.csv")
+
+ageBins_PS <- c("0~4", "0~4",   "5~9",   "5~9",   "10~14", "10~14", "15~19", "15~19","20~24", "20~24", "25~29", "25~29", "30~34", "30~34", "35~39", "35~39", "40~44", "40~44", "45~49", "45~49", "50~54", "50~54", "55~59", "55~59",">=60",  ">=60")
+sex <- c("female", "male",   "female", "male","female", "male",   "female", "male","female", "male",   "female", "male","female", "male",   "female", "male","female", "male",   "female", "male","female", "male",   "female", "male","female", "male")
+
+age_simulation$ageBins_PS  <- ageBins_PS 
+age_simulation$sex <- sex
+age_simulation$Site <- "traditional studies"
+
 age_simulation
 ```
+
+
 
 ```{r}
 fig3c <- ggplot(data = wpp_age60, aes(x = ageBins, y = ifelse(sex == "male", -Proportion, Proportion), fill = sex)) +
@@ -888,52 +952,29 @@ scale_color_manual(name="Sample source", values = c("BTS" ="#E41A1C", "tradition
   
   ylim(c(-39, 39))  
 fig3c
-ggsave("Sex_age.pdf", fig3c, device = "pdf", width = 12, height = 9)
+ggsave("Figure 3.pdf", fig3c, device = "pdf", width = 12, height = 9)
 ```
 
 #sample’ country distributions
 ```{r}
 wppdata <- read_csv("WPP2022.csv")
-wppdata
-```
-
-```{r}
 wppdata1 <- mutate(.data = wppdata, percentage_pop = pop/7909295.151) 
 wppdata1
 ```
 
-
 ```{r}
 psadata <- read_csv("psa001_ind.csv")
-psadata
-```
-
-```{r}
 psa1 <- psadata %>%
 count(country)
-psa1
-```
-
-```{r}
 psa2 <- mutate(.data = psa1, n1 = n/120) 
-psa2
-```
 
-```{r}
 psa3 <- mutate(.data = psa2, percentage_n = n1/11484) 
-psa3
-```
 
-```{r}
 uniondata <- wppdata1 %>% left_join(psa3, by = "country")
 
 uniondata <- uniondata %>%mutate(Country_groups =                                    case_when(Country_groups == "Developed Country"~"Developed country", TRUE ~ Country_groups))
 
 uniondata$percentage_n[is.na(uniondata$percentage_n)] <- 0
-uniondata
-```
-
-```{r}
 
 uniondata$ps2014 <- 0  
 uniondata$ps2014[uniondata$continent == "Europe"] <- 0.000216  
@@ -943,12 +984,10 @@ uniondata$ps2014[uniondata$country_map == "CH"] <- 0.000354
 uniondata$ps2014[uniondata$country_map == "GB"] <- 0.003164
 uniondata$ps2014[uniondata$country_map == "BE"] <- 0.000819
 uniondata$ps2014[uniondata$country_map == "DE"] <- 0.001257 
-uniondata
 ```
 
 
 ```{r}
-
 pp1 <- 
 ggplot(data = uniondata, aes(x = percentage_pop, y = percentage_n, color = Country_groups)) +
    geom_point(stat = "identity", position = "identity", size = 9) +
@@ -1016,15 +1055,12 @@ zoom_plt
 pp2 <- pp1 + inset_element(zoom_plt, 0.3, 0.4, 0.9, 1)+ 
   plot_annotation(theme=theme(
       plot.title = element_text( size = 12, color = "black", hjust = 0.5, margin = margin(5,0,10,0)), ))
-  
-
 pp2
 
   #ggsave(filename = "PSA_Population_percentage_by_Country_enlarge.pdf", plot = pp2,  dpi = 300)
 ```
 
 ```{r}
-
 pp3 <- 
 ggplot(data = uniondata, aes(x = percentage_pop, y = ps2014, color = Country_groups)) +
    geom_point(stat = "identity", position = "identity", size = 9) +
@@ -1141,19 +1177,19 @@ leading_author_bts_clean
 ```
 
 ```{r}
-α_bts <- vegan::diversity(author_bts_clean, index = "simpson")
-α_ps2014 <- vegan::diversity(author_ps2014_clean, index = "simpson")
-α_wpd <- vegan::diversity(author_BTS$wpd, index = "simpson")
+alpha_bts <- vegan::diversity(author_bts_clean, index = "simpson")
+alpha_ps2014 <- vegan::diversity(author_ps2014_clean, index = "simpson")
+alpha_wpd <- vegan::diversity(author_BTS$wpd, index = "simpson")
 
-α_ps2014_leading <- vegan::diversity(leading_author_ps2014_clean, index = "simpson")
-α_bts_leading <- vegan::diversity(leading_author_bts_clean, index = "simpson")
+alpha_ps2014_leading <- vegan::diversity(leading_author_ps2014_clean, index = "simpson")
+alpha_bts_leading <- vegan::diversity(leading_author_bts_clean, index = "simpson")
 
-α_ps2014
-α_bts
-α_wpd
+alpha_ps2014
+alpha_bts
+alpha_wpd
 
-α_ps2014_leading
-α_bts_leading
+alpha_ps2014_leading
+alpha_bts_leading
 ```
 
 ##Diversity t-test
@@ -1181,9 +1217,6 @@ p_value <- function(t_value,df) {
   return(2 * pt(abs(t_value), df, lower.tail = FALSE))
 }
 
-t_value1 <- (α_bts - α_ps2014) / sqrt(Var_bts + Var_ps2014)
-df_1 <- (Var_bts + Var_ps2014)^2 / (Var_bts^2 / N1 + Var_ps2014^2 / N2)
-p_value1 <- 2 * pt(abs(t_value1), df_1, lower.tail = FALSE)
 
 Var_ps2014<- Var_D(author_ps2014_clean)
 Var_bts<- Var_D(author_bts_clean)
@@ -1191,10 +1224,10 @@ Var_wpd<- Var_D(author_BTS$wpd)
 Var_ps2014_leading<- Var_D(leading_author_ps2014_clean)
 Var_bts_leading<- Var_D(leading_author_bts_clean)
 
-t_value1<- t_value(α_bts,α_ps2014,Var_bts,Var_ps2014)
-t_value2<- t_value(α_wpd,α_bts,Var_wpd,Var_bts)
-t_value3<- t_value(α_bts_leading,α_ps2014_leading,Var_bts_leading,Var_ps2014_leading)
-t_value4<- t_value(α_wpd,α_bts_leading,Var_wpd,Var_bts_leading)
+t_value1<- t_value(alpha_bts,alpha_ps2014,Var_bts,Var_ps2014)
+t_value2<- t_value(alpha_wpd,alpha_bts,Var_wpd,Var_bts)
+t_value3<- t_value(alpha_bts_leading,alpha_ps2014_leading,Var_bts_leading,Var_ps2014_leading)
+t_value4<- t_value(alpha_wpd,alpha_bts_leading,Var_wpd,Var_bts_leading)
 
 df1<- df(author_bts_clean,author_ps2014_clean,Var_bts,Var_ps2014)
 df2<- df(author_BTS$wpd,author_bts_clean,Var_wpd,Var_bts)
@@ -1220,9 +1253,66 @@ t_value4
 p_value4
 ```
 
-
-
+##Output Bayesian factors for diversity t-test
 ```{r}  
+posterior_normal <- function(delta,
+                             t,
+                             n1,
+                             n2 = NULL,
+                             independentSamples = FALSE,
+                             prior.mean,
+                             prior.variance) {
+  
+  neff <- ifelse(independentSamples, n1 * n2 / (n1 + n2), n1)
+  nu <- ifelse(independentSamples, n1 + n2 - 2, n1 - 1)
+  
+  mu.delta <- prior.mean
+  g <- prior.variance
+  
+  numerator <- dt(x = t, df = nu, ncp = sqrt(neff) * delta) *
+    dnorm(x = delta, mean = mu.delta, sd = sqrt(g))
+  
+  denominator <- 1 / sqrt(1 + neff * g) *
+    dt(x = t / sqrt(1 + neff * g),
+       df = nu,
+       ncp = sqrt(neff / (1 + neff * g)) * mu.delta)
+  
+  out <- numerator / denominator
+  out[is.na(out)] <- 0
+  
+  return(out)
+  
+}
+
+cdf_normal <- function(x,
+                       t,
+                       n1,
+                       n2 = NULL,
+                       independentSamples = FALSE,
+                       prior.mean,
+                       prior.variance,
+                       rel.tol = .Machine$double.eps^0.25) {
+  
+  out <- integrate(posterior_normal, lower = -Inf, upper = x,
+                   t = t, n1 = n1, n2 = n2,
+                   independentSamples = independentSamples,
+                   prior.mean = prior.mean,
+                   prior.variance = prior.variance,
+                   rel.tol = rel.tol)$value
+  
+  # catch numerical errors
+  if (out > 1 & out < 1.001) {
+    out <- 1
+    warning(
+      "Numerical integration yields a CDF value slightly larger than 1. The CDF value has been replaced by 1.",
+      call. = FALSE
+    )
+  }
+  
+  return(out)
+  
+}
+
 bf10_normal <- function(t,
                         n1,
                         n2 = NULL,
@@ -1305,8 +1395,8 @@ bf1$BF10
 bf2$BF10
 bf3$BF10
 bf4$BF10
-
 ```
+
 
 
 ## R Markdown
