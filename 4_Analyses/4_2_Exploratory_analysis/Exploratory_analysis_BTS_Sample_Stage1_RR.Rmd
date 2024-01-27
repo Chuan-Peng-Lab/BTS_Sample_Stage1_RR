@@ -30,39 +30,6 @@ library(ggthemes)
 
 ```
 
-```{r}
-set.seed(1234)  # Make everything reproducible
-
-# Define the goodness-of-fit stats to include in modelsummary()
-gof_stuff <- tribble(
-  ~raw, ~clean, ~fmt,
-  "nobs", "N", 0,
-  "r.squared", "R²", 3
-)
-
-# Custom ggplot theme to make pretty plots
-# Get the font at https://fonts.google.com/specimen/Barlow+Semi+Condensed
-theme_clean <- function() {
-  theme_minimal(base_family = "Barlow Semi Condensed") +
-    theme(panel.grid.minor = element_blank(),
-          plot.title = element_text(family = "BarlowSemiCondensed-Bold"),
-          axis.title = element_text(family = "BarlowSemiCondensed-Medium"),
-          strip.text = element_text(family = "BarlowSemiCondensed-Bold",
-                                    size = rel(1), hjust = 0),
-          strip.background = element_rect(fill = "grey80", color = NA))
-}
-
-# Make labels use Barlow by default
-update_geom_defaults("label_repel", list(family = "Barlow Semi Condensed"))
-
-# Format things as percentage points
-label_pp <- label_number(accuracy = 1, scale = 100, 
-                         suffix = " pp.", style_negative = "minus")
-label_pp_tiny <- label_number(accuracy = 0.01, scale = 100, 
-                              suffix = " pp.", style_negative = "minus")
-
-
-```
 
 ######1.Country-level relationship between proportion of sample and socioeconomic/cultural factors for traditional studies (using PS2014 as an example) and big team science (using PSA 001 as an example)
 
@@ -105,13 +72,6 @@ ame_beta_zi_gdp_bts %>% tidybayes::median_hdi(draw)
 
 result <-  brms::hypothesis(ame_beta_zi_gdp_bts, "draw>0")
 result
-ggplot2::ggplot(ame_beta_zi_gdp_bts, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of GDP per capita", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##PS2014
@@ -145,13 +105,6 @@ ame_beta_zi_gdp_ps2014 <- gdp_model_beta_zi_ps2014 %>%
 ame_beta_zi_gdp_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_gdp_ps2014, "draw>0")
 result
-ggplot(ame_beta_zi_gdp_ps2014, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of GDP per capita", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
@@ -193,14 +146,6 @@ ame_beta_zi_rd_bts <- rd_model_beta_zi_bts %>%
 ame_beta_zi_rd_bts %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_rd_bts, "draw>0")
 result
-
-ggplot(ame_beta_zi_rd_bts, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of R&D investment", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##PS2014
@@ -234,13 +179,6 @@ ame_beta_zi_rd_ps2014 <- rd_model_beta_zi_ps2014 %>%
 ame_beta_zi_rd_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_rd_ps2014, "draw>0")
 result
-ggplot(ame_beta_zi_rd_ps2014, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of R&D investment", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
@@ -282,14 +220,6 @@ ame_beta_zi_university_bts <- university_model_beta_zi_bts %>%
 ame_beta_zi_university_bts %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_university_bts, "draw>0")
 result
-
-ggplot(ame_beta_zi_university_bts, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Number of universities per 100000 people", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##PS2014
@@ -325,18 +255,10 @@ ame_beta_zi_university_ps2014 <- university_model_beta_zi_ps2014 %>%
 ame_beta_zi_university_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_university_ps2014, "draw>0")
 result
-
-ggplot(ame_beta_zi_university_ps2014, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Number of universities per 100000 people", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
-##number_of_psychology_researchers_per_capita
+##_1.4_number_of_psychology_researchers_per_capita
 ```{r}
 researcherdata <- read_csv("researcherdata.csv")
 researcherdata
@@ -375,14 +297,6 @@ ame_beta_zi_researcher_bts <- researcher_model_beta_zi_bts %>%
 ame_beta_zi_researcher_bts %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_researcher_bts, "draw>0")
 result
-
-ggplot(ame_beta_zi_researcher_bts, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of number of psychology researchers per capita", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##PS2014
@@ -418,14 +332,6 @@ ame_beta_zi_researcher_ps2014 <- researcher_model_beta_zi_ps2014 %>%
 ame_beta_zi_researcher_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_researcher_ps2014, "draw>0")
 result
-
-ggplot(ame_beta_zi_researcher_ps2014, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of number of psychology researchers per capita", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
@@ -467,14 +373,6 @@ ame_beta_zi_edu_bts <- edu_model_beta_zi_bts %>%
 ame_beta_zi_edu_bts %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_edu_bts, "draw>0")
 result
-
-ggplot(ame_beta_zi_edu_bts, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Average years of schooling", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##PS2014
@@ -509,14 +407,6 @@ ame_beta_zi_edu_ps2014 <- edu_model_beta_zi_ps2014 %>%
 ame_beta_zi_edu_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_edu_ps2014, "draw>0")
 result
-
-ggplot(ame_beta_zi_edu_ps2014, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Average years of schooling", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
@@ -557,14 +447,6 @@ ame_beta_zi_urban_bts <- urban_model_beta_zi_bts %>%
 ame_beta_zi_urban_bts %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_urban_bts, "draw>0")
 result
-
-ggplot(ame_beta_zi_urban_bts, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Urbanization", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##PS2014
@@ -598,14 +480,6 @@ ame_beta_zi_urban_ps2014 <- urban_model_beta_zi_ps2014 %>%
 ame_beta_zi_urban_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_urban_ps2014, "draw>0")
 result
-
-ggplot(ame_beta_zi_urban_ps2014, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Urbanization", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
@@ -647,14 +521,6 @@ ame_beta_zi_gi_bts <- gi_model_beta_zi_bts %>%
 ame_beta_zi_gi_bts %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_gi_bts, "draw>0")
 result
-
-ggplot(ame_beta_zi_gi_bts, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Globalization", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##PS2014
@@ -689,14 +555,6 @@ ame_beta_zi_gi_ps2014 <- gi_model_beta_zi_ps2014 %>%
 ame_beta_zi_gi_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_gi_ps2014, "draw>0")
 result
-
-ggplot(ame_beta_zi_gi_ps2014, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Globalization", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
@@ -738,14 +596,6 @@ ame_beta_zi_network_bts <- network_model_beta_zi_bts %>%
 ame_beta_zi_network_bts %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_network_bts, "draw>0")
 result
-
-ggplot(ame_beta_zi_network_bts, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Internet penetration rate", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
@@ -780,14 +630,6 @@ ame_beta_zi_network_ps2014 <- network_model_beta_zi_ps2014 %>%
 ame_beta_zi_network_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_network_ps2014, "draw>0")
 result
-
-ggplot(ame_beta_zi_network_ps2014, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Internet penetration rate", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
@@ -827,14 +669,6 @@ ame_beta_zi_pd_bts <- pd_model_beta_zi_bts %>%
 ame_beta_zi_pd_bts %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_pd_bts, "draw<0")
 result
-
-ggplot(ame_beta_zi_pd_bts, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Cultural distance", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ###PS2014
@@ -869,14 +703,6 @@ ame_beta_zi_pd_ps2014 <- pd_model_beta_zi_ps2014 %>%
 ame_beta_zi_pd_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_pd_ps2014, "draw<0")
 result
-
-ggplot(ame_beta_zi_pd_ps2014, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Cultural distance", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
@@ -918,14 +744,6 @@ ame_beta_zi_ld1_bts <- ld1_model_beta_zi_bts %>%
 ame_beta_zi_ld1_bts %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_ld1_bts, "draw<0")
 result
-
-ggplot(ame_beta_zi_ld1_bts, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Linguistic distance", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##PS2014
@@ -960,14 +778,6 @@ ame_beta_zi_ld1_ps2014 <- ld1_model_beta_zi_ps2014 %>%
 ame_beta_zi_ld1_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_ld1_ps2014, "draw<0")
 result
-
-ggplot(ame_beta_zi_ld1_ps2014, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Linguistic distance", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
@@ -993,7 +803,6 @@ ld2_model_beta_zi_bts <- brms::brm(
   file = "ld2_model_beta_zi_bts"
 )
 tidy(ld2_model_beta_zi_bts, effects = "fixed")
-
 ```
 
 ```{r}
@@ -1003,14 +812,6 @@ ame_beta_zi_ld2_bts <- ld2_model_beta_zi_bts %>%
 ame_beta_zi_ld2_bts %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_ld2_bts, "draw < 0")
 result
-
-ggplot(ame_beta_zi_ld2_bts, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Linguistic distance", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##ld2
@@ -1046,14 +847,6 @@ ame_beta_zi_ld2_ps2014 <- ld2_model_beta_zi_ps2014 %>%
 ame_beta_zi_ld2_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_ld2_ps2014, "draw<0")
 result
-
-ggplot(ame_beta_zi_ld2_ps2014, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of Linguistic distance", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
@@ -1096,14 +889,6 @@ ame_beta_zi_english_bts <- english_model_beta_zi_bts %>%
 ame_beta_zi_english_bts %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_english_bts, "draw<0")
 result
-
-ggplot(ame_beta_zi_english_bts, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of English proficiency rank", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
@@ -1139,14 +924,6 @@ ame_beta_zi_english_ps2014 <- english_model_beta_zi_ps2014 %>%
 ame_beta_zi_english_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_english_ps2014, "draw<0")
 result
-
-ggplot(ame_beta_zi_english_ps2014, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of English proficiency rank", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##GDP_per_capita drawing
@@ -1206,7 +983,7 @@ scale_color_manual(name = "Data source",
                     values = c("#377EB8","#E41A1C"), 
                     labels = c("Traditional studies", "Big team science"))+
   ylab("Proportion of sample") +
-  xlab("Research expenditure as a share of GDP") +
+  xlab("R & D investment") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
@@ -1250,7 +1027,7 @@ university <- ggplot(combined_data1, aes(x = number_of_universities_per_capita, 
                     labels = c("Traditional studies", "Big team science")) +
 
   ylab("Proportion of sample") +
-  xlab("Number of universities per 100000 people") +
+  xlab("Number of universities per capita") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
@@ -1292,7 +1069,7 @@ researcher <- ggplot(combined_data1, aes(x = number_of_psychology_researchers_pe
                     labels = c("Traditional studies", "Big team science")) +
 
   ylab("Proportion of sample") +
-  xlab("Number of psychology researchers per 100000 people") +
+  xlab("Number of psychology researchers per capita") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
@@ -1334,7 +1111,7 @@ education1 <- ggplot(combined_data9, aes(x = average_years_of_schooling, y = val
                     labels = c("Traditional studies", "Big team science"))+
     
   ylab("Proportion of sample") +
-  xlab("Average years of formal education\nfor individuals aged 15-64") +
+  xlab("Average years of schooling") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
@@ -1378,7 +1155,7 @@ UP1 <- ggplot(combined_data8, aes(x = Urbanization, y = value, color = source)) 
                     labels = c("Traditional studies", "Big team science"))+
     
   ylab("Proportion of sample") +
-  xlab("Proportion of urban population") +
+  xlab("Urbanization level") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
@@ -1420,7 +1197,7 @@ GI1 <- ggplot(combined_data4, aes(x = GI, y = value, color = source)) +
                     values = c("#377EB8","#E41A1C"), 
                     labels = c("Traditional studies", "Big team science"))+
   ylab("Proportion of sample") +
-  xlab("Globalization Index") +
+  xlab("Globalization level") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
@@ -1463,7 +1240,7 @@ Network1 <- ggplot(combined_data5, aes(x = Network_2021, y = value, color = sour
                     labels = c("Traditional studies", "Big team science"))+
   
   ylab("Proportion of sample") +
-  xlab("Proportion of population using the internet") +
+  xlab("Internet penetration rate") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
@@ -1596,7 +1373,7 @@ EPI1 <- ggplot(combined_data7, aes(x = EPI_rank, y = value, color = source)) +
                     labels = c("Traditional studies", "Big team science"))+
     
   ylab("Proportion of sample") +
-  xlab("English Proficiency Index") +
+  xlab("English Proficiency") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
@@ -1670,14 +1447,6 @@ ame_beta_zi_KE_urbanization <- KE_urbanization_model_beta_zi %>%
 ame_beta_zi_KE_urbanization %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_KE_urbanization, "draw>0")
 result
-
-ggplot(ame_beta_zi_KE_urbanization, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of KE_urbanization", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##2.1.2_CN_urbanization
@@ -1710,14 +1479,6 @@ ame_beta_zi_CN_urbanization <- CN_urbanization_model_beta_zi %>%
 ame_beta_zi_CN_urbanization %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_CN_urbanization, "draw>0")
 result
-
-ggplot(ame_beta_zi_CN_urbanization, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of CN_urbanization", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##2.1.3_US_urbanization
@@ -1750,14 +1511,6 @@ ame_beta_zi_US_urbanization <- US_urbanization_model_beta_zi %>%
 ame_beta_zi_US_urbanization %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_US_urbanization, "draw>0")
 result
-
-ggplot(ame_beta_zi_US_urbanization, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of US_urbanization", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##2.2_Internet penetration rate
@@ -1790,14 +1543,6 @@ ame_beta_zi_NG_internet <- NG_internet_model_beta_zi %>%
 ame_beta_zi_NG_internet %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_NG_internet, "draw<0")
 result
-
-ggplot(ame_beta_zi_NG_internet, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of NG_internet", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##2.2.2_CN_internet
@@ -1830,14 +1575,6 @@ ame_beta_zi_CN_internet <- CN_internet_model_beta_zi %>%
 ame_beta_zi_CN_internet %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_CN_internet, "draw>0")
 result
-
-ggplot(ame_beta_zi_CN_internet, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of CN_internet", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##2.2.3_US_internet
@@ -1868,15 +1605,8 @@ ame_beta_zi_US_internet <- US_internet_model_beta_zi %>%
 ame_beta_zi_US_internet %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_US_internet, "draw>0")
 result
-
-ggplot(ame_beta_zi_US_internet, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of US_internet", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
+
 ##2.3_English Proficiency
 ##2.3.1_NG_EPI
 ```{r}
@@ -1906,14 +1636,6 @@ ame_beta_zi_NG_EPI <- NG_EPI_model_beta_zi %>%
 ame_beta_zi_NG_EPI %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_NG_EPI, "draw<0")
 result
-
-ggplot(ame_beta_zi_NG_EPI, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of NG_EPI", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##2.3.2_CN_EPI
@@ -1944,14 +1666,6 @@ ame_beta_zi_CN_EPI <- CN_EPI_model_beta_zi %>%
 ame_beta_zi_CN_EPI %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_CN_EPI, "draw<0")
 result
-
-ggplot(ame_beta_zi_CN_EPI, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of CN_EPI", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 ##2.3.3_NL_EPI
@@ -1982,14 +1696,6 @@ ame_beta_zi_NL_EPI <- NL_EPI_model_beta_zi %>%
 ame_beta_zi_NL_EPI %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_NL_EPI, "draw>0")
 result
-
-ggplot(ame_beta_zi_NL_EPI, aes(x = draw)) +
-  stat_halfeye(.width = c(0.8, 0.95), point_interval = "median_hdi",
-               fill = "#bc3032") +
-  scale_x_continuous(labels = label_pp) +
-  labs(x = "Average marginal effect of NL_EPI", y = NULL,
-       caption = "80% and 95% credible intervals shown in black") +
-  theme_clean()
 ```
 
 
@@ -2008,7 +1714,7 @@ KE_UP <- ggplot(data = KE_urbanization, aes(y = Ruggeri_KE_pro, x = KE_UP_2020, 
   geom_line(data = predict_data_KE, aes(y = predicted), color = "#E41A1C", size = 2) +
   geom_ribbon(data = predict_data_KE, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
   ylab("Proportion of sample in big team science") +
-  xlab("Proportion of urban population\nby province in Kenya") +
+  xlab("Urbanization level\nby province in Kenya") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
@@ -2037,7 +1743,7 @@ CN_UP <- ggplot(data = CN_urbanization, aes(y = Ruggeri_CN_pro, x = CN_UP_2020, 
   geom_line(data = predict_data_CN, aes(y = predicted), color = "#E41A1C", size = 2) +
   geom_ribbon(data = predict_data_CN, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
   ylab("Proportion of sample in big team science") +
-  xlab("Proportion of urban population\nby province in China") +
+  xlab("Urbanization level\nby province in China") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
@@ -2065,7 +1771,7 @@ US_UP <- ggplot(data = US_urbanization, aes(y = Ruggeri_US_pro, x = US_UP_2020, 
   geom_line(data = predict_data_US, aes(y = predicted), color = "#E41A1C", size = 2) +
   geom_ribbon(data = predict_data_US, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
   ylab("Proportion of sample in big team science") +
-  xlab("Proportion of urban population\nby state in United States") +
+  xlab("Urbanization level\nby state in United States") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
@@ -2097,7 +1803,7 @@ NG_IPR <- ggplot(data = NG_internet, aes(y = Ruggeri_NG_pro, x = Internet_NG_202
   geom_line(data = predict_data_NG, aes(y = predicted), color = "#E41A1C", size = 2) +
   geom_ribbon(data = predict_data_NG, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
   ylab("Proportion of sample in big team science") +
-  xlab("Proportion of active Internet\nby state in Nigeria") +
+  xlab("Internet penetration rate\nby state in Nigeria") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
@@ -2127,7 +1833,7 @@ CN_IPR <- ggplot(data = CN_internet, aes(y = Ruggeri_CN_pro, x = Internet_CN_201
   geom_line(data = predict_data_CN, aes(y = predicted), color = "#E41A1C", size = 2) +
   geom_ribbon(data = predict_data_CN, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
   ylab("Proportion of sample in big team science") +
-  xlab("Proportion of population using the internet\nby province in china") +
+  xlab("Internet penetration rate\nby province in china") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
@@ -2155,7 +1861,7 @@ US_IPR <- ggplot(data = US_internet, aes(y = Ruggeri_US_pro, x = Internet_US_201
   geom_line(data = predict_data_US, aes(y = predicted), color = "#E41A1C", size = 2) +
   geom_ribbon(data = predict_data_US, aes(ymin = lower, ymax = upper), fill = "black", alpha = 0.3, linetype = "blank") +
   ylab("Proportion of sample in big team science") +
-  xlab("Proportion of population using the internet\nby state in United States") +
+  xlab("Internet penetration rate\nby state in United States") +
   theme(axis.text = element_text(size = 20),
         axis.title = element_text(size = 24),
         panel.background = element_rect(fill = "white"),
