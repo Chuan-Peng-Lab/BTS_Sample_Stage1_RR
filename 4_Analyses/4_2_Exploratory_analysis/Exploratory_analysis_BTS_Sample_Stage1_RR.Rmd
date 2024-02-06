@@ -46,8 +46,6 @@ gdp_model_beta_zi_bts <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
   
   backend = "cmdstanr",
   file = "gdp_model_beta_zi_bts"
@@ -78,12 +76,6 @@ gdp_model_beta_zi_ps2014 <- brms::brm(
   chains = 4, iter = 2000, warmup = 1000,
   cores = 4, seed = 1234,
   
- prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
   backend = "cmdstanr",
   file = "gdp_model_beta_zi_ps2014"
 )
@@ -98,7 +90,6 @@ ame_beta_zi_gdp_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_gdp_ps2014, "draw>0")
 result
 ```
-
 
 ## R&D_investment
 ```{r}
@@ -116,12 +107,6 @@ rd_model_beta_zi_bts <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
   
   backend = "cmdstanr",
   file = "rd_model_beta_zi_bts"
@@ -149,13 +134,7 @@ rd_model_beta_zi_ps2014 <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "rd_model_beta_zi_ps2014"
 )
@@ -187,13 +166,7 @@ university_model_beta_zi_bts <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "university_model_beta_zi_bts"
 )
@@ -221,17 +194,10 @@ university_model_beta_zi_ps2014 <- brms::brm(
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
   backend = "cmdstanr",
   file = "university_model_beta_zi_ps2014"
 )
 tidy(university_model_beta_zi_ps2014, effects = "fixed")
-
 ```
 
 ```{r}
@@ -260,18 +226,11 @@ researcher_model_beta_zi_bts <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "researcher_model_beta_zi_bts"
 )
 tidy(researcher_model_beta_zi_bts, effects = "fixed")
-
 ```
 
 ```{r}
@@ -294,18 +253,11 @@ researcher_model_beta_zi_ps2014 <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "researcher_model_beta_zi_ps2014"
 )
 tidy(researcher_model_beta_zi_ps2014, effects = "fixed")
-
 ```
 
 ```{r}
@@ -333,13 +285,7 @@ edu_model_beta_zi_bts <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+ 
   backend = "cmdstanr",
   file = "edu_model_beta_zi_bts"
 )
@@ -366,13 +312,7 @@ edu_model_beta_zi_ps2014 <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+ 
   backend = "cmdstanr",
   file = "edu_model_beta_zi_ps2014"
 )
@@ -405,16 +345,9 @@ urban_model_beta_zi_bts <- brms::brm(
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
   backend = "cmdstanr",
   file = "urban_model_beta_zi_bts")
 tidy(urban_model_beta_zi_bts, effects = "fixed")
-
 ```
 
 ```{r}
@@ -436,13 +369,7 @@ urban_model_beta_zi_ps2014 <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
  
-   # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
   backend = "cmdstanr",
   file = "urban_model_beta_zi_ps2014"
 )
@@ -474,18 +401,11 @@ gi_model_beta_zi_bts <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "gi_model_beta_zi_bts"
 )
 tidy(gi_model_beta_zi_bts, effects = "fixed")
-
 ```
 
 ```{r}
@@ -508,11 +428,6 @@ gi_model_beta_zi_ps2014 <- brms::brm(
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
   backend = "cmdstanr",
   file = "gi_model_beta_zi_ps2014"
 )
@@ -544,13 +459,7 @@ network_model_beta_zi_bts <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "network_model_beta_zi_bts"
 )
@@ -567,7 +476,6 @@ result <- brms::hypothesis(ame_beta_zi_network_bts, "draw>0")
 result
 ```
 
-
 ### PS2014
 ```{r}
 network_model_beta_zi_ps2014 <- brms::brm(
@@ -578,12 +486,7 @@ network_model_beta_zi_ps2014 <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "network_model_beta_zi_ps2014"
 )
@@ -615,13 +518,7 @@ pd_model_beta_zi_bts <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")), 
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "pd_model_beta_zi_bts"
 )
@@ -644,20 +541,13 @@ pd_model_beta_zi_ps2014 <- brms::brm(
      zi ~ pd),
   data = pddata,
   family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 1000, warmup = 500,
+  chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "pd_model_beta_zi_ps2014"
 )
 tidy(pd_model_beta_zi_ps2014, effects = "fixed")
-
 ```
 
 ```{r}
@@ -668,7 +558,6 @@ ame_beta_zi_pd_ps2014 %>% tidybayes::median_hdi(draw)
 result <- brms::hypothesis(ame_beta_zi_pd_ps2014, "draw<0")
 result
 ```
-
 
 ## Linguistic distance
 ### lp1
@@ -687,13 +576,7 @@ ld1_model_beta_zi_bts <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "ld1_model_beta_zi_bts"
 )
@@ -719,13 +602,7 @@ ld1_model_beta_zi_ps2014 <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "ld1_model_beta_zi_ps2014"
 )
@@ -752,13 +629,7 @@ ld2_model_beta_zi_bts <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "ld2_model_beta_zi_bts"
 )
@@ -784,13 +655,7 @@ ld2_model_beta_zi_ps2014 <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
-  
-  # tune the mcmc sampler
- control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "ld2_model_beta_zi_ps2014"
 )
@@ -823,18 +688,11 @@ english_model_beta_zi_bts <- brms::brm(
 
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = "cmdstanr",
   file = "english_model_beta_zi_bts"
 )
 tidy(english_model_beta_zi_bts, effects = "fixed")
-
 ```
 
 ```{r}
@@ -846,7 +704,6 @@ result <- brms::hypothesis(ame_beta_zi_english_bts, "draw<0")
 result
 ```
 
-
 ### PS2014
 ```{r}
 english_model_beta_zi_ps2014 <- brms::brm(
@@ -857,13 +714,8 @@ english_model_beta_zi_ps2014 <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
-  
   # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+  control = list(adapt_delta = 0.99), 
   backend = "cmdstanr",
   file = "english_model_beta_zi_ps2014"
 )
@@ -1389,9 +1241,6 @@ KE_urbanization_model_beta_zi <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
   
   backend = "cmdstanr",
   file = "KE_urbanization_model_beta_zi "
@@ -1425,15 +1274,11 @@ CN_urbanization_model_beta_zi <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
-  
+
   backend = "cmdstanr",
   file = "CN_urbanization_model_beta_zi "
 )
 tidy(CN_urbanization_model_beta_zi, effects = "fixed")
-
 ```
 
 ```{r}
@@ -1460,15 +1305,11 @@ US_urbanization_model_beta_zi <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 4, seed = 1234,
-    
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
   
   backend = "cmdstanr",
   file = "US_urbanization_model_beta_zi "
 )
 tidy(US_urbanization_model_beta_zi, effects = "fixed")
-
 ```
 
 
@@ -1497,15 +1338,11 @@ NG_internet_model_beta_zi <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
-  
+
   backend = "cmdstanr",
   file = "NG_internet_model_beta_zi "
 )
 tidy(NG_internet_model_beta_zi, effects = "fixed")
-
 ```
 
 ```{r}
@@ -1532,10 +1369,7 @@ CN_internet_model_beta_zi <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
-  
+
   backend = "cmdstanr",
   file = "CN_internet_model_beta_zi "
 )
@@ -1567,9 +1401,6 @@ US_internet_model_beta_zi <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
   
   backend = "cmdstanr",
   file = "US_internet_model_beta_zi "
@@ -1602,9 +1433,6 @@ NG_EPI_model_beta_zi <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
   
   backend = "cmdstanr",
   file = "NG_EPI_model_beta_zi "
@@ -1636,9 +1464,6 @@ CN_EPI_model_beta_zi <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),
   
   backend = "cmdstanr",
   file = "CN_EPI_model_beta_zi"
@@ -1670,9 +1495,6 @@ NL_EPI_model_beta_zi <- brms::brm(
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior("student_t(3, 0, 2.5)", class = "Intercept"),
-            prior("normal(0, 1)", class = "b")),  
   
   backend = "cmdstanr",
   file = "NL_EPI_model_beta_zi "

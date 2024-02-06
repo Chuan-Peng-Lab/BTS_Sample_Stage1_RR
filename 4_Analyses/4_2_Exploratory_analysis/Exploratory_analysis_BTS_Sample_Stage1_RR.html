@@ -493,8 +493,6 @@ an example) and big team science (using PSA 001 as an example)</p>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
   
   backend = &quot;cmdstanr&quot;,
   file = &quot;gdp_model_beta_zi_bts&quot;
@@ -505,26 +503,25 @@ tidy(gdp_model_beta_zi_bts, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term               estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;                 &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)         -1.40       4.88   -4.53      7.04  
-## 2 fixed  cond      phi_(Intercept)     -1.70      12.3   -23.0       5.96  
-## 3 fixed  zi        (Intercept)          3.76       2.64    1.67      8.30  
-## 4 fixed  cond      GDP_per_capita      -0.0668     0.134  -0.299     0.0231
-## 5 fixed  cond      phi_GDP_per_capita   0.311      0.616  -0.0606    1.38  
-## 6 fixed  zi        GDP_per_capita      -0.177      0.202  -0.527    -0.0333</code></pre>
+## 1 fixed  cond      (Intercept)         -4.21     0.183   -4.58      -3.85  
+## 2 fixed  cond      phi_(Intercept)      5.38     0.347    4.64       6.00  
+## 3 fixed  zi        (Intercept)          2.24     0.324    1.64       2.91  
+## 4 fixed  cond      GDP_per_capita       0.0110   0.00710 -0.00252    0.0249
+## 5 fixed  cond      phi_GDP_per_capita  -0.0445   0.00911 -0.0628    -0.0272
+## 6 fixed  zi        GDP_per_capita      -0.0593   0.0146  -0.0887    -0.0317</code></pre>
 <pre class="r"><code>ame_beta_zi_gdp_bts &lt;- gdp_model_beta_zi_bts %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;GDP_per_capita&quot;) %&gt;% 
   marginaleffects::posterior_draws()
 ame_beta_zi_gdp_bts %&gt;% tidybayes::median_hdi(draw)</code></pre>
-<pre><code>## # A tibble: 2 × 6
+<pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  2.75  0.936   4.27   0.95 median hdi      
-## 2  2.75 37.4    46.8    0.95 median hdi</code></pre>
+## 1  2.39   1.07   4.43   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;-  brms::hypothesis(ame_beta_zi_gdp_bts, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0    13.59     19.17     1.46    46.76        Inf         1    *
+## 1 (draw) &gt; 0     2.58      0.95     1.43     4.36        Inf         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -542,12 +539,6 @@ result</code></pre>
   chains = 4, iter = 2000, warmup = 1000,
   cores = 4, seed = 1234,
   
- prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
   backend = &quot;cmdstanr&quot;,
   file = &quot;gdp_model_beta_zi_ps2014&quot;
 )
@@ -557,12 +548,12 @@ tidy(gdp_model_beta_zi_ps2014, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term                estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;                  &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)        -4.18        0.584   -5.24     -2.99  
-## 2 fixed  cond      phi_(Intercept)     1.57        0.611    0.260     2.63  
-## 3 fixed  zi        (Intercept)         3.28        0.800    1.81      4.95  
-## 4 fixed  cond      GDP_per_capita      0.00523     0.0113  -0.0166    0.0266
-## 5 fixed  cond      phi_GDP_per_capita -0.000394    0.0117  -0.0225    0.0229
-## 6 fixed  zi        GDP_per_capita     -0.314       0.112   -0.575    -0.139</code></pre>
+## 1 fixed  cond      (Intercept)        -4.16        0.599   -5.27     -2.89  
+## 2 fixed  cond      phi_(Intercept)     1.53        0.604    0.255     2.62  
+## 3 fixed  zi        (Intercept)         3.26        0.801    1.84      4.98  
+## 4 fixed  cond      GDP_per_capita      0.00472     0.0111  -0.0171    0.0260
+## 5 fixed  cond      phi_GDP_per_capita  0.000138    0.0112  -0.0223    0.0227
+## 6 fixed  zi        GDP_per_capita     -0.314       0.109   -0.566    -0.148</code></pre>
 <pre class="r"><code>ame_beta_zi_gdp_ps2014 &lt;- gdp_model_beta_zi_ps2014 %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;GDP_per_capita&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -570,12 +561,12 @@ ame_beta_zi_gdp_ps2014 %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  6.18   2.36   12.4   0.95 median hdi</code></pre>
+## 1  6.21   2.30   12.9   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_gdp_ps2014, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0      6.8      3.09     3.32    12.32        Inf         1    *
+## 1 (draw) &gt; 0     6.87         3     3.37    12.76        Inf         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -621,12 +612,6 @@ result</code></pre>
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
   backend = &quot;cmdstanr&quot;,
   file = &quot;rd_model_beta_zi_bts&quot;
 )
@@ -636,12 +621,12 @@ tidy(rd_model_beta_zi_bts, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)       -4.06      0.325   -4.65     -3.38 
-## 2 fixed  cond      phi_(Intercept)    5.18      0.576    3.84      6.17 
-## 3 fixed  zi        (Intercept)        2.51      0.612    1.41      3.78 
-## 4 fixed  cond      R_D                0.222     0.216   -0.207     0.645
-## 5 fixed  cond      phi_R_D           -0.996     0.273   -1.52     -0.423
-## 6 fixed  zi        R_D               -2.00      0.572   -3.27     -1.02</code></pre>
+## 1 fixed  cond      (Intercept)       -4.08      0.324   -4.69     -3.40 
+## 2 fixed  cond      phi_(Intercept)    5.19      0.580    3.95      6.16 
+## 3 fixed  zi        (Intercept)        2.50      0.626    1.37      3.87 
+## 4 fixed  cond      R_D                0.236     0.215   -0.177     0.659
+## 5 fixed  cond      phi_R_D           -1.01      0.280   -1.54     -0.449
+## 6 fixed  zi        R_D               -1.98      0.573   -3.26     -0.983</code></pre>
 <pre class="r"><code>ame_beta_zi_rd_bts &lt;- rd_model_beta_zi_bts %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;R_D&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -649,12 +634,12 @@ ame_beta_zi_rd_bts %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  92.9   39.5   209.   0.95 median hdi</code></pre>
+## 1  94.8   37.4   204.   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_rd_bts, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0   103.56     48.65    48.71   197.48        Inf         1    *
+## 1 (draw) &gt; 0   105.69     48.89     50.4   198.04        Inf         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -671,13 +656,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;rd_model_beta_zi_ps2014&quot;
 )
@@ -687,25 +666,26 @@ tidy(rd_model_beta_zi_ps2014, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)       -6.33      0.124   -6.59     -6.10 
-## 2 fixed  cond      phi_(Intercept)   11.5       0.830    9.89     13.1  
-## 3 fixed  zi        (Intercept)        2.05      0.591    0.963     3.29 
-## 4 fixed  cond      R_D                0.573     0.162    0.276     0.904
-## 5 fixed  cond      phi_R_D           -3.34      0.369   -4.08     -2.66 
-## 6 fixed  zi        R_D               -3.10      0.823   -4.94     -1.63</code></pre>
+## 1 fixed  cond      (Intercept)       -6.35      0.123   -6.61     -6.12 
+## 2 fixed  cond      phi_(Intercept)   11.4       0.818    9.83     13.1  
+## 3 fixed  zi        (Intercept)        2.08      0.598    0.988     3.35 
+## 4 fixed  cond      R_D                0.596     0.163    0.289     0.922
+## 5 fixed  cond      phi_R_D           -3.33      0.363   -4.09     -2.67 
+## 6 fixed  zi        R_D               -3.16      0.830   -5.02     -1.74</code></pre>
 <pre class="r"><code>ame_beta_zi_rd_ps2014 &lt;- rd_model_beta_zi_ps2014 %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;R_D&quot;) %&gt;% 
   marginaleffects::posterior_draws()
 ame_beta_zi_rd_ps2014 %&gt;% tidybayes::median_hdi(draw)</code></pre>
-<pre><code>## # A tibble: 1 × 6
+<pre><code>## # A tibble: 2 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  40.8   15.6   90.9   0.95 median hdi</code></pre>
+## 1  43.3   16.6   91.1   0.95 median hdi      
+## 2  43.3   92.5   96.9   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_rd_ps2014, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0    46.46     22.75    22.82    89.96        Inf         1    *
+## 1 (draw) &gt; 0    49.61     24.95    23.51    95.34        Inf         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -753,13 +733,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;university_model_beta_zi_bts&quot;
 )
@@ -769,12 +743,12 @@ tidy(university_model_beta_zi_bts, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term                    estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;                      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)             -2.48e-1  0.159    -4.30e-1  -0.0597 
-## 2 fixed  cond      phi_(Intercept)         -3.55e+0  0.561    -4.44e+0  -2.76   
-## 3 fixed  zi        (Intercept)             -2.42e+1  8.52     -3.33e+1 -15.5    
-## 4 fixed  cond      number_of_universities…  9.03e-3  0.000409  7.95e-3   0.00946
-## 5 fixed  cond      phi_number_of_universi…  9.42e-2  0.0552    3.18e-2   0.160  
-## 6 fixed  zi        number_of_universities…  7.09e-1  0.266     4.37e-1   0.992</code></pre>
+## 1 fixed  cond      (Intercept)             -2.58e-1  0.151    -4.25e-1  -0.0787 
+## 2 fixed  cond      phi_(Intercept)         -3.59e+0  0.608    -4.44e+0  -2.80   
+## 3 fixed  zi        (Intercept)             -2.41e+1  8.15     -3.26e+1 -15.6    
+## 4 fixed  cond      number_of_universities…  9.01e-3  0.000455  7.86e-3   0.00947
+## 5 fixed  cond      phi_number_of_universi…  9.63e-2  0.0565    3.38e-2   0.160  
+## 6 fixed  zi        number_of_universities…  7.05e-1  0.256     4.41e-1   0.970</code></pre>
 <pre class="r"><code>ame_beta_zi_university_bts &lt;- university_model_beta_zi_bts %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;number_of_universities_per_capita&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -783,13 +757,13 @@ ame_beta_zi_university_bts %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 2 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  7.09   3.94   7.38   0.95 median hdi      
-## 2  7.09   8.73  12.1    0.95 median hdi</code></pre>
+## 1  7.30   4.12   7.64   0.95 median hdi      
+## 2  7.30   8.71  12.0    0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_university_bts, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0     8.37      2.56     4.78    11.78        999         1    *
+## 1 (draw) &gt; 0     8.43      2.54      4.7    11.73     284.71         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -807,12 +781,6 @@ result</code></pre>
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
   backend = &quot;cmdstanr&quot;,
   file = &quot;university_model_beta_zi_ps2014&quot;
 )
@@ -822,12 +790,12 @@ tidy(university_model_beta_zi_ps2014, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term                    estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;                      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)               0.911     1.19    -0.277   2.10    
-## 2 fixed  cond      phi_(Intercept)          -2.19      0.0621  -2.26   -2.13    
-## 3 fixed  zi        (Intercept)               1.22      0.208    1.01    1.42    
-## 4 fixed  cond      number_of_universities…  -0.0273    0.0342  -0.0615  0.00688 
-## 5 fixed  cond      phi_number_of_universi…   0.0531    0.0339   0.0192  0.0870  
-## 6 fixed  zi        number_of_universities…  -0.0247    0.0249  -0.0496  0.000181</code></pre>
+## 1 fixed  cond      (Intercept)               1.14      1.42    -0.283   2.55    
+## 2 fixed  cond      phi_(Intercept)          -2.14      0.0776  -2.21   -2.06    
+## 3 fixed  zi        (Intercept)               1.13      0.0664   1.06    1.20    
+## 4 fixed  cond      number_of_universities…  -0.0313    0.0361  -0.0674  0.00478 
+## 5 fixed  cond      phi_number_of_universi…   0.0539    0.0368   0.0171  0.0907  
+## 6 fixed  zi        number_of_universities…  -0.0228    0.0219  -0.0447 -0.000903</code></pre>
 <pre class="r"><code>ame_beta_zi_university_ps2014 &lt;- university_model_beta_zi_ps2014 %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;number_of_universities_per_capita&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -836,13 +804,13 @@ ame_beta_zi_university_ps2014 %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 2 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  34.2   5.87   5.87   0.95 median hdi      
-## 2  34.2  62.5   62.5    0.95 median hdi</code></pre>
+## 1  36.0   5.18   19.4   0.95 median hdi      
+## 2  36.0  52.7    66.9   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_university_ps2014, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0     34.2     28.33     5.87    62.52        Inf         1    *
+## 1 (draw) &gt; 0    36.05     30.88     5.18    66.91        Inf         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -890,13 +858,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;researcher_model_beta_zi_bts&quot;
 )
@@ -906,12 +868,12 @@ tidy(researcher_model_beta_zi_bts, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term                    estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;                      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)             -2.06      2.47     -3.96     2.20   
-## 2 fixed  cond      phi_(Intercept)          1.35      3.29     -4.29     4.12   
-## 3 fixed  zi        (Intercept)              4.43      6.23      0.198   15.2    
-## 4 fixed  cond      number_of_psychology_r… -0.00217   0.00672  -0.0129   0.00798
-## 5 fixed  cond      phi_number_of_psycholo…  0.0494    0.0778   -0.0120   0.184  
-## 6 fixed  zi        number_of_psychology_r… -0.152     0.219    -0.530   -0.00956</code></pre>
+## 1 fixed  cond      (Intercept)             -2.08      2.44     -3.98     2.13   
+## 2 fixed  cond      phi_(Intercept)          1.34      3.28     -4.29     4.12   
+## 3 fixed  zi        (Intercept)              4.43      6.23      0.195   15.2    
+## 4 fixed  cond      number_of_psychology_r… -0.00162   0.00571  -0.0105   0.00794
+## 5 fixed  cond      phi_number_of_psycholo…  0.0495    0.0779   -0.0114   0.184  
+## 6 fixed  zi        number_of_psychology_r… -0.152     0.219    -0.530   -0.00988</code></pre>
 <pre class="r"><code>ame_beta_zi_researcher_bts &lt;- researcher_model_beta_zi_bts %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;number_of_psychology_researchers_per_capita&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -920,13 +882,13 @@ ame_beta_zi_researcher_bts %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 2 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  2.34  0.507   3.74   0.95 median hdi      
-## 2  2.34 35.6    43.6    0.95 median hdi</code></pre>
+## 1  2.32  0.508   3.73   0.95 median hdi      
+## 2  2.32 36.3    45.1    0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_researcher_bts, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0    12.48     17.99     1.03     43.6    1332.33         1    *
+## 1 (draw) &gt; 0    12.85     18.63     1.06    45.09        499         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -943,13 +905,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;researcher_model_beta_zi_ps2014&quot;
 )
@@ -959,27 +915,28 @@ tidy(researcher_model_beta_zi_ps2014, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term                    estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;                      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)              -0.542     4.40    -4.06     7.03   
-## 2 fixed  cond      phi_(Intercept)          -3.74      7.10   -16.0      1.35   
-## 3 fixed  zi        (Intercept)               2.80      7.29    -4.71    15.2    
-## 4 fixed  cond      number_of_psychology_r…  -0.0562    0.0672  -0.172   -0.00761
-## 5 fixed  cond      phi_number_of_psycholo…   0.170     0.231    0.0131   0.570  
-## 6 fixed  zi        number_of_psychology_r…  -0.149     0.224   -0.530    0.0260</code></pre>
+## 1 fixed  cond      (Intercept)              -0.562     4.33    -4.06     6.88   
+## 2 fixed  cond      phi_(Intercept)          -3.59      6.82   -15.4      1.36   
+## 3 fixed  zi        (Intercept)               2.84      7.28    -4.76    15.2    
+## 4 fixed  cond      number_of_psychology_r…  -0.0554    0.0649  -0.167   -0.00651
+## 5 fixed  cond      phi_number_of_psycholo…   0.165     0.222    0.0142   0.549  
+## 6 fixed  zi        number_of_psychology_r…  -0.150     0.224   -0.530    0.0258</code></pre>
 <pre class="r"><code>ame_beta_zi_researcher_ps2014 &lt;- researcher_model_beta_zi_ps2014 %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;number_of_psychology_researchers_per_capita&quot;) %&gt;% 
   marginaleffects::posterior_draws()
 
 ame_beta_zi_researcher_ps2014 %&gt;% tidybayes::median_hdi(draw)</code></pre>
-<pre><code>## # A tibble: 2 × 6
+<pre><code>## # A tibble: 3 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1 -2.16  -13.2   10.4   0.95 median hdi      
-## 2 -2.16   18.7   21.8   0.95 median hdi</code></pre>
+## 1 -2.05  -14.3   10.1   0.95 median hdi      
+## 2 -2.05   12.5   13.0   0.95 median hdi      
+## 3 -2.05   19.3   22.7   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_researcher_ps2014, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0     2.77     11.22    -9.91    20.13       0.66       0.4     
+## 1 (draw) &gt; 0     2.92     11.59   -10.79    20.81       0.68       0.4     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1024,13 +981,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+ 
   backend = &quot;cmdstanr&quot;,
   file = &quot;edu_model_beta_zi_bts&quot;
 )
@@ -1040,12 +991,12 @@ tidy(edu_model_beta_zi_bts, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term                    estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;                      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)              -4.54      0.953    -6.58     -2.80 
-## 2 fixed  cond      phi_(Intercept)           8.68      1.61      5.44     11.8  
-## 3 fixed  zi        (Intercept)               5.59      1.18      3.49      8.14 
-## 4 fixed  cond      average_years_of_schoo…   0.0676    0.0949   -0.118     0.265
-## 5 fixed  cond      phi_average_years_of_s…  -0.422     0.145    -0.709    -0.142
-## 6 fixed  zi        average_years_of_schoo…  -0.466     0.114    -0.717    -0.267</code></pre>
+## 1 fixed  cond      (Intercept)              -4.55      0.948    -6.52     -2.85 
+## 2 fixed  cond      phi_(Intercept)           8.66      1.64      5.41     11.9  
+## 3 fixed  zi        (Intercept)               5.58      1.21      3.46      8.25 
+## 4 fixed  cond      average_years_of_schoo…   0.0683    0.0943   -0.110     0.260
+## 5 fixed  cond      phi_average_years_of_s…  -0.419     0.147    -0.717    -0.138
+## 6 fixed  zi        average_years_of_schoo…  -0.465     0.116    -0.724    -0.265</code></pre>
 <pre class="r"><code>ame_beta_zi_edu_bts &lt;- edu_model_beta_zi_bts %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;average_years_of_schooling&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -1054,12 +1005,12 @@ ame_beta_zi_edu_bts %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  23.2   8.30   44.2   0.95 median hdi</code></pre>
+## 1  23.0   8.10   44.4   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_edu_bts, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0    24.52      9.67     11.1    42.43        Inf         1    *
+## 1 (draw) &gt; 0    24.47      9.64    11.32    42.75        Inf         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1075,13 +1026,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+ 
   backend = &quot;cmdstanr&quot;,
   file = &quot;edu_model_beta_zi_ps2014&quot;
 )
@@ -1091,12 +1036,12 @@ tidy(edu_model_beta_zi_ps2014, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term                   estimate std.error  conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;                     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)           -6.79e+ 0  3.32e+ 0 -1.33e+ 1  1.18e- 1
-## 2 fixed  cond      phi_(Intercept)       -1.01e+ 0  3.39e+ 0 -7.87e+ 0  5.72e+ 0
-## 3 fixed  zi        (Intercept)            7.56e+14  6.63e+14  3.48e+11  2.01e+15
-## 4 fixed  cond      average_years_of_sch…  2.50e- 1  2.74e- 1 -3.21e- 1  8.08e- 1
-## 5 fixed  cond      phi_average_years_of…  2.05e- 1  2.79e- 1 -3.68e- 1  7.54e- 1
-## 6 fixed  zi        average_years_of_sch… -8.09e+13  7.09e+13 -2.14e+14 -3.72e+10</code></pre>
+## 1 fixed  cond      (Intercept)           -7.12e+ 0  3.38e+ 0 -1.37e+ 1 -4.13e- 1
+## 2 fixed  cond      phi_(Intercept)       -7.31e- 1  3.43e+ 0 -7.75e+ 0  5.73e+ 0
+## 3 fixed  zi        (Intercept)            6.38e+14  8.21e+14  1.02e+12  2.62e+15
+## 4 fixed  cond      average_years_of_sch…  2.78e- 1  2.79e- 1 -2.74e- 1  8.25e- 1
+## 5 fixed  cond      phi_average_years_of…  1.82e- 1  2.83e- 1 -3.55e- 1  7.40e- 1
+## 6 fixed  zi        average_years_of_sch… -6.82e+13  8.78e+13 -2.80e+14 -1.09e+11</code></pre>
 <pre class="r"><code>ame_beta_zi_edu_ps2014 &lt;- edu_model_beta_zi_ps2014 %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;average_years_of_schooling&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -1104,12 +1049,12 @@ ame_beta_zi_edu_ps2014 %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  51.6 0.0142   140.   0.95 median hdi</code></pre>
+## 1  52.8   4.20   144.   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_edu_ps2014, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0     60.3     40.36    16.63   132.97        159      0.99    *
+## 1 (draw) &gt; 0    62.41     41.21    17.94   138.06     265.67         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1156,12 +1101,6 @@ result</code></pre>
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
   backend = &quot;cmdstanr&quot;,
   file = &quot;urban_model_beta_zi_bts&quot;)
 tidy(urban_model_beta_zi_bts, effects = &quot;fixed&quot;)</code></pre>
@@ -1170,12 +1109,12 @@ tidy(urban_model_beta_zi_bts, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term             estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;               &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)       -5.70      2.31    -9.42     -2.65  
-## 2 fixed  cond      phi_(Intercept)   31.2      46.0     -0.332   111.    
-## 3 fixed  zi        (Intercept)      -15.5      33.5    -73.5       5.43  
-## 4 fixed  cond      Urbanization       0.0480    0.0668  -0.0144    0.162 
-## 5 fixed  cond      phi_Urbanization  -0.452     0.761   -1.77      0.0460
-## 6 fixed  zi        Urbanization       0.275     0.541   -0.0588    1.21</code></pre>
+## 1 fixed  cond      (Intercept)       -5.77      2.48    -9.75     -2.47  
+## 2 fixed  cond      phi_(Intercept)   31.1      46.0     -0.897   111.    
+## 3 fixed  zi        (Intercept)      -15.4      33.5    -73.5       5.75  
+## 4 fixed  cond      Urbanization       0.0491    0.0693  -0.0174    0.167 
+## 5 fixed  cond      phi_Urbanization  -0.452     0.762   -1.77      0.0543
+## 6 fixed  zi        Urbanization       0.275     0.541   -0.0637    1.21</code></pre>
 <pre class="r"><code>ame_beta_zi_urban_bts &lt;- urban_model_beta_zi_bts %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;Urbanization&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -1183,13 +1122,13 @@ ame_beta_zi_urban_bts %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 2 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  2.39  0.515   4.00   0.95 median hdi      
-## 2  2.39 14.0    16.3    0.95 median hdi</code></pre>
+## 1  2.39  0.372   4.26   0.95 median hdi      
+## 2  2.39 14.6    17.2    0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_urban_bts, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0     5.65      6.19     0.95    16.28     128.03      0.99    *
+## 1 (draw) &gt; 0     5.85      6.59     0.82    17.16      74.47      0.99    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1206,13 +1145,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
  
-   # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
   backend = &quot;cmdstanr&quot;,
   file = &quot;urban_model_beta_zi_ps2014&quot;
 )
@@ -1222,12 +1155,12 @@ tidy(urban_model_beta_zi_ps2014, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term             estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;               &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)        -9.83      7.24  -22.0      -1.59  
-## 2 fixed  cond      phi_(Intercept)    31.2      45.6    -1.49    110.    
-## 3 fixed  zi        (Intercept)       -14.8      34.1   -73.5       9.15  
-## 4 fixed  cond      Urbanization        0.106     0.151  -0.0396    0.365 
-## 5 fixed  cond      phi_Urbanization   -0.472     0.744  -1.76      0.0412
-## 6 fixed  zi        Urbanization        0.240     0.563  -0.165     1.21</code></pre>
+## 1 fixed  cond      (Intercept)       -7.97       4.22  -14.7      -1.57  
+## 2 fixed  cond      phi_(Intercept)   31.3       45.6    -1.23    110.    
+## 3 fixed  zi        (Intercept)      -14.6       34.1   -73.5       9.12  
+## 4 fixed  cond      Urbanization       0.0764     0.101  -0.0386    0.247 
+## 5 fixed  cond      phi_Urbanization  -0.474      0.744  -1.76      0.0382
+## 6 fixed  zi        Urbanization       0.238      0.565  -0.163     1.21</code></pre>
 <pre class="r"><code>ame_beta_zi_urban_ps2014 &lt;- urban_model_beta_zi_ps2014 %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;Urbanization&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -1235,13 +1168,13 @@ ame_beta_zi_urban_ps2014 %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 2 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  5.45  -1.64   12.8   0.95 median hdi      
-## 2  5.45  41.3    44.9   0.95 median hdi</code></pre>
+## 1  5.46  -1.46   12.5   0.95 median hdi      
+## 2  5.46  31.3    33.3   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_urban_ps2014, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0    14.62     17.82     0.12    44.91      21.73      0.96    *
+## 1 (draw) &gt; 0    11.73     12.86     0.21    33.28      23.69      0.96    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1287,13 +1220,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;gi_model_beta_zi_bts&quot;
 )
@@ -1303,12 +1230,12 @@ tidy(gi_model_beta_zi_bts, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)      -4.82      1.55    -7.37     -1.15  
-## 2 fixed  cond      phi_(Intercept)   5.16      3.17    -2.81     10.1   
-## 3 fixed  zi        (Intercept)       9.58      1.43     6.90     12.4   
-## 4 fixed  cond      GI                0.0156    0.0196  -0.0296    0.0487
-## 5 fixed  cond      phi_GI           -0.0186    0.0398  -0.0837    0.0803
-## 6 fixed  zi        GI               -0.123     0.0197  -0.162    -0.0858</code></pre>
+## 1 fixed  cond      (Intercept)      -4.89      1.51    -7.44     -1.36  
+## 2 fixed  cond      phi_(Intercept)   5.29      3.11    -2.49     10.1   
+## 3 fixed  zi        (Intercept)       9.65      1.48     6.89     12.7   
+## 4 fixed  cond      GI                0.0166    0.0194  -0.0275    0.0503
+## 5 fixed  cond      phi_GI           -0.0202    0.0394  -0.0831    0.0739
+## 6 fixed  zi        GI               -0.124     0.0205  -0.166    -0.0858</code></pre>
 <pre class="r"><code>ame_beta_zi_gi_bts &lt;- gi_model_beta_zi_bts %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;GI&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -1316,12 +1243,12 @@ ame_beta_zi_gi_bts %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  4.63   2.61   7.62   0.95 median hdi</code></pre>
+## 1  4.67   2.59   7.71   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_gi_bts, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0     4.83      1.33     3.09     7.32        Inf         1    *
+## 1 (draw) &gt; 0      4.9      1.42      3.1     7.44        Inf         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1339,11 +1266,6 @@ result</code></pre>
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
   backend = &quot;cmdstanr&quot;,
   file = &quot;gi_model_beta_zi_ps2014&quot;
 )
@@ -1353,12 +1275,12 @@ tidy(gi_model_beta_zi_ps2014, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)     -4.62       2.58    -9.99      0.189 
-## 2 fixed  cond      phi_(Intercept) -7.27       2.95   -12.4      -1.17  
-## 3 fixed  zi        (Intercept)      4.63       4.92    -5.81     14.1   
-## 4 fixed  cond      GI               0.00492    0.0324  -0.0538    0.0727
-## 5 fixed  cond      phi_GI           0.120      0.0384   0.0392    0.186 
-## 6 fixed  zi        GI              -0.110      0.0760  -0.284     0.0286</code></pre>
+## 1 fixed  cond      (Intercept)     -4.78       2.69   -10.3       0.333 
+## 2 fixed  cond      phi_(Intercept) -7.15       2.95   -12.4      -1.13  
+## 3 fixed  zi        (Intercept)      4.63       5.20    -6.67     14.4   
+## 4 fixed  cond      GI               0.00678    0.0337  -0.0552    0.0768
+## 5 fixed  cond      phi_GI           0.119      0.0382   0.0395    0.187 
+## 6 fixed  zi        GI              -0.112      0.0800  -0.301     0.0329</code></pre>
 <pre class="r"><code>ame_beta_zi_gi_ps2014 &lt;- gi_model_beta_zi_ps2014 %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;GI&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -1366,12 +1288,12 @@ ame_beta_zi_gi_ps2014 %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  3.07  -5.21   8.96   0.95 median hdi</code></pre>
+## 1  3.17  -4.67   9.46   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_gi_ps2014, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0     2.79      3.41    -3.12     7.65       5.63      0.85     
+## 1 (draw) &gt; 0     2.83      3.65    -2.97     7.42       6.48      0.87     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1416,13 +1338,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;network_model_beta_zi_bts&quot;
 )
@@ -1432,12 +1348,12 @@ tidy(network_model_beta_zi_bts, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term             estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;               &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)      -4.61       1.07    -7.09     -2.73  
-## 2 fixed  cond      phi_(Intercept)   4.50       1.71     0.401     7.23  
-## 3 fixed  zi        (Intercept)       4.98       1.12     2.83      7.29  
-## 4 fixed  cond      Network_2021      0.0112     0.0124  -0.0105    0.0391
-## 5 fixed  cond      phi_Network_2021 -0.00924    0.0192  -0.0410    0.0355
-## 6 fixed  zi        Network_2021     -0.0496     0.0134  -0.0768   -0.0235</code></pre>
+## 1 fixed  cond      (Intercept)      -4.64       1.11    -7.09     -2.71  
+## 2 fixed  cond      phi_(Intercept)   4.51       1.69     0.484     7.18  
+## 3 fixed  zi        (Intercept)       4.99       1.18     2.84      7.40  
+## 4 fixed  cond      Network_2021      0.0115     0.0129  -0.0111    0.0394
+## 5 fixed  cond      phi_Network_2021 -0.00938    0.0190  -0.0402    0.0345
+## 6 fixed  zi        Network_2021     -0.0496     0.0141  -0.0789   -0.0243</code></pre>
 <pre class="r"><code>ame_beta_zi_network_bts &lt;- network_model_beta_zi_bts %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;Network_2021&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -1445,12 +1361,12 @@ ame_beta_zi_network_bts %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  2.87   1.15   5.20   0.95 median hdi</code></pre>
+## 1  2.90  0.994   5.19   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_network_bts, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0     2.98      1.05     1.48      4.9        Inf         1    *
+## 1 (draw) &gt; 0        3       1.1     1.42     4.99     665.67         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1467,12 +1383,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;network_model_beta_zi_ps2014&quot;
 )
@@ -1482,12 +1393,12 @@ tidy(network_model_beta_zi_ps2014, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term             estimate std.error  conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;               &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)       -0.0258    3.71    -7.39       7.20  
-## 2 fixed  cond      phi_(Intercept)   -4.35      3.57   -11.7        2.32  
-## 3 fixed  zi        (Intercept)       19.6      10.3      5.41      43.8   
-## 4 fixed  cond      Network_2021      -0.0491    0.0419  -0.129      0.0353
-## 5 fixed  cond      phi_Network_2021   0.0703    0.0410  -0.00758    0.153 
-## 6 fixed  zi        Network_2021      -0.277     0.151   -0.637     -0.0776</code></pre>
+## 1 fixed  cond      (Intercept)       -0.276     3.73    -7.73       6.91  
+## 2 fixed  cond      phi_(Intercept)   -4.38      3.53   -11.3        2.48  
+## 3 fixed  zi        (Intercept)       19.4      11.5     -1.93      48.0   
+## 4 fixed  cond      Network_2021      -0.0462    0.0422  -0.126      0.0385
+## 5 fixed  cond      phi_Network_2021   0.0706    0.0405  -0.00725    0.149 
+## 6 fixed  zi        Network_2021      -0.277     0.168   -0.714      0.0176</code></pre>
 <pre class="r"><code>ame_beta_zi_network_ps2014 &lt;- network_model_beta_zi_ps2014 %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;Network_2021&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -1495,12 +1406,12 @@ ame_beta_zi_network_ps2014 %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##     draw .lower .upper .width .point .interval
 ##    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1 -0.592  -7.63   5.68   0.95 median hdi</code></pre>
+## 1 -0.520  -7.38   5.34   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_network_ps2014, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0    -0.76      3.32    -6.27     3.93       0.68       0.4     
+## 1 (draw) &gt; 0    -0.72      3.29    -6.19      3.9        0.7      0.41     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1546,13 +1457,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)), 
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;pd_model_beta_zi_bts&quot;
 )
@@ -1562,24 +1467,26 @@ tidy(pd_model_beta_zi_bts, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)       -3.76      0.206    -4.15     -3.36
-## 2 fixed  cond      phi_(Intercept)    2.72      0.497     1.65      3.61
-## 3 fixed  zi        (Intercept)       -2.83      0.869    -4.66     -1.24
-## 4 fixed  cond      pd                -0.589     0.977    -2.48      1.26
-## 5 fixed  cond      phi_pd            13.9       5.06      3.85     23.8 
-## 6 fixed  zi        pd                28.6       7.43     14.9      44.1</code></pre>
+## 1 fixed  cond      (Intercept)        -2.68     0.452  -3.55       -1.74
+## 2 fixed  cond      phi_(Intercept)     2.89     0.580   1.72        4.00
+## 3 fixed  zi        (Intercept)        -2.62     0.829  -4.28       -1.08
+## 4 fixed  cond      pd                -11.7      4.98  -23.3        -3.10
+## 5 fixed  cond      phi_pd             12.9      5.91    0.0539     23.6 
+## 6 fixed  zi        pd                 26.7      7.35   13.1        41.3</code></pre>
 <pre class="r"><code>ame_beta_zi_pd_bts &lt;- pd_model_beta_zi_bts %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;pd&quot;) %&gt;%    marginaleffects::posterior_draws()
 ame_beta_zi_pd_bts %&gt;% tidybayes::median_hdi(draw)</code></pre>
-<pre><code>## # A tibble: 1 × 6
-##    draw .lower .upper .width .point .interval
-##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1 -327.  -758.  -105.   0.95 median hdi</code></pre>
+<pre><code>## # A tibble: 3 × 6
+##     draw  .lower .upper .width .point .interval
+##    &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1 -9426. -11482. -3733.   0.95 median hdi      
+## 2 -9426.  -3440. -2187.   0.95 median hdi      
+## 3 -9426.  -1681. -1069.   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_pd_bts, &quot;draw&lt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
-##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &lt; 0  -364.13    187.38  -711.02  -141.76        Inf         1    *
+##   Hypothesis Estimate Est.Error  CI.Lower CI.Upper Evid.Ratio Post.Prob Star
+## 1 (draw) &lt; 0 -8307.51    3091.4 -11417.17 -1762.35        Inf         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1594,15 +1501,9 @@ result</code></pre>
      zi ~ pd),
   data = pddata,
   family = zero_inflated_beta_binomial(),
-  chains = 4, iter = 1000, warmup = 500,
+  chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;pd_model_beta_zi_ps2014&quot;
 )
@@ -1612,25 +1513,28 @@ tidy(pd_model_beta_zi_ps2014, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)       -5.92      0.128    -6.17    -5.67 
-## 2 fixed  cond      phi_(Intercept)   -1.97      1.42     -5.02     0.469
-## 3 fixed  zi        (Intercept)       -4.57      1.34     -7.52    -2.20 
-## 4 fixed  cond      pd                -0.379     0.978    -2.30     1.54 
-## 5 fixed  cond      phi_pd           109.       18.7      76.5    149.   
-## 6 fixed  zi        pd                49.2      12.6      27.1     75.8</code></pre>
+## 1 fixed  cond      (Intercept)        -3.83      1.07    -5.68     -2.50
+## 2 fixed  cond      phi_(Intercept)    88.7     115.      -4.50    279.  
+## 3 fixed  zi        (Intercept)       -16.1      24.2    -57.9       1.84
+## 4 fixed  cond      pd                -13.1       5.51   -20.2      -2.48
+## 5 fixed  cond      phi_pd           -415.      657.   -1498.      141.  
+## 6 fixed  zi        pd                141.      193.      -2.25    474.</code></pre>
 <pre class="r"><code>ame_beta_zi_pd_ps2014 &lt;- pd_model_beta_zi_ps2014 %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;pd&quot;) %&gt;% 
   marginaleffects::posterior_draws()
 ame_beta_zi_pd_ps2014 %&gt;% tidybayes::median_hdi(draw)</code></pre>
-<pre><code>## # A tibble: 1 × 6
-##    draw .lower .upper .width .point .interval
-##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1 -42.0  -96.2  -12.9   0.95 median hdi</code></pre>
+<pre><code>## # A tibble: 4 × 6
+##     draw  .lower   .upper .width .point .interval
+##    &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1 -4642. -13640. -8456.     0.95 median hdi      
+## 2 -4642.  -8161. -8100.     0.95 median hdi      
+## 3 -4642.  -7280. -6763.     0.95 median hdi      
+## 4 -4642.  -6485.    -2.96   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_pd_ps2014, &quot;draw&lt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
-##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &lt; 0   -47.34     23.96   -93.09      -19        Inf         1    *
+##   Hypothesis Estimate Est.Error  CI.Lower CI.Upper Evid.Ratio Post.Prob Star
+## 1 (draw) &lt; 0 -5732.78   4800.56 -12448.88  -290.54        Inf         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1678,13 +1582,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;ld1_model_beta_zi_bts&quot;
 )
@@ -1694,12 +1592,12 @@ tidy(ld1_model_beta_zi_bts, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)       -3.29      0.429   -4.13    -2.44  
-## 2 fixed  cond      phi_(Intercept)    2.46      0.593    1.14     3.48  
-## 3 fixed  zi        (Intercept)        2.08      0.523    1.11     3.14  
-## 4 fixed  cond      lp1               -0.222     0.153   -0.531    0.0677
-## 5 fixed  cond      phi_lp1            0.800     0.239    0.340    1.29  
-## 6 fixed  zi        lp1               -0.686     0.257   -1.21    -0.205</code></pre>
+## 1 fixed  cond      (Intercept)       -3.27      0.451   -4.19    -2.42  
+## 2 fixed  cond      phi_(Intercept)    2.47      0.597    1.22     3.51  
+## 3 fixed  zi        (Intercept)        2.08      0.526    1.09     3.13  
+## 4 fixed  cond      lp1               -0.228     0.160   -0.541    0.0900
+## 5 fixed  cond      phi_lp1            0.793     0.241    0.329    1.28  
+## 6 fixed  zi        lp1               -0.686     0.256   -1.21    -0.204</code></pre>
 <pre class="r"><code>ame_beta_zi_ld1_bts &lt;- ld1_model_beta_zi_bts %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;lp1&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -1707,12 +1605,12 @@ ame_beta_zi_ld1_bts %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  18.5  -12.6   46.2   0.95 median hdi</code></pre>
+## 1  18.5  -14.7   44.6   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_ld1_bts, &quot;draw&lt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &lt; 0    17.51     15.33    -8.25     40.1       0.13      0.11     
+## 1 (draw) &lt; 0    17.02     15.22    -8.91    39.14       0.14      0.12     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1729,13 +1627,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;ld1_model_beta_zi_ps2014&quot;
 )
@@ -1745,12 +1637,12 @@ tidy(ld1_model_beta_zi_ps2014, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)       -4.50      0.698   -5.98    -3.22  
-## 2 fixed  cond      phi_(Intercept)    1.63      0.631    0.213    2.68  
-## 3 fixed  zi        (Intercept)        1.68      1.08    -1.19     3.25  
-## 4 fixed  cond      lp1               -0.320     0.219   -0.735    0.137 
-## 5 fixed  cond      phi_lp1            1.43      0.196    1.07     1.84  
-## 6 fixed  zi        lp1               -0.850     0.407   -1.57     0.0839</code></pre>
+## 1 fixed  cond      (Intercept)       -4.48      0.713   -5.97    -3.10  
+## 2 fixed  cond      phi_(Intercept)    1.61      0.633    0.206    2.65  
+## 3 fixed  zi        (Intercept)        1.66      1.02    -0.810    3.29  
+## 4 fixed  cond      lp1               -0.325     0.225   -0.774    0.134 
+## 5 fixed  cond      phi_lp1            1.44      0.200    1.07     1.86  
+## 6 fixed  zi        lp1               -0.839     0.391   -1.56    -0.0198</code></pre>
 <pre class="r"><code>ame_beta_zi_ld1_ps2014 &lt;- ld1_model_beta_zi_ps2014 %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;lp1&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -1758,12 +1650,12 @@ ame_beta_zi_ld1_ps2014 %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  5.35  -11.7   15.5   0.95 median hdi</code></pre>
+## 1  4.98  -12.6   16.3   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_ld1_ps2014, &quot;draw&lt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &lt; 0      3.9       7.5   -10.06    12.69       0.27      0.21     
+## 1 (draw) &lt; 0     3.28      9.08    -11.9    12.63       0.31      0.24     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1783,13 +1675,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;ld2_model_beta_zi_bts&quot;
 )
@@ -1799,12 +1685,12 @@ tidy(ld2_model_beta_zi_bts, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)       -3.44      0.274   -3.99    -2.90  
-## 2 fixed  cond      phi_(Intercept)    3.16      0.391    2.32     3.87  
-## 3 fixed  zi        (Intercept)        2.17      0.364    1.50     2.93  
-## 4 fixed  cond      lp2               -0.212     0.143   -0.510    0.0540
-## 5 fixed  cond      phi_lp2            0.673     0.225    0.229    1.10  
-## 6 fixed  zi        lp2               -1.04      0.300   -1.65    -0.475</code></pre>
+## 1 fixed  cond      (Intercept)       -3.43      0.279   -3.98    -2.90  
+## 2 fixed  cond      phi_(Intercept)    3.17      0.394    2.32     3.86  
+## 3 fixed  zi        (Intercept)        2.17      0.357    1.49     2.91  
+## 4 fixed  cond      lp2               -0.217     0.149   -0.529    0.0547
+## 5 fixed  cond      phi_lp2            0.673     0.223    0.221    1.10  
+## 6 fixed  zi        lp2               -1.05      0.299   -1.65    -0.493</code></pre>
 <pre class="r"><code>ame_beta_zi_ld2_bts &lt;- ld2_model_beta_zi_bts %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;lp2&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -1812,12 +1698,12 @@ ame_beta_zi_ld2_bts %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  34.9   6.05   63.5   0.95 median hdi</code></pre>
+## 1  34.5   5.60   64.9   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_ld2_bts, &quot;draw &lt; 0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &lt; 0    34.66     14.74     10.4    58.94       0.01      0.01     
+## 1 (draw) &lt; 0    34.39     14.83    10.34    58.01       0.01      0.01     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1834,13 +1720,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
-  
-  # tune the mcmc sampler
- control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;ld2_model_beta_zi_ps2014&quot;
 )
@@ -1850,12 +1730,12 @@ tidy(ld2_model_beta_zi_ps2014, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)       -4.52      0.553   -5.76   -3.52   
-## 2 fixed  cond      phi_(Intercept)    1.51      0.715   -0.124   2.66   
-## 3 fixed  zi        (Intercept)        2.19      1.18    -0.780   3.67   
-## 4 fixed  cond      lp2               -0.426     0.205   -0.806   0.00779
-## 5 fixed  cond      phi_lp2            2.04      0.310    1.48    2.71   
-## 6 fixed  zi        lp2               -1.74      0.618   -2.84   -0.469</code></pre>
+## 1 fixed  cond      (Intercept)       -4.45      0.558   -5.66    -3.43  
+## 2 fixed  cond      phi_(Intercept)    1.50      0.735   -0.202    2.64  
+## 3 fixed  zi        (Intercept)        2.28      0.995   -0.302    3.73  
+## 4 fixed  cond      lp2               -0.453     0.209   -0.838   -0.0300
+## 5 fixed  cond      phi_lp2            2.04      0.321    1.48     2.74  
+## 6 fixed  zi        lp2               -1.77      0.572   -2.85    -0.554</code></pre>
 <pre class="r"><code>ame_beta_zi_ld2_ps2014 &lt;- ld2_model_beta_zi_ps2014 %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;lp2&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -1863,12 +1743,12 @@ ame_beta_zi_ld2_ps2014 %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  17.4  -3.71   33.2   0.95 median hdi</code></pre>
+## 1  17.7 -0.399   35.0   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_ld2_ps2014, &quot;draw&lt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &lt; 0    16.55     10.27     0.93    29.43       0.05      0.04     
+## 1 (draw) &lt; 0    16.85        10     1.49    29.99       0.04      0.04     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1914,13 +1794,7 @@ result</code></pre>
 
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
-  
-  # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;english_model_beta_zi_bts&quot;
 )
@@ -1930,26 +1804,26 @@ tidy(english_model_beta_zi_bts, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)      -5.73      2.07    -8.77      -3.18 
-## 2 fixed  cond      phi_(Intercept)  20.7      64.6    -70.3      108.   
-## 3 fixed  zi        (Intercept)      17.7      60.0    -69.4       90.7  
-## 4 fixed  cond      EPI_rank          0.0842    0.0671  -0.0123     0.170
-## 5 fixed  cond      phi_EPI_rank     -0.317     1.11    -1.83       1.22 
-## 6 fixed  zi        EPI_rank         -0.301     1.05    -1.58       1.21</code></pre>
+## 1 fixed  cond      (Intercept)     -0.650      12.9    -14.6      20.4  
+## 2 fixed  cond      phi_(Intercept) 19.2        65.6    -74.6     107.   
+## 3 fixed  zi        (Intercept)     17.5        59.8    -69.4      90.1  
+## 4 fixed  cond      EPI_rank        -0.00289     0.213   -0.330     0.260
+## 5 fixed  cond      phi_EPI_rank    -0.291       1.12    -1.80      1.30 
+## 6 fixed  zi        EPI_rank        -0.299       1.04    -1.57      1.21</code></pre>
 <pre class="r"><code>ame_beta_zi_english_bts &lt;- english_model_beta_zi_bts %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;EPI_rank&quot;) %&gt;% 
   marginaleffects::posterior_draws()
 ame_beta_zi_english_bts %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 2 × 6
-##    draw .lower .upper .width .point .interval
-##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  43.5  -3.47   89.9   0.95 median hdi      
-## 2  43.5  97.1    99.2   0.95 median hdi</code></pre>
+##     draw .lower .upper .width .point .interval
+##    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+## 1 -0.341  -3.47   59.2   0.95 median hdi      
+## 2 -0.341  70.8    92.7   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_english_bts, &quot;draw&lt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &lt; 0    45.95     47.47    -2.88    99.24          1       0.5     
+## 1 (draw) &lt; 0     22.4     40.59    -2.89    92.67          3      0.75     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -1966,13 +1840,8 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-  
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
-  
   # tune the mcmc sampler
-  control = list(adapt_delta = 0.99),
-  
+  control = list(adapt_delta = 0.99), 
   backend = &quot;cmdstanr&quot;,
   file = &quot;english_model_beta_zi_ps2014&quot;
 )
@@ -1982,12 +1851,12 @@ tidy(english_model_beta_zi_ps2014, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term             estimate std.error  conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;               &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)     -7.17e+ 0  8.02e+ 0 -2.09e+ 1 -6.81e- 1
-## 2 fixed  cond      phi_(Intercept)  3.70e+ 1  4.31e+ 1 -9.91e- 1  1.05e+ 2
-## 3 fixed  zi        (Intercept)     -1.13e+13  1.79e+13 -6.11e+13  5.09e+ 1
-## 4 fixed  cond      EPI_rank         5.19e- 2  1.95e- 1 -1.47e- 1  3.68e- 1
-## 5 fixed  cond      phi_EPI_rank    -5.72e- 1  7.69e- 1 -1.78e+ 0  1.40e- 1
-## 6 fixed  zi        EPI_rank         1.94e+11  3.05e+11 -8.78e- 1  1.05e+12</code></pre>
+## 1 fixed  cond      (Intercept)     -2.73e+ 0  1.05e+ 0 -3.80e+ 0  -6.58e-1
+## 2 fixed  cond      phi_(Intercept)  3.69e+ 1  4.29e+ 1 -9.50e- 1   1.05e+2
+## 3 fixed  zi        (Intercept)     -1.04e+10  2.47e+10 -9.91e+10   5.09e+1
+## 4 fixed  cond      EPI_rank        -2.31e- 2  8.50e- 2 -1.47e- 1   7.57e-2
+## 5 fixed  cond      phi_EPI_rank    -5.71e- 1  7.65e- 1 -1.77e+ 0   1.41e-1
+## 6 fixed  zi        EPI_rank         1.78e+ 8  4.22e+ 8 -8.79e- 1   1.69e+9</code></pre>
 <pre class="r"><code>ame_beta_zi_english_ps2014 &lt;- english_model_beta_zi_ps2014 %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;EPI_rank&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -1995,13 +1864,13 @@ ame_beta_zi_english_ps2014 %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 2 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1 -1.38  -37.8   73.8   0.95 median hdi      
-## 2 -1.38   76.9  104.    0.95 median hdi</code></pre>
+## 1 -2.74  -38.3   64.3   0.95 median hdi      
+## 2 -2.74   68.2   92.3   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_english_ps2014, &quot;draw&lt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &lt; 0    16.63     51.27   -31.79   103.58          3      0.75     
+## 1 (draw) &lt; 0    13.39     46.55   -31.85    92.33          3      0.75     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -2708,9 +2577,6 @@ Kenya/Nigeria, China, and United States/Netherlands.</p>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
   
   backend = &quot;cmdstanr&quot;,
   file = &quot;KE_urbanization_model_beta_zi &quot;
@@ -2721,27 +2587,26 @@ tidy(KE_urbanization_model_beta_zi, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)       -3.00      1.16    -4.20     -1.12 
-## 2 fixed  cond      phi_(Intercept)   37.8      19.3      4.97     63.0  
-## 3 fixed  zi        (Intercept)       -2.12      2.12    -5.57      0.627
-## 4 fixed  cond      KE_UP_2020         0.555     0.942   -0.827     2.09 
-## 5 fixed  cond      phi_KE_UP_2020   -17.0      41.9    -63.3      47.6  
-## 6 fixed  zi        KE_UP_2020        -2.28      6.06   -12.1       4.75</code></pre>
+## 1 fixed  cond      (Intercept)       -4.10      0.496  -4.76       -3.60
+## 2 fixed  cond      phi_(Intercept)    7.83     14.9    -2.52       33.5 
+## 3 fixed  zi        (Intercept)       -0.183     1.13   -1.69        1.17
+## 4 fixed  cond      KE_UP_2020         3.19      2.39   -0.0234      6.14
+## 5 fixed  cond      phi_KE_UP_2020    55.5      22.8    40.5        95.7 
+## 6 fixed  zi        KE_UP_2020        -9.42      7.54  -18.6         1.89</code></pre>
 <pre class="r"><code>ame_beta_zi_KE_urbanization &lt;- KE_urbanization_model_beta_zi %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;KE_UP_2020&quot;) %&gt;% 
   marginaleffects::posterior_draws()
 ame_beta_zi_KE_urbanization %&gt;% tidybayes::median_hdi(draw)</code></pre>
-<pre><code>## # A tibble: 3 × 6
+<pre><code>## # A tibble: 2 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  4.30 -20.4   -16.9   0.95 median hdi      
-## 2  4.30  -2.53   12.7   0.95 median hdi      
-## 3  4.30  13.0    13.7   0.95 median hdi</code></pre>
+## 1  21.5   2.36   2.79   0.95 median hdi      
+## 2  21.5  43.5   45.0    0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_KE_urbanization, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0    -0.87     11.73   -20.37     10.2       2.49      0.71     
+## 1 (draw) &gt; 0    22.66     15.87     2.43    45.02        Inf         1    *
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -2782,10 +2647,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;CN_urbanization_model_beta_zi &quot;
 )
@@ -2793,29 +2655,39 @@ tidy(CN_urbanization_model_beta_zi, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## Warning in tidy.brmsfit(CN_urbanization_model_beta_zi, effects = &quot;fixed&quot;): some
 ## parameter names contain underscores: term naming may be unreliable!</code></pre>
 <pre><code>## # A tibble: 6 × 7
-##   effect component term              estimate std.error   conf.low conf.high
-##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;                &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)        -1.57       1.82      -4.01      0.729
-## 2 fixed  cond      phi_(Intercept)    -0.0952     1.93      -2.00      3.34 
-## 3 fixed  zi        (Intercept)     -9044.     12513.    -36798.        1.80 
-## 4 fixed  cond      CN_UP_2020          0.134      0.273     -0.583     0.568
-## 5 fixed  cond      phi_CN_UP_2020      0.558      1.12      -1.88      3.35 
-## 6 fixed  zi        CN_UP_2020       3239.      4481.        -0.482 13178.</code></pre>
+##   effect component term             estimate std.error   conf.low conf.high
+##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;               &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;
+## 1 fixed  cond      (Intercept)        -2.31      1.41      -3.95     0.0364
+## 2 fixed  cond      phi_(Intercept)     0.689     1.43      -1.22     3.38  
+## 3 fixed  zi        (Intercept)     -5954.     7862.    -25820.       0.666 
+## 4 fixed  cond      CN_UP_2020          0.120     0.354     -0.865    0.578 
+## 5 fixed  cond      phi_CN_UP_2020      0.568     1.14      -1.91     3.40  
+## 6 fixed  zi        CN_UP_2020       2133.     2815.        -0.140 9248.</code></pre>
 <pre class="r"><code>ame_beta_zi_CN_urbanization &lt;- CN_urbanization_model_beta_zi %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;CN_UP_2020&quot;) %&gt;% 
   marginaleffects::posterior_draws()
 ame_beta_zi_CN_urbanization %&gt;% tidybayes::median_hdi(draw)</code></pre>
-<pre><code>## # A tibble: 3 × 6
-##    draw .lower .upper .width .point .interval
-##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  13.8 -11.3   -10.8   0.95 median hdi      
-## 2  13.8  -9.70   11.6   0.95 median hdi      
-## 3  13.8  12.6    15.4   0.95 median hdi</code></pre>
+<pre><code>## # A tibble: 13 × 6
+##     draw .lower .upper .width .point .interval
+##    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
+##  1  6.93  -17.9  -17.9   0.95 median hdi      
+##  2  6.93  -15.9  -14.9   0.95 median hdi      
+##  3  6.93  -14.7  -14.6   0.95 median hdi      
+##  4  6.93  -14.4  -13.5   0.95 median hdi      
+##  5  6.93  -13.2  -13.2   0.95 median hdi      
+##  6  6.93  -12.9  -12.6   0.95 median hdi      
+##  7  6.93  -12.0  -11.3   0.95 median hdi      
+##  8  6.93  -11.1   12.5   0.95 median hdi      
+##  9  6.93   12.9   13.3   0.95 median hdi      
+## 10  6.93   14.1   14.8   0.95 median hdi      
+## 11  6.93   15.7   16.3   0.95 median hdi      
+## 12  6.93   17.6   17.9   0.95 median hdi      
+## 13  6.93   20.7   20.9   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_CN_urbanization, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0     8.14      7.76    -5.63    15.22       5.92      0.86     
+## 1 (draw) &gt; 0     4.17      6.32    -8.37     8.99       4.96      0.83     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -2856,9 +2728,6 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 4, seed = 1234,
-    
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
   
   backend = &quot;cmdstanr&quot;,
   file = &quot;US_urbanization_model_beta_zi &quot;
@@ -2869,25 +2738,26 @@ tidy(US_urbanization_model_beta_zi, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)       -4.49      0.687   -5.82      -3.12
-## 2 fixed  cond      phi_(Intercept)    3.26      1.17     0.824      5.44
-## 3 fixed  zi        (Intercept)       -4.76      6.63   -21.1        4.60
-## 4 fixed  cond      US_UP_2020         0.946     0.844   -0.687      2.63
-## 5 fixed  cond      phi_US_UP_2020    -0.227     1.42    -2.93       2.72
-## 6 fixed  zi        US_UP_2020         1.58      8.18   -12.2       19.7</code></pre>
+## 1 fixed  cond      (Intercept)       -6.13       1.20   -8.51      -3.84
+## 2 fixed  cond      phi_(Intercept)    3.59       1.06    1.35       5.50
+## 3 fixed  zi        (Intercept)       -6.41       5.97  -20.5        3.31
+## 4 fixed  cond      US_UP_2020         3.07       1.53    0.132      6.02
+## 5 fixed  cond      phi_US_UP_2020    -0.467      1.36   -3.03       2.31
+## 6 fixed  zi        US_UP_2020         4.14       7.49  -10.0       19.7</code></pre>
 <pre class="r"><code>ame_beta_zi_US_urbanization &lt;- US_urbanization_model_beta_zi %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;US_UP_2020&quot;) %&gt;% 
   marginaleffects::posterior_draws()
 ame_beta_zi_US_urbanization %&gt;% tidybayes::median_hdi(draw)</code></pre>
-<pre><code>## # A tibble: 1 × 6
+<pre><code>## # A tibble: 2 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  4.91  -8.12   22.3   0.95 median hdi</code></pre>
+## 1  13.9  -6.65   63.9   0.95 median hdi      
+## 2  13.9  68.8    71.3   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_US_urbanization, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0     5.63      7.99    -5.33    19.47       2.82      0.74     
+## 1 (draw) &gt; 0    19.85     20.83    -1.06    63.29      11.54      0.92     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -2933,10 +2803,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;NG_internet_model_beta_zi &quot;
 )
@@ -2946,12 +2813,12 @@ tidy(NG_internet_model_beta_zi, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term                 estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;                   &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)            -2.63      0.804    -4.18     -1.09
-## 2 fixed  cond      phi_(Intercept)         0.169     1.45     -2.65      2.86
-## 3 fixed  zi        (Intercept)            -2.48      3.10     -9.19      3.11
-## 4 fixed  cond      Internet_NG_2022       -0.733     0.978    -2.48      1.22
-## 5 fixed  cond      phi_Internet_NG_2022    1.72      2.05     -1.94      5.78
-## 6 fixed  zi        Internet_NG_2022       -0.470     3.83     -9.09      5.85</code></pre>
+## 1 fixed  cond      (Intercept)            -1.65       1.23    -4.52     0.464
+## 2 fixed  cond      phi_(Intercept)        -1.19       1.79    -4.25     2.83 
+## 3 fixed  zi        (Intercept)            -2.07       3.08    -8.97     3.37 
+## 4 fixed  cond      Internet_NG_2022       -1.97       1.50    -4.33     1.78 
+## 5 fixed  cond      phi_Internet_NG_2022    3.58       2.44    -2.06     7.57 
+## 6 fixed  zi        Internet_NG_2022       -0.932      3.81    -9.79     5.62</code></pre>
 <pre class="r"><code>ame_beta_zi_NG_internet &lt;- NG_internet_model_beta_zi %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;Internet_NG_2022&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -2959,12 +2826,12 @@ ame_beta_zi_NG_internet %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1 -4.75  -32.4   16.2   0.95 median hdi</code></pre>
+## 1 -17.8  -79.7   23.5   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_NG_internet, &quot;draw&lt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &lt; 0    -6.06     12.06   -28.12    10.78       2.44      0.71     
+## 1 (draw) &lt; 0    -22.9     25.68   -73.02    10.01        6.6      0.87     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -3005,10 +2872,7 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
-  
+
   backend = &quot;cmdstanr&quot;,
   file = &quot;CN_internet_model_beta_zi &quot;
 )
@@ -3018,12 +2882,12 @@ tidy(CN_internet_model_beta_zi, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term                 estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;                   &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)            -3.25      0.689    -4.56     -1.86
-## 2 fixed  cond      phi_(Intercept)         0.944     1.76     -2.63      4.24
-## 3 fixed  zi        (Intercept)            -0.611     6.10    -12.9      11.8 
-## 4 fixed  cond      Internet_CN_2016        0.259     0.957    -1.57      2.11
-## 5 fixed  cond      phi_Internet_CN_2016    1.60      2.96     -4.31      7.36
-## 6 fixed  zi        Internet_CN_2016       -4.64     11.4     -31.3      14.8</code></pre>
+## 1 fixed  cond      (Intercept)            -4.60       1.80    -8.18    -0.957
+## 2 fixed  cond      phi_(Intercept)         1.96       2.16    -2.34     6.11 
+## 3 fixed  zi        (Intercept)            -0.917      6.02   -13.1     11.4  
+## 4 fixed  cond      Internet_CN_2016        2.64       3.12    -3.45     9.03 
+## 5 fixed  cond      phi_Internet_CN_2016   -0.191      3.80    -8.11     6.85 
+## 6 fixed  zi        Internet_CN_2016       -4.30      11.3    -31.1     15.0</code></pre>
 <pre class="r"><code>ame_beta_zi_CN_internet &lt;- CN_internet_model_beta_zi %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;Internet_CN_2016&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -3031,12 +2895,12 @@ ame_beta_zi_CN_internet %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  8.67  -28.0   44.6   0.95 median hdi</code></pre>
+## 1  34.2  -58.3   271.   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_CN_internet, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0     7.87      18.2   -20.78    36.38       2.24      0.69     
+## 1 (draw) &gt; 0    56.92     80.69   -29.85   224.44       5.08      0.84     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -3077,9 +2941,6 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
   
   backend = &quot;cmdstanr&quot;,
   file = &quot;US_internet_model_beta_zi &quot;
@@ -3090,25 +2951,29 @@ tidy(US_internet_model_beta_zi, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term                 estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;                   &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)            -3.85      0.891    -5.62     -2.16
-## 2 fixed  cond      phi_(Intercept)        -4.54      7.23    -18.3      10.4 
-## 3 fixed  zi        (Intercept)             1.73     28.6     -59.1      52.2 
-## 4 fixed  cond      Internet_US_2018        0.143     0.995    -1.78      2.09
-## 5 fixed  cond      phi_Internet_US_2018    8.92      8.45     -8.41     25.2 
-## 6 fixed  zi        Internet_US_2018       -6.22     33.7     -67.3      65.1</code></pre>
+## 1 fixed  cond      (Intercept)            -18.8       8.61   -34.4      -1.80
+## 2 fixed  cond      phi_(Intercept)         18.6      15.2    -11.5      46.5 
+## 3 fixed  zi        (Intercept)             -1.41     28.3    -61.0      49.2 
+## 4 fixed  cond      Internet_US_2018        17.7      10.1     -2.36     36.3 
+## 5 fixed  cond      phi_Internet_US_2018   -18.1      17.8    -51.1      17.0 
+## 6 fixed  zi        Internet_US_2018        -2.60     33.3    -64.1      66.2</code></pre>
 <pre class="r"><code>ame_beta_zi_US_internet &lt;- US_internet_model_beta_zi %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;Internet_US_2018&quot;) %&gt;% 
   marginaleffects::posterior_draws()
 ame_beta_zi_US_internet %&gt;% tidybayes::median_hdi(draw)</code></pre>
-<pre><code>## # A tibble: 1 × 6
+<pre><code>## # A tibble: 5 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1  4.96  -18.4   21.6   0.95 median hdi</code></pre>
+## 1  214.  -16.6   131.   0.95 median hdi      
+## 2  214.  143.    153.   0.95 median hdi      
+## 3  214.  181.    189.   0.95 median hdi      
+## 4  214.  209.    223.   0.95 median hdi      
+## 5  214.  239.    369.   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_US_internet, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0     2.52     10.82   -14.94    18.39       1.55      0.61     
+## 1 (draw) &gt; 0    185.3    168.89     -0.2   368.98       5.59      0.85     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -3152,9 +3017,6 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
   
   backend = &quot;cmdstanr&quot;,
   file = &quot;NG_EPI_model_beta_zi &quot;
@@ -3163,28 +3025,29 @@ tidy(NG_EPI_model_beta_zi, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## Warning in tidy.brmsfit(NG_EPI_model_beta_zi, effects = &quot;fixed&quot;): some
 ## parameter names contain underscores: term naming may be unreliable!</code></pre>
 <pre><code>## # A tibble: 6 × 7
-##   effect component term            estimate std.error conf.low conf.high
-##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)      -0.397     3.91    -3.92      6.29  
-## 2 fixed  cond      phi_(Intercept) -19.4      34.4    -79.0       1.74  
-## 3 fixed  zi        (Intercept)      -1.81      2.62    -8.29      1.08  
-## 4 fixed  cond      EPI_NG_2022      -0.145     0.189   -0.468     0.0283
-## 5 fixed  cond      phi_EPI_NG_2022   1.22      2.00    -0.0122    4.69  
-## 6 fixed  zi        EPI_NG_2022      -0.0182    0.0900  -0.186     0.191</code></pre>
+##   effect component term            estimate std.error  conf.low conf.high
+##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+## 1 fixed  cond      (Intercept)      -0.281      4.15   -3.93       6.82  
+## 2 fixed  cond      phi_(Intercept) -13.5       24.2   -55.4        1.75  
+## 3 fixed  zi        (Intercept)      -0.402      4.18   -7.10       6.18  
+## 4 fixed  cond      EPI_NG_2022      -0.150      0.200  -0.493      0.0255
+## 5 fixed  cond      phi_EPI_NG_2022   0.864      1.39   -0.00940    3.26  
+## 6 fixed  zi        EPI_NG_2022      -0.0991     0.180  -0.378      0.167</code></pre>
 <pre class="r"><code>ame_beta_zi_NG_EPI &lt;- NG_EPI_model_beta_zi %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;EPI_NG_2022&quot;) %&gt;% 
   marginaleffects::posterior_draws()
 ame_beta_zi_NG_EPI %&gt;% tidybayes::median_hdi(draw)</code></pre>
-<pre><code>## # A tibble: 2 × 6
+<pre><code>## # A tibble: 3 × 6
 ##     draw .lower .upper .width .point .interval
 ##    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1 -0.454  -1.71 -1.54    0.95 median hdi      
-## 2 -0.454  -1.30  0.318   0.95 median hdi</code></pre>
+## 1 -0.143  -1.48 -1.44    0.95 median hdi      
+## 2 -0.143  -1.41 -1.40    0.95 median hdi      
+## 3 -0.143  -1.31  0.362   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_NG_EPI, &quot;draw&lt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &lt; 0    -0.68      0.66    -1.63     0.12       7.89      0.89     
+## 1 (draw) &lt; 0    -0.22      0.45    -1.06     0.19       1.71      0.63     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -3225,9 +3088,6 @@ result</code></pre>
   family = zero_inflated_beta_binomial(),
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
-    
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),
   
   backend = &quot;cmdstanr&quot;,
   file = &quot;CN_EPI_model_beta_zi&quot;
@@ -3238,12 +3098,12 @@ tidy(CN_EPI_model_beta_zi, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)      -2.71      0.527    -3.73    -1.63  
-## 2 fixed  cond      phi_(Intercept)   2.40      0.635     0.994    3.48  
-## 3 fixed  zi        (Intercept)      -4.59      2.73    -11.2     -0.782 
-## 4 fixed  cond      EPI_CN_2022      -0.0315    0.0374   -0.105    0.0429
-## 5 fixed  cond      phi_EPI_CN_2022  -0.0354    0.0369   -0.110    0.0372
-## 6 fixed  zi        EPI_CN_2022       0.0808    0.140    -0.214    0.365</code></pre>
+## 1 fixed  cond      (Intercept)      -2.73      0.520    -3.75    -1.69  
+## 2 fixed  cond      phi_(Intercept)   2.42      0.616     1.11     3.53  
+## 3 fixed  zi        (Intercept)      -4.56      2.68    -11.1     -0.786 
+## 4 fixed  cond      EPI_CN_2022      -0.0295    0.0368   -0.100    0.0453
+## 5 fixed  cond      phi_EPI_CN_2022  -0.0376    0.0372   -0.114    0.0328
+## 6 fixed  zi        EPI_CN_2022       0.0777    0.139    -0.209    0.362</code></pre>
 <pre class="r"><code>ame_beta_zi_CN_EPI &lt;- CN_EPI_model_beta_zi %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;EPI_CN_2022&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -3251,12 +3111,12 @@ ame_beta_zi_CN_EPI %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##     draw .lower .upper .width .point .interval
 ##    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1 -0.495  -1.78  0.590   0.95 median hdi</code></pre>
+## 1 -0.478  -1.73  0.567   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_CN_EPI, &quot;draw&lt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &lt; 0    -0.52      0.57    -1.46      0.3       7.11      0.88     
+## 1 (draw) &lt; 0    -0.49      0.56    -1.41     0.37       6.38      0.86     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
@@ -3299,9 +3159,6 @@ result</code></pre>
   chains = 4, iter = 2000, warmup = 1000,
   cores = 2, seed = 1234,
   
-  prior = c(prior(&quot;student_t(3, 0, 2.5)&quot;, class = &quot;Intercept&quot;),
-            prior(&quot;normal(0, 1)&quot;, class = &quot;b&quot;)),  
-  
   backend = &quot;cmdstanr&quot;,
   file = &quot;NL_EPI_model_beta_zi &quot;
 )
@@ -3311,12 +3168,12 @@ tidy(NL_EPI_model_beta_zi, effects = &quot;fixed&quot;)</code></pre>
 <pre><code>## # A tibble: 6 × 7
 ##   effect component term            estimate std.error conf.low conf.high
 ##   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1 fixed  cond      (Intercept)       -3.24      0.791   -4.55    -1.38  
-## 2 fixed  cond      phi_(Intercept)    4.61      1.91     0.733    8.55  
-## 3 fixed  zi        (Intercept)       -3.82      2.71   -10.3      0.403 
-## 4 fixed  cond      EPI_NL_2022        0.187     0.138   -0.124    0.435 
-## 5 fixed  cond      phi_EPI_NL_2022   -0.459     0.250   -0.974    0.0458
-## 6 fixed  zi        EPI_NL_2022        0.225     0.377   -0.606    0.953</code></pre>
+## 1 fixed  cond      (Intercept)       -3.28      0.812   -4.62    -1.25  
+## 2 fixed  cond      phi_(Intercept)    4.66      1.89     0.705    8.40  
+## 3 fixed  zi        (Intercept)       -3.84      2.75   -10.2      0.492 
+## 4 fixed  cond      EPI_NL_2022        0.193     0.143   -0.123    0.450 
+## 5 fixed  cond      phi_EPI_NL_2022   -0.464     0.248   -0.955    0.0391
+## 6 fixed  zi        EPI_NL_2022        0.225     0.385   -0.575    0.960</code></pre>
 <pre class="r"><code>ame_beta_zi_NL_EPI &lt;- NL_EPI_model_beta_zi %&gt;%
   marginaleffects::avg_comparisons(variables = &quot;EPI_NL_2022&quot;) %&gt;% 
   marginaleffects::posterior_draws()
@@ -3324,12 +3181,12 @@ ame_beta_zi_NL_EPI %&gt;% tidybayes::median_hdi(draw)</code></pre>
 <pre><code>## # A tibble: 1 × 6
 ##    draw .lower .upper .width .point .interval
 ##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;    
-## 1 0.989  -1.42   5.20   0.95 median hdi</code></pre>
+## 1  1.02  -1.38   5.63   0.95 median hdi</code></pre>
 <pre class="r"><code>result &lt;- brms::hypothesis(ame_beta_zi_NL_EPI, &quot;draw&gt;0&quot;)
 result</code></pre>
 <pre><code>## Hypothesis Tests for class :
 ##   Hypothesis Estimate Est.Error CI.Lower CI.Upper Evid.Ratio Post.Prob Star
-## 1 (draw) &gt; 0      1.3      1.71    -0.82     4.53       4.09       0.8     
+## 1 (draw) &gt; 0     1.35      1.78    -0.81     4.74       4.12       0.8     
 ## ---
 ## &#39;CI&#39;: 90%-CI for one-sided and 95%-CI for two-sided hypotheses.
 ## &#39;*&#39;: For one-sided hypotheses, the posterior probability exceeds 95%;
