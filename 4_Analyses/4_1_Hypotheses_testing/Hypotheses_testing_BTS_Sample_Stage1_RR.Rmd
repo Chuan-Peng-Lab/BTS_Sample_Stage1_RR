@@ -11,23 +11,46 @@ In this script, we will use data from PSA 001 project [Jones et al., 2021, *Natu
 
 # load libraries.
 ```{r}
-library(extrafont)
-library(ggplot2)
-library(rio)
-library(countrycode)
-library(maps)
-library(tidyverse)
-library(treemapify)
-library(lubridate)
-library(MOTE)
-library(patchwork)
-library(ggrepel) #Used to label the points in the bubble chart
-library(grid)
-library(cowplot)
-library(ggforce) #Picture in Picture
-library(boot)
-library(bootES)
-library(vegan)# Calculate Simpson's diversity index
+
+rm(list = ls()) # clear the env
+
+if (!requireNamespace("pacman", quietly = TRUE)) {
+  install.packages("pacman") }   # 如果未安装，则安装包
+
+# import packages
+pacman::p_load("tidyverse", 
+               "extrafont",
+               "rio",
+               "countrycode",
+               "maps",
+               "treemapify",
+               "lubridate",
+               "MOTE",
+               "patchwork",
+               "ggrepel",
+               "grid",
+               "ggforce",
+               "boot",
+               "bootES",
+               "vegan")
+
+# library(extrafont)
+# # library(ggplot2)
+# library(rio)
+# library(countrycode)
+# library(maps)
+# # library(tidyverse)
+# library(treemapify)
+# library(lubridate)
+# library(MOTE)
+# library(patchwork)
+# library(ggrepel) # Used to label the points in the bubble chart
+# library(grid)
+# library(cowplot)
+# library(ggforce) # Picture in Picture
+# library(boot)
+# library(bootES)
+# library(vegan)  # Calculate Simpson's diversity index
 ```
 
 # Preprocessing
@@ -36,6 +59,7 @@ df <- read.csv("psa001_ind.csv")
 ```
 
 ```{r}
+# hcp: need to find a better way for converting country code
 df <- df %>%
   dplyr::mutate(country_map = case_when(
     country == "AFG" ~ "AF", 
@@ -317,7 +341,8 @@ wppdata <- read_csv("WPP2022.csv")
 wppdata1 <- subset(wppdata, select = c("country_map","continent", "pop"))
 wppdata2 <- dplyr::mutate(.data = wppdata1, percentage_pop = pop/7909295.151) 
 wppdata3 <- wppdata2 %>% dplyr::left_join(df_PSA001, by = "country_map")
-#Merge data from Taiwan Province with data from mainland China
+
+# Merge data from Taiwan Province with data from mainland China
 sum_of_cn <- sum(wppdata3$percentage_pop[wppdata3$country_map %in% c("CN", "TW")])
 wppdata3$percentage_pop[wppdata3$country_map %in% c("CN", "TW")] <- sum_of_cn
 sum_of_cn
