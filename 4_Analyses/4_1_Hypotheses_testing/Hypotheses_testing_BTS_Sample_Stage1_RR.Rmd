@@ -950,7 +950,9 @@ ggsave("Figure 3.pdf", fig3c, device = "pdf", width = 12, height = 9)
 ```{r}
 wppdata <- read_csv("WPP2022.csv")
 wppdata1 <- mutate(.data = wppdata, percentage_pop = pop/7909295.151) 
+wppdata1 <- wppdata1 %>% filter(!is.na(Country_groups))
 wppdata1
+wppdata
 ```
 
 ```{r}
@@ -960,7 +962,7 @@ count(country)
 psa2 <- mutate(.data = psa1, n1 = n/120) 
 psa3 <- mutate(.data = psa2, percentage_n = n1/11484) 
 uniondata <- wppdata1 %>% left_join(psa3, by = "country")
-uniondata <- uniondata %>%mutate(Country_groups =                                    case_when(Country_groups == "Developed Country"~"Developed country", TRUE ~ Country_groups))
+
 uniondata$percentage_n[is.na(uniondata$percentage_n)] <- 0
 uniondata$ps2014 <- 0  
 uniondata$ps2014[uniondata$continent == "Europe"] <- 0.000216  
@@ -984,9 +986,10 @@ ggplot(data = uniondata, aes(x = percentage_pop, y = percentage_n, color = Count
   ylab("Proportion of sample from BTS") +
 
  scale_color_manual(name = "Country groups",
-    values = c("#F8766D","#00BA38","#619CFF"),
-                    breaks = c("Developed country", "Developing country", "Least developed country"),
-                    labels = c("Developed country", "Developing country", "Least developed country")) +
+    values = c("#F8766D","#00BA38","#619CFF","blue"),
+                    breaks = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country"),
+                    labels = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country"),
+    guide = guide_legend(nrow = 2)) +
 
   geom_segment(aes(x = 0, y = 0, xend = 0.095, yend = 0.095),color = "black",size = 0.5,linetype = "dashed") +
  
@@ -996,9 +999,9 @@ ggplot(data = uniondata, aes(x = percentage_pop, y = percentage_n, color = Count
   theme(
         legend.position = "bottom",
         legend.key.size = unit(0.5, "cm"),
-        legend.text = element_text(size = 18),
-        legend.title = element_text(size = 20),
-        axis.text = element_text(size = 26),
+        legend.text = element_text(size = 20),
+        legend.title = element_text(size = 22),
+        axis.text = element_text(size = 24),
         axis.title = element_text(size = 30),
         panel.background = element_rect(fill = "white"), 
         axis.line = element_line(color = "black"),
@@ -1021,7 +1024,10 @@ zoom_plt <- zoom_data %>%
   geom_abline(slope = 1, intercept = 0, size = 0.5,linetype = "dashed", color = "black") +
   scale_y_continuous(limits = c(0, 0.04)) +
   scale_x_continuous(limits = c(0, 0.04))+
-
+  scale_color_manual(name = "Country groups",
+    values = c("#F8766D","#00BA38","#619CFF","blue"),
+                    breaks = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country"),
+                    labels = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country")) +
   theme_void()+
   theme(plot.background = element_rect(fill = NA, color = "grey80", size = 2),
         legend.position = "none",
@@ -1039,7 +1045,7 @@ zoom_plt
 pp2 <- pp1 + inset_element(zoom_plt, 0.3, 0.4, 0.9, 1)+ 
   plot_annotation(theme=theme(
       plot.title = element_text( size = 12, color = "black", hjust = 0.5, margin = margin(5,0,10,0)), ))
-pp2
+
 
   #ggsave(filename = "PSA_Population_percentage_by_Country_enlarge.pdf", plot = pp2,  dpi = 300)
 ```
@@ -1055,10 +1061,11 @@ ggplot(data = uniondata, aes(x = percentage_pop, y = ps2014, color = Country_gro
   xlab("Proportion of population") +
   ylab("Proportion of sample from traditional studies") +
 
- scale_color_manual(name = "Country groups",
-    values = c("#F8766D","#00BA38","#619CFF"),
-                    breaks = c("Developed country", "Developing country", "Least developed country"),
-                    labels = c("Developed country", "Developing country", "Least developed country")) +
+  scale_color_manual(name = "Country groups",
+    values = c("#F8766D","#00BA38","#619CFF","blue"),
+                    breaks = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country"),
+                    labels = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country"),
+    guide = guide_legend(nrow = 2)) +
 
   geom_segment(aes(x = 0, y = 0, xend = 0.38, yend = 0.38),color = "black",size = 0.5,linetype = "dashed") +
   
@@ -1067,10 +1074,10 @@ ggplot(data = uniondata, aes(x = percentage_pop, y = ps2014, color = Country_gro
 
   theme(
         legend.position = "bottom",
-        legend.key.size = unit(0.5, "cm"),
-        legend.text = element_text(size = 18),
-        legend.title = element_text(size = 20),
-        axis.text = element_text(size = 26),
+        #legend.key.size = unit(0.5, "cm"),
+        legend.text = element_text(size = 20),
+        legend.title = element_text(size = 22),
+        axis.text = element_text(size = 24),
         axis.title = element_text(size = 30),
         panel.background = element_rect(fill = "white"),
         axis.line = element_line(color = "black"),
@@ -1092,12 +1099,12 @@ zoom_plt1 <- zoom_data1 %>%
   geom_abline(slope = 1, intercept = 0, size = 0.5,linetype = "dashed", color = "black") +
   scale_y_continuous(limits = c(0, 0.045)) +
   scale_x_continuous(limits = c(0, 0.045))+
-  
+  scale_color_manual(name = "Country groups",
+    values = c("#F8766D","#00BA38","#619CFF","blue"),
+                    breaks = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country"),
+                    labels = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country")) +
   theme_void()+
- scale_color_manual(name = "Country groups",
-    values = c("#F8766D","#00BA38","#619CFF"),
-                    breaks = c("Developed country", "Developing country", "Least developed country"),
-                    labels = c("Developed country", "Developing country", "Least developed country")) +
+
    theme(plot.background = element_rect(fill = NA, color = "grey80", size = 2),
         legend.position = "none",
         legend.key.size = unit(0.5, "cm"),
@@ -1115,18 +1122,18 @@ zoom_plt1
 pp4 <- pp3 + inset_element(zoom_plt1, 0.3, 0.4, 0.9, 1)+ 
   plot_annotation(theme=theme(
       plot.title = element_text( size = 12, color = "black", hjust = 0.5, margin = margin(5,0,10,0)), ))
-pp4
+
   #ggsave(filename = "PS2014_&_World_Population_by_Country_enlarge.pdf", plot = pp4,  dpi = 300)
 ```
 
 ```{r}  
 combined_plot_people <-   pp4 + pp2+
   plot_layout(ncol = 2) + # 设置两列布局
-plot_annotation(tag_levels = list(c('A', '','B', '')), theme=theme(plot.tag = element_text(size = 10)))
+plot_annotation(tag_levels = list(c('A', '','B', '')), theme=theme(plot.tag = element_text(size = 28)))
 
-combined_plot_people
+
 # Save the plot as a pdf image
-ggsave(filename = "Figure 4.pdf", plot = combined_plot_people, device = "pdf", width = 24, height = 12)
+ggsave(filename = "Figure 4.pdf", plot = combined_plot_people, device = "pdf", width = 24, height = 14)
 ```
 
 # Author diversity

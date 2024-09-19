@@ -6,10 +6,13 @@ This repo is data, code, and related materials of "Assessing diversity and repre
 ```
 .
 ├── 1_Protocol
-│   └── Protocol
+│   └── Assess_BTS_Stage1_RR_manuscript.docx
 ├── 2_Raw_Data
-│   └── 2_2_BTS
+
+│   └── 2_1_BTS
 │       └── Collection of Big Team Science in Psych Sci.txt
+│   └── 2_2_Traditional studies 
+│   └── 2_2_World population census data
 ├── 3_Data extraction
 │   └── 3_1_Code_manual
 │   │   ├──BTS_sample_Code_Manual (in Chinese).docx
