@@ -1139,6 +1139,14 @@ ggsave(filename = "Figure 4.pdf", plot = combined_plot_people, device = "pdf", w
 # Author diversity
 ## Calculate Simpson's diversity index
 ```{r}
+author_data <- read_csv("author_BTS.csv") %>%
+filter(country_map != "TW")
+author_data[author_data == ""] <- 0
+
+author_data
+```
+
+```{r}
 author_BTS_1 <- read_csv("author_BTS.csv")
 author_BTS <- filter(author_BTS_1, country_map != "TW")
 author_BTS[author_BTS == ""] <- NA
@@ -1521,6 +1529,213 @@ bf3$BF10
 bf4$BF10
 ```
 
+```{r}
+author_data <- read_csv("author_BTS.csv") %>%
+filter(country_map != "TW")
+author_data[author_data == ""] <- 0
+
+author_data
+
+
+new_author_data <- author_data %>%
+  group_by(Country_groups) %>%
+  summarise(
+    author_ps2014 = sum(author_ps2014, na.rm = TRUE),
+    author_bts = sum(author_bts, na.rm = TRUE),  
+    wpd = sum(wpd, na.rm = TRUE),
+    leading_author_bts = sum(leading_author_bts, na.rm = TRUE),
+    leading_author_ps2014 = sum(leading_author_ps2014, na.rm = TRUE),
+    percentage_author_ps2014 = sum(percentage_author_ps2014, na.rm = TRUE),
+    percentage_author_bts = sum(percentage_author_bts, na.rm = TRUE),  
+    percentage_wpd = sum(percentage_wpd, na.rm = TRUE),
+    percentage_leading_author_bts = sum(percentage_leading_author_bts, na.rm = TRUE),
+    percentage_leading_author_ps2014 = sum(percentage_leading_author_ps2014, na.rm = TRUE)
+  )
+
+# 查看新的数据框
+print(new_author_data)
+new_author_data1 <- new_author_data %>%
+  filter(Country_groups != "other")
+
+new_author_data1
+
+```
+
+```{r cars}
+BayesMultiNomial <- function(dataset, factor, observed, expected, default_prior = TRUE, prior = NA){
+  # datase - the input dataframe
+  # factor - column name of the factor,
+  # observed - column name of the column contains counts information for the observed,
+  # expected - column name of the column contains counts information for the expected,
+  # default_prior - whether use the default, defused prior
+  # prior - priors defined by users
+  
+  fact_level <- dataset %>% dplyr::select(all_of(factor)) %>% dplyr::pull()
+  observed_data <- dataset %>% dplyr::select(all_of(observed)) %>% dplyr::pull()
+  names(observed_data) <- fact_level
+  expected_data <- dataset %>% dplyr::select(all_of(expected)) %>% dplyr::pull()
+  n_levels <- length(observed_data)
+  
+  
+  if (default_prior & all(is.na(prior))) {
+    prior <- rep(1, n_levels)
+  } else{
+    if (is.character(prior)){
+      prior <- dataset %>% dplyr::select(all_of(prior)) %>% dplyr::pull()
+    } else if (is.array(prior)){
+      prior <-  prior
+    } else if (is.numeric(prior)){
+      prior <-  prior
+    } else{
+      print("prior much a column of the input data or a vector")
+    }
+  }
+  
+  alphas <- prior
+  counts <- observed_data
+  thetas <- expected_data
+  
+  if(sum(thetas) != 1) {
+    thetas <- thetas/sum(thetas)
+    }
+  
+  expected <- setNames(sum(counts)*thetas, names(counts))
+  
+  lbeta.xa <- sum(lgamma(alphas + counts)) - lgamma(sum(alphas + counts))
+  lbeta.a  <- sum(lgamma(alphas)) - lgamma(sum(alphas))
+
+  if (any(rowSums(cbind(thetas, counts)) == 0)) {
+    LogBF10 <- (lbeta.xa-lbeta.a)
+  } else {
+    LogBF10 <- (lbeta.xa-lbeta.a) + (0 - sum(counts * log(thetas))) 
+  }
+
+  BF <- data.frame(LogBF10 = LogBF10,
+                   BF10    = exp(LogBF10),
+                   BF01    = 1/exp(LogBF10))
+
+  return(list(BF       = BF,
+              expected = expected))
+  
+}
+```
+
+```{r cars}
+BF1 <- BayesMultiNomial(
+      dataset = new_author_data1,
+      factor = "Country_groups",
+      observed = "percentage_author_ps2014",
+      expected = "percentage_author_bts")
+BF1
+
+
+BF2 <- BayesMultiNomial(
+      dataset = new_author_data1,
+      factor = "Country_groups",
+      observed = "percentage_author_bts",
+      expected = "percentage_wpd")
+BF2
+BF3 <- BayesMultiNomial(
+      dataset = new_author_data1,
+      factor = "Country_groups",
+      observed = "percentage_leading_author_ps2014",
+      expected = "percentage_leading_author_bts")
+BF3
+
+BF4 <- BayesMultiNomial(
+      dataset = new_author_data1,
+      factor = "Country_groups",
+      observed = "percentage_leading_author_bts",
+      expected = "percentage_wpd")
+BF4
+```
+
+```{r cars}
+BF1 <- BayesMultiNomial(
+      dataset = new_author_data,
+      factor = "Country_groups",
+      observed = "percentage_author_ps2014",
+      expected = "percentage_author_bts")
+BF1
+
+
+BF2 <- BayesMultiNomial(
+      dataset = new_author_data,
+      factor = "Country_groups",
+      observed = "percentage_author_bts",
+      expected = "percentage_wpd")
+BF2
+BF3 <- BayesMultiNomial(
+      dataset = new_author_data,
+      factor = "Country_groups",
+      observed = "percentage_leading_author_ps2014",
+      expected = "percentage_leading_author_bts")
+BF3
+
+BF4 <- BayesMultiNomial(
+      dataset = new_author_data,
+      factor = "Country_groups",
+      observed = "percentage_leading_author_bts",
+      expected = "percentage_wpd")
+BF4
+```
+
+```{r cars}
+BF1 <- BayesMultiNomial(
+      dataset = new_author_data,
+      factor = "Country_groups",
+      observed = "author_ps2014",
+      expected = "author_bts")
+BF1
+
+
+BF2 <- BayesMultiNomial(
+      dataset = new_author_data,
+      factor = "Country_groups",
+      observed = "author_bts",
+      expected = "wpd")
+BF2
+BF3 <- BayesMultiNomial(
+      dataset = new_author_data,
+      factor = "Country_groups",
+      observed = "leading_author_ps2014",
+      expected = "leading_author_bts")
+BF3
+
+BF4 <- BayesMultiNomial(
+      dataset = new_author_data,
+      factor = "Country_groups",
+      observed = "leading_author_bts",
+      expected = "wpd")
+BF4
+```
+
+```{r cars}
+df1 <- c(10, 20, 30, 40, 50)
+df2 <- c(200, 200, 200, 200, 200)
+df3 <- c(10, 20, 30, 40, 50)
+
+# 使用$操作符直接赋值
+new_author_data$df1 <- df1
+new_author_data$df2 <- df2
+new_author_data$df3 <- df3
+new_author_data
+BF1 <- BayesMultiNomial(
+      dataset = new_author_data,
+      factor = "Country_groups",
+      observed = "df1",
+      expected = "df3")
+BF1
+
+
+BF2 <- BayesMultiNomial(
+      dataset = new_author_data,
+      factor = "Country_groups",
+      observed = "df2",
+      expected = "df3")
+BF2
+
+```
 ## R Markdown
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
