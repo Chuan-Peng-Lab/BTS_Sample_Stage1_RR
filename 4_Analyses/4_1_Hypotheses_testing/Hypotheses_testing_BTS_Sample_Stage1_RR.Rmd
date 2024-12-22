@@ -1557,9 +1557,87 @@ print(new_author_data)
 new_author_data1 <- new_author_data %>%
   filter(Country_groups != "other")
 
+
+
+new_author_data1 <- new_author_data1 %>%
+  mutate(across(everything(), ~ ifelse(. == 0, 0.1e-08, .)))
 new_author_data1
+```
+
+```{r}
+froot<-function(x,lambda,thresh,df){
+ dchisq(x,df, ncp =lambda)/dchisq(x,df)-thresh
+ }
+ f1<- function(lambda,thresh,df){
+ r<-uniroot(froot,lambda=lambda,thresh=thresh,df=df,c(0.01,1000))$root
+ }
+ vf1<-Vectorize(f1)
+ UMPBT<-function(df, thresh){
+ optout<- optimize(vf1,c(0,100),thresh=thresh,df=df)
+ z<-optout$minimum
+ return(z)
+ }
+
+
+lambda <- UMPBT(df <- 4, thresh <- 10)
+lambda
+
+# 定义观测值
+observed1 <- new_author_data1$percentage_author_ps2014
+
+# 定义期望值 (例如均匀分布)
+expected1 <- new_author_data1$percentage_author_bts
+
+# 执行卡方拟合优度检验
+chi_square_result1 <- chisq.test(x = observed1, p = expected1 / sum(expected1))
+chi_square_result1
+
+BF1 <- dchisq(x = chi_square_result1$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result1$statistic, df = 4)
+BF1
+
+
+
+observed2 <- new_author_data1$percentage_author_bts
+expected2 <- new_author_data1$percentage_wpd
+
+chi_square_result2 <- chisq.test(x = observed2, p = expected2 / sum(expected2))
+chi_square_result2
+
+BF2 <- dchisq(x = chi_square_result2$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result2$statistic, df = 4)
+BF2
+
+
+observed3 <- new_author_data1$percentage_leading_author_ps2014
+expected3 <- new_author_data1$percentage_leading_author_bts
+
+chi_square_result3 <- chisq.test(x = observed3, p = expected3 / sum(expected3))
+chi_square_result3
+
+BF3 <- dchisq(x = chi_square_result3$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result3$statistic, df = 4)
+BF3
+
+
+observed4 <- new_author_data1$percentage_leading_author_bts
+expected4 <- new_author_data1$percentage_wpd
+
+chi_square_result4 <- chisq.test(x = observed4, p = expected4 / sum(expected4))
+chi_square_result4
+
+BF4 <- dchisq(x = chi_square_result4$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result4$statistic, df = 4)
+BF4
+
 
 ```
+
+```{r}
+ 
+```
+
+```{r}
+ 
+```
+
+
 
 ```{r cars}
 BayesMultiNomial <- function(dataset, factor, observed, expected, default_prior = TRUE, prior = NA){

@@ -1,0 +1,307 @@
+---
+title: "sensitivity analysis "
+author: "liu_weibiao"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r Initialization, message=FALSE, warning=FALSE, include=FALSE}
+# rm(list = ls())
+if (!require("pacman")) install.packages("pacman")
+
+pacman::p_load("tidyverse", "ggh4x","stringr", "patchwork", "BayesFactor", "gtools", "bruceR")
+
+pacman::p_load("iterators", "foreach","parallel", "doParallel")
+
+pacman::p_load("truncnorm")
+
+options(scipen=999) 
+```
+
+# Bayesian multinomial test
+
+## Background
+Here, `alphas` defined the prior Dirichlet distribution, e.g., noninformative prior is a vector of $1$s, `counts` are the observed frequencies.
+
+To use the algorithm in R, we defined a function here:
+
+```{r define BF for Multinomial test, message=FALSE, warning=FALSE}
+BayesMultiNomial <- function(dataset, factor, observed, expected, default_prior = TRUE, prior = NA){
+  # datase - the input dataframe
+  # factor - column name of the factor,
+  # observed - column name of the column contains counts information for the observed,
+  # expected - column name of the column contains counts information for the expected,
+  # default_prior - whether use the default, defused prior
+  # prior - priors defined by users
+  
+  fact_level <- dataset %>% dplyr::select(all_of(factor)) %>% dplyr::pull()
+  observed_data <- dataset %>% dplyr::select(all_of(observed)) %>% dplyr::pull()
+  names(observed_data) <- fact_level
+  expected_data <- dataset %>% dplyr::select(all_of(expected)) %>% dplyr::pull()
+  n_levels <- length(observed_data)
+  
+  
+  if (default_prior & all(is.na(prior))) {
+    prior <- rep(1, n_levels)
+  } else{
+    if (is.character(prior)){
+      prior <- dataset %>% dplyr::select(all_of(prior)) %>% dplyr::pull()
+    } else if (is.array(prior)){
+      prior <-  prior
+    } else if (is.numeric(prior)){
+      prior <-  prior
+    } else{
+      print("prior much a column of the input data or a vector")
+    }
+  }
+  
+  alphas <- prior
+  counts <- observed_data
+  thetas <- expected_data
+  
+  if(sum(thetas) != 1) {
+    thetas <- thetas/sum(thetas)
+    }
+  
+  expected <- setNames(sum(counts)*thetas, names(counts))
+  
+  lbeta.xa <- sum(lgamma(alphas + counts)) - lgamma(sum(alphas + counts))
+  lbeta.a  <- sum(lgamma(alphas)) - lgamma(sum(alphas))
+
+  if (any(rowSums(cbind(thetas, counts)) == 0)) {
+    LogBF10 <- (lbeta.xa-lbeta.a)
+  } else {
+    LogBF10 <- (lbeta.xa-lbeta.a) + (0 - sum(counts * log(thetas))) 
+  }
+
+  BF <- data.frame(LogBF10 = LogBF10,
+                   BF10    = exp(LogBF10),
+                   BF01    = 1/exp(LogBF10))
+
+  return(list(BF       = BF,
+              expected = expected))
+  
+}
+```
+
+### Justification for the Bayesian multinomial test
+
+
+To test whether the current non-informative prior is reasonable, we conducted a simulation to test the sensitivity.
+
+We tested the false positive rate of the current setting and false negative (power = 1 - FN ) of the current setting under different deviation from the expected. 
+
+#### Test the default prior for sex ratio
+
+For sex ratio, we used the $Y \sim Binomial(p = 0.5)$ as the null model, any deviation from $0.5$ will be viewed as different from the null effect. 
+
+**False Positive Rate**: The proportion of $BF_{01}$ that greater than 6.
+
+**Power**: The proportion of $BF_{01}$ that greater than 6.
+
+
+As the $H_1$ is any deviation from the null, we need to get a reasonable smallest effect size of interest. We used data from [Rad et al., 2018](https://www.pnas.org/content/115/45/11401) for this purpose.
+
+In this paper, Rad et al. surveyed papers published in *Psychological Science* on how the demographic information reported in these papers. In the supplementary, they provided 35 studies, which can be identified and their participants' sex ratio can be found. We used these data as our basis of smallest effect size of interest.
+
+```{r smallest effect size of interest, eval=FALSE}
+df_rad2018 <- read.csv("Rad_2018_suppl.csv") %>%
+  dplyr::mutate(male_num = as.numeric(male_num),
+                female_num = as.numeric(female_num)) %>%
+  dplyr::filter(!is.na(male_num)) %>%
+  dplyr::select(1:2, 13:14) %>%
+  dplyr::mutate(prop = male_num/(male_num + female_num),
+                deviation = prop - 0.5,
+                dev_abs = abs(deviation)) %>%
+  dplyr::arrange(dev_abs)
+df_rad2018
+effect_size <- bootES::bootES(df_rad2018$dev_abs, plot=TRUE)
+effect_size
+
+male <- sum(df_rad2018$male_num)/(sum(df_rad2018$male_num)+sum(df_rad2018$female_num))*100
+female <- 100-male
+male
+female
+
+# 定义数据
+sex <- c("male", "female")  # 第一列数据
+PS2014 <- c(male, female)       # 第二列数据
+WPP <- c(50, 50)            # 第三列数据
+
+# 创建数据框
+data_df <- data.frame(sex = sex, PS2014 = PS2014, WPP = WPP)
+
+# 打印数据框
+print(data_df)
+
+```
+
+```{r cars}
+
+BF1 <- BayesMultiNomial(
+      dataset = data_df,
+      factor = "sex",
+      observed = "PS2014",
+      expected = "WPP")
+BF1
+```
+
+```{r smallest effect size of interest, eval=FALSE}
+
+# 定义BayesMultiNomial函数
+BayesMultiNomial <- function(dataset, factor, observed, expected, prior) {
+  counts <- dataset[[observed]]
+  thetas <- dataset[[expected]] / sum(dataset[[expected]])  # Normalize expected
+  
+  alphas <- prior
+  lbeta_xa <- sum(lgamma(alphas + counts)) - lgamma(sum(alphas + counts))
+  lbeta_a  <- sum(lgamma(alphas)) - lgamma(sum(alphas))
+  
+  if (any(thetas + counts == 0)) {
+    LogBF10 <- (lbeta_xa - lbeta_a)
+  } else {
+    LogBF10 <- (lbeta_xa - lbeta_a) + (0 - sum(counts * log(thetas)))
+  }
+  
+  BF10 <- exp(LogBF10)
+  return(BF10)
+}
+
+# 设置先验范围
+priors <- c(seq(0.1, 1, 0.1), 1, 1.5, 2, 2.5, 3)
+
+# 计算贝叶斯因子
+BF_values <- sapply(priors, function(p) {
+  BayesMultiNomial(data_df, "sex", "PS2014", "WPP", prior = c(p, p))
+})
+
+# 加载所需包
+library(ggplot2)
+
+# 对贝叶斯因子取对数
+log_BF_values <- log(BF_values)
+
+# 创建数据框，包含原始BF值和对数BF值
+results <- data.frame(
+  Prior = priors,
+  BF10 = BF_values,
+  log_BF10 = log_BF_values
+)
+# 使用ggplot2绘制折线图
+ggplot(data = results, aes(x = Prior, y = log_BF10)) +
+  geom_line(color = "blue", size = 1) +
+  geom_point(color = "blue", size = 2) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(
+    title = "Sensitivity Analysis of Bayes Factor to Prior [sex data]",
+    x = "Prior Value",
+    y = "Bayes Factor [log(BF10)]"
+  ) +
+  # 自定义主题，去掉网格线并启用刻度线
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    panel.grid = element_blank(), # 移除网格线
+    axis.line = element_line(size = 0.5, color = "black"), # 添加轴线
+    axis.ticks = element_line(size = 0.5, color = "black") # 添加刻度线
+  )
+
+```
+
+
+
+```{r smallest effect size of interest, eval=FALSE}
+# 定义数据
+age <- c("0~4","5~9","10~14","15~19","20~24","25~29","30~34","35~39", "40~44","45~49","50~54","55~59", ">=60")  # 第一列数据
+PS2014 <- c(0.38,  0.55,   1.27, 19.70, 54.43,  8.65, 4.56, 3.88, 2.87, 1.77, 1.01, 0.55, 0.38)       # 第二列数据
+WPP <- c(8.49,  8.64, 8.34, 7.88,7.59,  7.51, 7.66, 7.07, 6.33, 6.02, 5.70, 5.07, 13.70)            # 第三列数据
+
+# 创建数据框
+data_df <- data.frame(age = age, PS2014 = PS2014, WPP = WPP)
+
+# 打印数据框
+print(data_df)
+# 定义BayesMultiNomial函数
+BayesMultiNomial <- function(dataset, factor, observed, expected, prior) {
+  counts <- dataset[[observed]]
+  thetas <- dataset[[expected]] / sum(dataset[[expected]])  # Normalize expected
+  
+  alphas <- prior
+  lbeta_xa <- sum(lgamma(alphas + counts)) - lgamma(sum(alphas + counts))
+  lbeta_a  <- sum(lgamma(alphas)) - lgamma(sum(alphas))
+  
+  if (any(thetas + counts == 0)) {
+    LogBF10 <- (lbeta_xa - lbeta_a)
+  } else {
+    LogBF10 <- (lbeta_xa - lbeta_a) + (0 - sum(counts * log(thetas)))
+  }
+  
+  BF10 <- exp(LogBF10)
+  return(BF10)
+}
+
+# 设置先验范围
+priors <- c(seq(0.1, 1, 0.1),1, 1.5, 2, 2.5, 3)
+
+# 计算贝叶斯因子
+BF_values <- sapply(priors, function(p) {
+  BayesMultiNomial(data_df, "age", "PS2014", "WPP", prior = c(p, p))
+})
+
+# 对贝叶斯因子取对数
+log_BF_values <- log(BF_values)
+
+# 创建数据框，包含原始BF值和对数BF值
+results <- data.frame(
+  Prior = priors,
+  BF10 = BF_values,
+  log_BF10 = log_BF_values
+)
+
+# 使用ggplot2绘制对数贝叶斯因子的敏感性分析折线图
+library(ggplot2)
+
+ggplot(data = results, aes(x = Prior, y = log_BF10)) +
+  geom_line(color = "blue", size = 1) +
+  geom_point(color = "blue", size = 2) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(
+    title = "Sensitivity Analysis of Bayes Factor to Prior [age data]",
+    x = "Prior Value",
+    y = "Bayes Factor [log(BF10)]"
+  ) +
+  # 自定义主题，去掉网格线并启用刻度线
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    panel.grid = element_blank(), # 移除网格线
+    axis.line = element_line(size = 0.5, color = "black"), # 添加轴线
+    axis.ticks = element_line(size = 0.5, color = "black") # 添加刻度线
+  )
+
+```
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
