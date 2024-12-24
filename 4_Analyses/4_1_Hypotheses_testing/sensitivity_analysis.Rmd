@@ -1,9 +1,15 @@
 ---
-title: "sensitivity analysis "
+title: "Sensitivity Analysis for Bayes Factors"
 author: "liu_weibiao"
 date: "`r Sys.Date()`"
 output: html_document
 ---
+
+# Purpose
+
+The purpose of this document is to examine to what extent the Bayes Factors (BF) in the Bayesian multinomial test are sensitive to the prior.
+
+This was conducted to confirm the reviewers' comments on the Stage 1 manuscript.
 
 ```{r Initialization, message=FALSE, warning=FALSE, include=FALSE}
 # rm(list = ls())
@@ -18,12 +24,11 @@ pacman::p_load("truncnorm")
 options(scipen=999) 
 ```
 
-# Bayesian multinomial test
+## Define Bayesian multinomial test
 
-## Background
-Here, `alphas` defined the prior Dirichlet distribution, e.g., noninformative prior is a vector of $1$s, `counts` are the observed frequencies.
+Here, `alphas` defined the prior Dirichlet distribution, e.g., non-informative prior is a vector of $1$s, `counts` are the observed frequencies.
 
-To use the algorithm in R, we defined a function here:
+To use the algorithm in R, we defined a function here, which was from the function in the JASP team's [GitHub](XXXX) and was used in [Yue et al (2023)](https://doi.org/10.17605/OSF.IO/MTR8D).
 
 ```{r define BF for Multinomial test, message=FALSE, warning=FALSE}
 BayesMultiNomial <- function(dataset, factor, observed, expected, default_prior = TRUE, prior = NA){
@@ -84,21 +89,17 @@ BayesMultiNomial <- function(dataset, factor, observed, expected, default_prior 
 }
 ```
 
-### Justification for the Bayesian multinomial test
-
-
-To test whether the current non-informative prior is reasonable, we conducted a simulation to test the sensitivity.
+## False positive rate and power
 
 We tested the false positive rate of the current setting and false negative (power = 1 - FN ) of the current setting under different deviation from the expected. 
 
-#### Test the default prior for sex ratio
+### The non-informative prior in case of sex ratio
 
 For sex ratio, we used the $Y \sim Binomial(p = 0.5)$ as the null model, any deviation from $0.5$ will be viewed as different from the null effect. 
 
 **False Positive Rate**: The proportion of $BF_{01}$ that greater than 6.
 
 **Power**: The proportion of $BF_{01}$ that greater than 6.
-
 
 As the $H_1$ is any deviation from the null, we need to get a reasonable smallest effect size of interest. We used data from [Rad et al., 2018](https://www.pnas.org/content/115/45/11401) for this purpose.
 
@@ -125,7 +126,7 @@ female
 
 # 定义数据
 sex <- c("male", "female")  # 第一列数据
-PS2014 <- c(male, female)       # 第二列数据
+PS2014 <- c(male, female)   # 第二列数据
 WPP <- c(50, 50)            # 第三列数据
 
 # 创建数据框
@@ -135,6 +136,8 @@ data_df <- data.frame(sex = sex, PS2014 = PS2014, WPP = WPP)
 print(data_df)
 
 ```
+
+HCP: need more explanations here for all the code below. To show the sensitivity of BF, we need to varying the priors, fixed the data, and plot the relation between BFs (or logBFs) and priors. I saw the plot in the response letter, it would be better to explain the code and show the plot here (in html?) too.
 
 ```{r cars}
 
@@ -284,24 +287,3 @@ ggplot(data = results, aes(x = Prior, y = log_BF10)) +
   )
 
 ```
-
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
