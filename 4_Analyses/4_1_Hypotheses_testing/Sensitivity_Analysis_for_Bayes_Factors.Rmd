@@ -1,0 +1,178 @@
+---
+title: "Sensitivity Analysis for Bayes Factors"
+author: "liu_weibiao"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Purpose
+
+The purpose of this document is to examine to what extent the Bayes Factors (BF) in the Bayesian multinomial test are sensitive to the prior.
+
+This was conducted to confirm the reviewers' comments on the Stage 1 manuscript.
+
+```{r Initialization, message=FALSE, warning=FALSE, include=FALSE}
+# rm(list = ls())
+if (!require("pacman")) install.packages("pacman")
+
+pacman::p_load("tidyverse", "ggh4x","stringr", "patchwork", "BayesFactor", "gtools", "bruceR")
+
+pacman::p_load("iterators", "foreach","parallel", "doParallel")
+
+pacman::p_load("truncnorm")
+
+options(scipen=999) 
+```
+
+## Define Bayesian multinomial test
+
+Here, `alphas` defined the prior Dirichlet distribution, e.g., non-informative prior is a vector of $1$s, `counts` are the observed frequencies.
+
+To use the algorithm in R, we defined a function here, which was from the function in the JASP team's [GitHub](https://github.com/jasp-stats/jaspFrequencies/blob/fe643e1fa7492f095771a45ae683d39e16fc1e5f/R/multinomialtestbayesian.R) and was used in [Yue et al (2023)](https://doi.org/10.17605/OSF.IO/MTR8D).
+
+```{r define BF for Multinomial test, message=FALSE, warning=FALSE}
+BayesMultiNomial <- function(dataset, factor, observed, expected, prior) {
+  counts <- dataset[[observed]]
+  thetas <- dataset[[expected]] / sum(dataset[[expected]])  # Normalize expected
+  
+  alphas <- prior
+  lbeta_xa <- sum(lgamma(alphas + counts)) - lgamma(sum(alphas + counts))
+  lbeta_a  <- sum(lgamma(alphas)) - lgamma(sum(alphas))
+  
+  if (any(thetas + counts == 0)) {
+    LogBF10 <- (lbeta_xa - lbeta_a)
+  } else {
+    LogBF10 <- (lbeta_xa - lbeta_a) + (0 - sum(counts * log(thetas)))
+  }
+  
+  BF10 <- exp(LogBF10)
+  return(BF10)
+}
+```
+
+## Sensitivity Analysis for Bayes Factors
+The sensitivity of Bayes Factors (BF) to priors is analyzed by fixing the data and varying the prior values. This allows us to assess how much the choice of prior influences the calculated BF. Below we will implement the above process using two data examples (sex ratio and age bin). 
+
+### Sex Ratio Case
+
+For the sex ratio, we used data from [Rad et al., 2018](https://www.pnas.org/content/115/45/11401).
+
+In this paper, Rad et al. surveyed papers published in *Psychological Science* on how the demographic information reported in these papers. In the supplementary, they provided 35 studies, which can be identified and their participants' sex ratio can be found. 
+
+The dataset for the analysis is shown below:
+
+```{r}
+df_rad2018 <- read.csv("Rad_2018_suppl.csv") %>%
+  dplyr::mutate(male_num = as.numeric(male_num),
+                female_num = as.numeric(female_num)) %>%
+  dplyr::filter(!is.na(male_num))%>%
+  dplyr::select(1:2, 13:14) 
+
+male <- sum(df_rad2018$male_num)/(sum(df_rad2018$male_num)+sum(df_rad2018$female_num))*100
+female <- 100-male
+
+sex <- c("male", "female")  
+PS2014 <- c(male, female)  
+WPP <- c(50, 50)          
+
+age_data <- data.frame(sex = sex, PS2014 = PS2014, WPP = WPP)
+age_data
+```
+
+Next, we vary the prior values and calculate the log-transformed Bayes Factors (logBFs) to analyze their sensitivity to the prior:
+
+```{r}
+# Set prior range
+priors <- c(seq(0.1, 1, 0.1), 1, 1.5, 2, 2.5, 3)
+
+# Calculate logBFs
+BF_values <- sapply(priors, function(p) {
+  BayesMultiNomial(age_data, "sex", "PS2014", "WPP", prior = c(p, p))
+})
+log_BF_values <- log(BF_values)
+results <- data.frame(
+  Prior = priors,
+  BF10 = BF_values,
+  log_BF10 = log_BF_values)
+
+# Plot with prior on x-axis and logBFs on y-axis
+plot1 <- ggplot(data = results, aes(x = Prior, y = log_BF10)) +
+  geom_line(color = "blue", linewidth = 1) +  
+  geom_point(color = "blue", size = 2) +  
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(
+    title = "Sensitivity Analysis of Bayes Factor to Prior [sex data]",
+    x = "Prior Value",
+    y = "Bayes Factor [log(BF10)]"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    panel.grid = element_blank(), 
+    axis.line = element_line(linewidth = 0.5, color = "black"),
+    axis.ticks = element_line(linewidth = 0.5, color = "black"))
+plot1
+```
+
+From the figure, it is evident that Bayes Factors for the same sex ratio data vary significantly with the choice of prior. This highlights that Bayes Factors are highly sensitive to the prior.
+
+
+### Age Bin Case
+
+For age bin, we used data from the supplementary of [Rad et al., 2018](https://www.pnas.org/content/115/45/11401) as above.
+
+Since the age information from the dataset is the mean age and variance, we obtain the number of participants in different age bins through simulation methods. More detailed steps can be found in the code file "Hypotheses_testing_BTS_Sample_Stage1_RR".
+
+The dataset is as follows:
+```{r}
+age <- c("0~4","5~9","10~14","15~19","20~24","25~29","30~34","35~39", "40~44","45~49","50~54","55~59", ">=60")  
+PS2014 <- c(0.38,  0.55,   1.27, 19.70, 54.43,  8.65, 4.56, 3.88, 2.87, 1.77, 1.01, 0.55, 0.38)   
+WPP <- c(8.49,  8.64, 8.34, 7.88,7.59,  7.51, 7.66, 7.07, 6.33, 6.02, 5.70, 5.07, 13.70)   
+
+age_data <- data.frame(age = age, PS2014 = PS2014, WPP = WPP)
+age_data 
+```
+
+Again, we vary the priors and compute the logBFs:
+```{r}
+# Set prior range
+priors <- c(seq(0.1, 1, 0.1), 1, 1.5, 2, 2.5, 3)
+
+# Calculate logBFs
+BF_values <- sapply(priors, function(p) {
+  BayesMultiNomial(age_data, "age", "PS2014", "WPP", prior = p)
+})
+log_BF_values <- log(BF_values)
+
+results <- data.frame(
+  Prior = priors,
+  BF10 = BF_values,
+  log_BF10 = log_BF_values)
+
+# Plot with prior on x-axis and logBFs on y-axis
+plot2 <- ggplot(data = results, aes(x = Prior, y = log_BF10)) +
+  geom_line(color = "blue", size = 1) +
+  geom_point(color = "blue", size = 2) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(
+    title = "Sensitivity Analysis of Bayes Factor to Prior [age data]",
+    x = "Prior Value",
+    y = "Bayes Factor [log(BF10)]") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    panel.grid = element_blank(),
+    axis.line = element_line(size = 0.5, color = "black"),
+    axis.ticks = element_line(size = 0.5, color = "black"))
+plot2
+```
+
+As with the sex ratio data, the Bayes Factors for age bin data vary significantly with the prior. This reinforces the conclusion that Bayes Factors are highly sensitive to prior specifications.
+
+## Summary:
+The sensitivity analyses for both sex ratio and age bin data demonstrate that Bayes Factors can vary substantially with the choice of prior in the Bayesian multinomial test. 
+
