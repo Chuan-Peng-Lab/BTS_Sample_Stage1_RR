@@ -1136,7 +1136,7 @@ plot_annotation(tag_levels = list(c('A', '','B', '')), theme=theme(plot.tag = el
 ggsave(filename = "Figure 4.pdf", plot = combined_plot_people, device = "pdf", width = 24, height = 14)
 ```
 
-# Author diversity
+# Comparing all or leading authors
 ```{r}
 author_data <- read_csv("author_BTS.csv") %>%
 filter(country_map != "TW")
