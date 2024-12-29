@@ -1185,7 +1185,8 @@ expected1 <- author_data$percentage_author_bts
 chi_square_result1 <- chisq.test(x = observed1, p = expected1 / sum(expected1))
 
 BF1 <- dchisq(x = chi_square_result1$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result1$statistic, df = 4)
-BF1
+log_BF1 <- log(BF1)
+log_BF1
 
 # 02 All author: bts vs wpd
 observed2 <- author_data$percentage_author_bts
@@ -1193,7 +1194,8 @@ expected2 <- author_data$percentage_wpd
 chi_square_result2 <- chisq.test(x = observed2, p = expected2 / sum(expected2))
 
 BF2 <- dchisq(x = chi_square_result2$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result2$statistic, df = 4)
-BF2
+log_BF2 <- log(BF2)
+log_BF2
 
 # 03 Leading author: ps2014 vs bts
 observed3 <- author_data$percentage_leading_author_ps2014
@@ -1201,7 +1203,8 @@ expected3 <- author_data$percentage_leading_author_bts
 chi_square_result3 <- chisq.test(x = observed3, p = expected3 / sum(expected3))
 
 BF3 <- dchisq(x = chi_square_result3$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result3$statistic, df = 4)
-BF3
+log_BF3 <- log(BF3)
+log_BF3
 
 # 04 Leading author: bts vs wpd
 observed4 <- author_data$percentage_leading_author_bts
@@ -1210,6 +1213,7 @@ expected4 <- author_data$percentage_wpd
 chi_square_result4 <- chisq.test(x = observed4, p = expected4 / sum(expected4))
 
 BF4 <- dchisq(x = chi_square_result4$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result4$statistic, df = 4)
-BF4
+log_BF4 <- log(BF4)
+log_BF4
 ```
 

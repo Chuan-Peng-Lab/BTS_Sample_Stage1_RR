@@ -1,0 +1,172 @@
+---
+title: "Matching_algorithm"
+author: "liu_weibiao"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+library(PsychWordVec)
+PsychWordVec::text_model_download(c(
+  "bert-base-uncased",
+  "bert-base-cased",
+  "bert-base-multilingual-cased"
+))
+```
+
+```{r}
+text0 = c("valence–dominance model",
+          "valence",
+          "dominance",
+          "faces",
+          "social judgements"
+          )
+
+text1 = c("cross-cultural differences",
+          "genetics",
+          "social cognition",
+          "values")
+
+text2 = c("spatial memory",
+          "time perception")
+
+text3 = c("procrastination",
+         "impulsivity",
+         "goal management",
+        " self-control",
+         "heritability",
+         "individual differences" )
+
+text4 = c("evolution",
+         "natural selection",
+         "learning",
+         "children",
+         "childhood development",
+        "science education",
+         "cognition")
+
+text5 = c("self-control",
+         "health",
+         "rewards")
+
+text6 = c("experiential purchases",
+         "materialism",
+         "waiting",
+        "anticipation"
+          )
+
+text7 = c("reality monitoring",
+         "source monitoring",
+         "false memory",
+        "imagination",
+         "auditory" )
+
+text8 = c("attention",
+         "consciousness",
+         "cognitive processes"
+          )
+
+text9 = c("emotions",
+          "decision making",
+          "self-control")
+
+text10 = c("learning",
+          "racial and ethnic attitudes and relations",
+          "social influences",
+          "emotions")
+
+text11 = c("implicit measures",
+          "self-esteem",
+          "automatic processes",
+          "marriage",
+          "romantic relationships",
+          "implicit association test")
+
+text12 = c("academic achievement",
+          "cognitive processes",
+          "memory",
+          "educational psychology")
+
+text13 = c("cognitive development",
+          "social perception",
+          "social cognition",
+          "physical appearance")
+
+text14 = c("categorization",
+          "assimilation",
+          "interoception",
+          "affect",
+          "dyspnea",
+          "perception",
+          "cognition(s)",
+          "emotions",
+          "associative processes")
+
+text15 = c("sociocultural factors",
+          "values",
+          "trust",
+          "generational differences",
+          "change over time")
+
+text16 = c("insight",
+          "judgment",
+          "consciousness",
+          "decision making",
+          "cognitive neuroscience")
+
+text17 = c("infant development",
+          "food",
+          "learning",
+          "social cognition",
+          "evolutionary psychology")
+
+text18 = c("good genes",
+          "sexual selection",
+          "dominance",
+          "facial width-to-height ratio",
+          "speed dating",
+          "mate selection",
+          "evolutionary psychology",
+          "face perception")
+
+text19 = c("antisocial behavior",
+          "emotions")
+
+text20 = c("sexual economics theory",
+          "sex differences",
+          "gender equality",
+          "heterosexual relationships",
+          "romantic relationships",
+          "human sexuality")
+
+text21 = c("free will",
+          "punishment",
+          "morality",
+          "responsibility",
+          "blame")
+
+
+# Loop through text1 to text21 to generate vecs1 to vecs21
+for (i in 0:21) {
+  vec_name <- paste0("vecs", i)
+  text_name <- paste0("text", i)
+  
+  assign(vec_name, PsychWordVec::text_to_vec(get(text_name), model = "bert-base-cased", layers = c(0, 12)) %>%
+           .$text.embed %>%
+           as_embed(normalize = TRUE) %>%
+           sum_wordvec())
+}
+
+
+similarities_df <- data.frame(Vector = integer(), Similarity = double())
+
+for (i in 1:21) {
+  similarity <- cosine_similarity(vecs0, get(paste0("vecs", i)), distance = FALSE)
+  similarities_df <- rbind(similarities_df, data.frame(Vector = i, Similarity = similarity))
+}
+
+similarities_df <- similarities_df[order(-similarities_df$Similarity), ]
+
+similarities_df
+
+```
