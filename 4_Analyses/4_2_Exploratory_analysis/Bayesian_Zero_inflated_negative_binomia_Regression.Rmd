@@ -1,5 +1,6 @@
 ---
-title: "Bayesian Zero-inflated negative binomial Regression"
+title: "Bayesian_Zero_inflated_negative_binomia_Regression"
+author: "liu_weibiao"
 output: html_document
 date: "2024-10-02"
 ---
@@ -82,7 +83,7 @@ ggplot(gdpdata, aes(x = log_GDP_per_capita)) +
 shapiro.test(gdpdata$log_GDP_per_capita)
 ```
 
-The sample size is the dependent variable, which is a simple count data that contains many zeros, and non-zero data has over-dispersion. To diagnose overdispersion of count data, we used the model comparison leaf one out cross validation (LOO-CV) method to compare the zero-inflation Poisson model with the zero-inflation negative binomial regression (Winter & Bürkner, 2021).
+The sample size is the dependent variable, which is a simple count data that contains many zeros, and non-zero data has over-dispersion. To diagnose overdispersion of count data, we used the model comparison leaf one out cross validation (LOO-CV) method to compare the zero-inflation Poisson model with the zero-inflation negative binomial regression [Winter & Bürkner, 2021](https://doi.org/10.1111/lnc3.12439).
 ```{r}
 gdp_zero_inflated_poisson_bts <- brms::brm(
    bf(bts_sample_size ~ 1 + log_GDP_per_capita,
@@ -162,17 +163,15 @@ priors_main
 ```
 
 ## 3.1 Set the prior of shape(ϕ)
-Recently, Paul Christian B ü rkner, the author of the R package brms, changed the default prior for negative binomial regression shape parameters from the original gamma (0.1, 0.1) to inv_gamma (0.4, 0.3) because gamma (0.1, 0.1) contains only a small range, which is more extreme. However, inv_gamma (0.4, 0.3) can contain a larger range(https://github.com/paul-buerkner/brms/issues/1614; https://dansblog.netlify.app/posts/2022-08-29-priors4/priors4.html#the-dream-pc-priors-in-practice). Although the author only changed the prior for some shape parameters in negative binomial regression, without changing the default prior for zero dilation negative binomial regression, we still set the prior to inv_gamma (0.4, 0.3) for shape parameters here.
+For the shape parameters in Bayesian negative binomial regression, an inv_gamma(0.4, 0.3) prior is appropriate, as it can cover a broader range (Bürkner, 2024; https://github.com/paul-buerkner/brms/issues/1614). Therefore, we will also use an inv_gamma (0.4, 0.3) prior for the shape parameters in our Bayesian zero-inflated negative binomial regression model.
 
 ## 3.2 Set the prior of β0
-After sampling 200 samples from each country in each study, there are over 100 BTS studies and the sample size for each country can be around 20000.
-The log is then converted to 9.9 and a relatively flat prior β0 ~ Normal (0, 4.45) is first set.
-Since link=log, it is a log-normal distribution, and the mean of the log-normal distribution is: 
-$$E(X)=e^{\frac{\mu+\sigma^{2}}{2}}$$
-So, after converting the above formula, it becomes 20847, which is close to 20000.
+Based on the self-compiled big team science data, the total sample size, after filtering according to our operational definition, ranges from 1,100,000 to 1,200,000. To ensure that the intercept β₀ can cover all possible ranges from 1 to 1,200,000, we consider two priors: a more diffuse prior, β₀ ~ Normal (0, 4.67), and a more concentrated prior, β₀ ~ Normal (6, 2.67).
 
-Set a relatively concentrated intercept β0 ~ Normal (8.5, 1.7) and convert to 19955, which is close to 20000.
-Below we will visually compare the β0 ~ Normal (8.5, 1.7) intercept with the relatively flat β0 ~ Normal (0, 4.45) intercept.
+Using the properties of the log-normal distribution, the β₀ ~ Normal (0, 4.67) prior covers a range from about 8.23e-07 (e^(0-4.67×3)) to 1,214,691 (e^(0+4.67×3)), while the β₀ ~ Normal (6, 2.67) prior ranges from about 0.13 (e^(6-2.67×3)) to 1,214,691 (e^(6+2.67×3)). Both priors effectively cover the target range of 1 to 1,200,000.
+
+We have made a visual comparison between the intercept priors β₀ ~ Normal (6, 2.67) and β₀ ~ Normal (0, 4.67) (see figure below). 
+
 ```{r}
 pp1 <- tibble(x       = c(200, 400),
        y       = c(0.00082, 0.00054),
@@ -238,13 +237,15 @@ theme(
 pp2
 ggsave(filename = "pp2.pdf", plot = pp2, device = "pdf", width = 4, height = 4)
 ```
-Obviously, the prior of β0~Normal(0,4.45) is more extreme, while β0~normal(8.5,1.7) is more appropriate.
+Notably, the prior β₀ ~ Normal (0, 4.67) is more extreme, with a median of e⁰ = 1, whereas the median for β₀ ~ Normal (6, 2.67) is e⁶ = 403.
 
-## 3.3Set the prior of p0
+Given that one big team science study sampled from 187 countries, and that there are approximately 230 countries and regions worldwide, it is reasonable to conclude that most big team science studies sampled from a majority of countries worldwide. However, as the majority of BTS studies sampled from only a few dozen countries, the median sample size per country is likely to represent those countries that are less frequently included in big team science studies. For this median, sample sizes in the range of a few hundred are appropriate. Therefore, β₀ ~ Normal (6, 2.67) is the more appropriate prior.
+
+## 3.3 The intercept γ0 of p_i
 The probability of 0 in our data may be mostly concentrated between 0.1-0.9, and after logit transformation it is (-2.2, 2.2). We set γ0~Normal (0,1), which corresponds exactly to this range.
 
-## 3.4 Set the prior of β1 and p1
-For the slope parameters β1 and p1, we use the changing slope to plot the prior prediction distribution and then select the appropriate prior.
+## 3.4 The slope β1 of μ_i  and the slope γ1 of p_i
+For the slope parameters β1 and γ1, we use the changing slope to plot the prior prediction distribution and then select the appropriate prior. 
 
 ```{r}
 set.seed(11)
@@ -319,7 +320,9 @@ pp <- gridExtra::grid.arrange(pp1, pp2, pp3, pp4, ncol = 1)
 # 保存图形
 ggsave(filename = "ppp.pdf", plot = pp, device = "pdf", width = 8, height = 18)
 ```
-The prior selection depends on two criteria: (1) whether it is within the possible range of values (which can be taken as sample size=20000 * 200=4000000); (2) whether the change in the data is extreme. From the prior distribution map above, we can see that the most appropriate priors are β 1~Normal(0,1) & p1~Normal(0,0.05).
+The prior selection can meet two criteria (as shown below): (1) it is within the possible range of values (there are values on the x-axis, and the sample size can take the larger value of 1,200,000); (2) the change in the data is not extreme.
+
+Based on the above criteria, the priors we finally chose were β1 ~ Normal (0, 0.1) & γ1 ~ Normal (0, 0.1).
 
 ```{r}
 set.seed(11)
@@ -371,6 +374,7 @@ prior = set_prior("normal(0, 0.1 )", class = "b") +
 ```
 
 # 4 Prior prediction check
+The visualization of the prior prediction check is shown below. 
 ```{r}
 gdp_zero_inflated_negbinomial_bts1 <- brms::brm(
    bf(bts_sample_size ~ 1 + log_GDP_per_capita,
@@ -425,9 +429,7 @@ pp_check(gdp_zero_inflated_negbinomial_bts1,ndraws=200)+
     legend.position = "none")
 
 ```
-In the prior prediction distribution, the actual data is wrapped around the predicted data, indicating that our prior is appropriate.
-
-
+The visualization of the prior prediction check is shown below. In the left panel we can see that the sample size can accommodate values up to 1,200,000. As shown in the right-hand panel, the actual data are well encompassed by the prior distribution, indicating that the prior is appropriate.
 
 # 5 Fit model
 ```{r}
@@ -491,6 +493,10 @@ gdp_zero_inflated_negbinomial_bts2 <- brms::brm(
   file = "gdp_zero_inflated_negbinomial_bts2"
 )
 gdp_zero_inflated_negbinomial_bts2
+
+```
+
+```{r}
 # 提取最高密度区间（HDI）
 library(bayestestR)
 
@@ -519,7 +525,7 @@ bayestestR::hdi(gdp_zero_inflated_negbinomial_bts2, component = c("all"),ci = 0.
 bayestestR::ci(gdp_zero_inflated_negbinomial_bts2, component = c("all"),ci = 0.95)
 ```
 ### 结果解释
-(1)Intercept=4.56 means that when log (GDP per capita)=0, i.e. GDP per capita=1 ($1000), the model predicts a sample size of exp (4.56)=95.58.
+(1)Intercept=5.43 means that when log (GDP per capita)=0, i.e. GDP per capita=1 ($1000), the model predicts a sample size of exp (5.15)=95.58.
 
 (2)log_GDP_per_capita=0.34 means that when GDP per capital increases by 1%, the model's predicted sample size increases by 0.34%.
 
@@ -533,24 +539,12 @@ $$Var(Y\mid \mu ,\phi )= \mu +\frac{\mu ^{2} }{\phi } $$
 
 
 # 6 Posterior prediction check
-
+First, as shown in panel (a) below, the actual data are well contained within the posterior predictive distribution. In addition, panels (b) and (c) show that the minimum and mean values of the actual data are close to the center of the posterior predictive distribution. In panel (d), although the maximum value of 2,682 is an outlier (as all other values are below 1,000) and does not fall exactly in the center of the posterior predictive distribution, the distribution adequately covers this extreme value and is therefore acceptable. Overall, this indicates that our model effectively describes the actual data.
 ```{r}
-pp_check(gdp_zero_inflated_negbinomial_bts2, ndraws = 1000)
- ppc_stat(
- y,
- yrep,
- stat = "mean")
-
-```
-
-
-```{r}
-color_scheme_set("brightblue")
-pp_check(gdp_zero_inflated_negbinomial_bts2, ndraws = 150)+
-  theme_bw() +
+pp_check(gdp_zero_inflated_negbinomial_bts2, ndraws = 200)+
   xlim(0, 5300) +
   ylim(0, 0.0053) +
-  theme(
+theme(
     text = element_text(size = 22),
     plot.title = element_text(hjust = .5),
     panel.grid.major = element_blank(),
@@ -561,260 +555,21 @@ pp_check(gdp_zero_inflated_negbinomial_bts2, ndraws = 150)+
     axis.line.y.left   = element_line(color = 'black'),
     legend.position = "none")
 
-library(ggplot2)
-library(brms)
-
-# 生成后验预测分布的样本
-posterior_samples <- posterior_predict(gdp_zero_inflated_negbinomial_bts2, ndraws = 1000)
-posterior_samples
-# 计算每个数据点的均值
-mean_posterior <- colMeans(posterior_samples)
-mean_posterior
-# 将均值数据转化为密度估计，以便于叠加在pp_check图中
-mean_density <- density(mean_posterior)
-mean_density
-# 绘制pp_check图，并添加后验预测分布的均值密度曲线
-pp_check(gdp_zero_inflated_negbinomial_bts2, ndraws = 1000) +
-  theme_bw() +
-  xlim(0, 4200) +
-  ylim(0, 0.0053) +
-  geom_line(data = data.frame(x = mean_density$x, y = mean_density$y), 
-            aes(x = x, y = y), color = "red", linetype = "dashed", size = 1) +
-  theme(
-    text = element_text(size = 22),
-    plot.title = element_text(hjust = .5),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.border = element_blank(),
-    strip.background = element_blank(),
-    axis.line.x.bottom = element_line(color = 'black'),
-    axis.line.y.left = element_line(color = 'black'),
-    legend.position = "none"
-  )
-
-```
-
-```{r}
-# 从拟合模型中抽取后验预测样本
+ # 从拟合模型中抽取后验预测样本
 posterior_preds <- posterior_predict(gdp_zero_inflated_negbinomial_bts2, ndraws = 1000)
-mean_posterior <- colMeans(posterior_preds)
-mean_posterior
-# 将均值数据转化为密度估计，以便于叠加在pp_check图中
-mean_density <- density(mean_posterior)
-mean_density
 
 y = gdpdata$bts_sample_size
-y
 #posterior_preds <- t(posterior_preds)
 y_df <- as.data.frame(y)
 y_df
 posterior_preds_df <- as.data.frame(posterior_preds)
-posterior_preds_df
-
-```
-
-```{r}
-color_scheme_set("brightblue")
-p <- ppc_dens_overlay(y = y,
-                 yrep = posterior_preds)
-p1 <- p+
-  xlim(0, 4200) +
-  ylim(0, 0.005)+
-  geom_line(data = data.frame(x = mean_density$x, y = mean_density$y), 
-            aes(x = x, y = y), color = "red", linetype = "dashed", size = 1)
-p1
-```
-
-
-```{r}
-ppc_rootogram(y = y,
-                 yrep = posterior_preds,style = "suspended")
-```
-
-```{r}
-pp_check(gdp_zero_inflated_negbinomial_bts2, ndraws = 11, type = "hist")
-ppc_bars(y = y,
-                 yrep = posterior_preds)
-color_scheme_set("brightblue")
-p <- ppc_rootogram(y = y,
-                 yrep = posterior_preds, style = "hanging",prob = 0)
-
-p1 <- p+
-  xlim(-1, 5000) 
-p1
- ppc_stat(y = y, yrep = posterior_preds,
+posterior_preds_df 
+ ppc_stat(gdp_zero_inflated_negbinomial_bts2,y = y, yrep = posterior_preds,
  stat = "mean")
- ppc_stat(y = y, yrep = posterior_preds,
+ ppc_stat(gdp_zero_inflated_negbinomial_bts2,y = y, yrep = posterior_preds,
  stat = "min") 
- ppc_stat(y = y, yrep = posterior_preds,
+ ppc_stat(gdp_zero_inflated_negbinomial_bts2,y = y, yrep = posterior_preds,
  stat = "max") 
-  ppc_stat(y = y, yrep = posterior_preds,
- stat = "median")
- ppc_stat(y = y, yrep = posterior_preds,
- stat = "sd") 
-
- 
-```
-
-
-
-
-```{r}
-pp_check(gdp_zero_inflated_negbinomial_bts2, stat = "mean")
-
-pp_check(gdp_zero_inflated_negbinomial_bts2, ndraws = 1000)+
-  theme_bw() +
-  #labs(title = "sample") +
-  theme(
-    text = element_text(size = 22),
-    plot.title = element_text(hjust = .5),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.border = element_blank(),
-    strip.background =element_blank(),
-    axis.line.x.bottom = element_line(color = 'black'),
-    axis.line.y.left   = element_line(color = 'black'),
-    legend.position = "none")
-
-
-library(ggplot2)
-library(brms)
-
-# 生成后验预测分布的样本
-posterior_samples <- posterior_predict(gdp_zero_inflated_negbinomial_bts2, ndraws = 100)
-posterior_samples
-# 计算每个数据点的均值
-mean_posterior <- colMeans(posterior_samples)
-mean_posterior
-# 将均值数据转化为密度估计，以便于叠加在pp_check图中
-mean_density <- density(mean_posterior)
-mean_density
-mean_posterior <- data.frame(value = rowMeans(posterior_samples))  # 转换为数据框
-
-# 绘制后验预测检查图并添加均值线
-pp_check(gdp_zero_inflated_negbinomial_bts2, ndraws = 1000) +
-  theme_bw() +
-  xlim(0, 4200) +
-  ylim(0, 0.005) +
-  geom_density(data = mean_posterior, aes(x = value), 
-               color = "red", linetype = "dashed", size = 1) +
-  theme(
-    text = element_text(size = 22),
-    plot.title = element_text(hjust = .5),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.border = element_blank(),
-    strip.background = element_blank(),
-    axis.line.x.bottom = element_line(color = 'black'),
-    axis.line.y.left = element_line(color = 'black'),
-    legend.position = "none"
-  )
-```
-
-```{r}
-library(brms)  # 假设你使用的是brms包
-library(ggplot2)
-
-# 假设gdp_zero_inflated_negbinomial_bts2是你的brms模型
-# 使用pp_check生成图
-p <- pp_check(gdp_zero_inflated_negbinomial_bts2, ndraws = 1000) +
-  theme_bw() +
-
-  theme(
-    text = element_text(size = 22),
-    plot.title = element_text(hjust = .5),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.border = element_blank(),
-    strip.background = element_blank(),
-    axis.line.x.bottom = element_line(color = 'black'),
-    axis.line.y.left = element_line(color = 'black'),
-    legend.position = "none"
-  )
-
-# 提取pp_check的数据
-pp_data <- ggplot_build(p)$data[[1]]  # 这可能取决于pp_check生成的具体图层结构
-
-# 计算模拟数据的均值
-mean_y <- mean(pp_data$y)
-
-# 将均值线添加到图中
-p + geom_hline(yintercept = mean_y, color = "red", linetype = "dashed", size = 1) +
-  annotate("text", x = Inf, y = mean_y, label = paste("Mean =", round(mean_y, 2)), 
-           hjust = 1.1, color = "red", size = 5)+
-  ylim(0, 0.005)
-```
-
-```{r}
-
-
-pp_check(gdp_zero_inflated_negbinomial_bts2)+
-  theme_bw() +
-  #labs(title = "sample") +
-  theme(
-    text = element_text(size = 22),
-    plot.title = element_text(hjust = .5),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.border = element_blank(),
-    strip.background =element_blank(),
-    axis.line.x.bottom = element_line(color = 'black'),
-    axis.line.y.left   = element_line(color = 'black'),
-    legend.position = "none")
-pp_check(gdp_zero_inflated_negbinomial_bts2,ndraws=1000)+
-  theme_bw() +
-  xlim(0, 5200) +
-  ylim(0, 0.0052) +
-  #labs(title = "sample") +
-  theme(
-    text = element_text(size = 22),
-    plot.title = element_text(hjust = .5),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.border = element_blank(),
-    strip.background =element_blank(),
-    axis.line.x.bottom = element_line(color = 'black'),
-    axis.line.y.left   = element_line(color = 'black'),
-    legend.position = "none")
-```
-The results of the posterior prediction check showed that the actual data is enveloped by the posterior prediction distribution, meaning that the actual data can be fully predicted.
-
-# 7 Bayesian Inference
-## 7.1 Bayes factor
-```{r}
-bridge1 <-  brms::bridge_sampler(gdp_zero_inflated_negbinomial_bts0)
-bridge2 <-  brms::bridge_sampler(gdp_zero_inflated_negbinomial_bts1)
-bridge3 <-  brms::bridge_sampler(gdp_zero_inflated_negbinomial_bts2)
-bf1 <-  brms::bayes_factor(bridge2, bridge1)$bf
-bf1
-bf2 <-  brms::bayes_factor(bridge3, bridge2)$bf
-bf2
-# bf1 = 3.49719
-# bf2 = 272.3048
-
-```
-
-## 7.2 Loo
-```{r}
-loo1 <- loo(gdp_zero_inflated_negbinomial_bts0, moment_match = TRUE)
-loo2 <- loo(gdp_zero_inflated_negbinomial_bts1, moment_match = TRUE)
-loo3 <- loo(gdp_zero_inflated_negbinomial_bts2, moment_match = TRUE)
-loo_1 <-  brms::loo_compare(loo1,loo2)
-loo_1
-loo_2 <-  brms::loo_compare(loo2,loo3)
-loo_2
-```
-
-## 7.3 Waic
-```{r}
-waic1 <- waic(gdp_zero_inflated_negbinomial_bts0)
-waic2 <- waic(gdp_zero_inflated_negbinomial_bts1)
-waic3 <- waic(gdp_zero_inflated_negbinomial_bts2)
-
-waic_1 <-  brms::loo_compare(waic1,waic2)
-waic_1
-waic_2 <-  brms::loo_compare(waic2,waic3)
-waic_2
 ```
 
 # Country level drawing
