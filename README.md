@@ -15,10 +15,12 @@ This repo is data, code, and related materials of "Assessing diversity and repre
 │   └── 2_2_World population census data
 ├── 3_Data extraction
 │   └── 3_1_Code_manual
-│   │   ├──BTS_sample_Code_Manual (in Chinese).docx
-│   │   ├──BTS_sample_Code_Manual_20240116 (in English).docx       
+│   │   ├──BTS_sample_Code_Manual_V2 (in Chinese).docx
+│   │   ├──BTS_sample_Code_Manual_V2 (in English).docx       
 ├── 4_Analayses
 │   ├── 4_1_Hypotheses testing
+│   │   ├── Matching_algorithm.Rmd
+│   │   ├── Sensitivity_Analysis_for_Bayes_Factors.Rmd
 │   │   ├── Hypotheses_testing_BTS_Sample_Stage1_RR.Rmd
 │   │   ├── ...
 │   │   
