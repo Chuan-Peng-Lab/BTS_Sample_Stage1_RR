@@ -455,7 +455,7 @@ country_PS2014 <- ggplot2::ggplot(PS2014_map) +
   scale_fill_manual(name = "Proportion of PS2014",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggtitle("Geographical distribution of sample from traditional studies")+
+ggtitle("Geographical distribution of sample from traditional psychological studies")+
   theme(plot.title = element_text(hjust = 0.5, size = 15),
         legend.text = element_text(size = 10),  
         legend.title = element_text(size = 12),  
@@ -636,7 +636,7 @@ author_ps2014 <- ggplot2::ggplot(author_ps2022_no_na) +
   ggplot2::scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggplot2::ggtitle("Geographical distribution of all authors from traditional studies")+
+ggplot2::ggtitle("Geographical distribution of all authors from traditional psychological studies")+
   ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 15),
         legend.text = element_text(size = 10),  
         legend.title = element_text(size = 12), 
@@ -699,7 +699,7 @@ author_ps2014_leading <- ggplot2::ggplot(author_ps2022_no_na) +
   ggplot2::scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggplot2::ggtitle("Geographical distribution of leading authors from traditional studies")+
+ggplot2::ggtitle("Geographical distribution of leading authors from traditional psychological studies")+
   ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 15),
         legend.text = element_text(size = 10), 
         legend.title = element_text(size = 12), 
@@ -902,7 +902,7 @@ sex <- c("female", "male",   "female", "male","female", "male",   "female", "mal
 
 age_simulation$ageBins_PS  <- ageBins_PS 
 age_simulation$sex <- sex
-age_simulation$Site <- "traditional studies"
+age_simulation$Site <- "traditional psychological studies"
 age_simulation
 ```
 
@@ -922,7 +922,7 @@ fig3c <- ggplot(data = wpp_age60, aes(x = ageBins, y = ifelse(sex == "male", -Pr
   
   scale_fill_manual(name="World population data", values = c("male" = "#00BFC4", "female" = "#F8766D"))  +
   
-scale_color_manual(name="Sample source", values = c("BTS" ="#E41A1C", "traditional studies" =  "#377EB8")) +
+scale_color_manual(name="Sample source", values = c("BTS" ="#E41A1C", "traditional psychological studies" =  "#377EB8")) +
   guides(fill = guide_legend(order = 1), color = guide_legend(order = 2)) +  
   theme_classic() + 
   theme(
@@ -1059,7 +1059,7 @@ ggplot(data = uniondata, aes(x = percentage_pop, y = ps2014, color = Country_gro
   geom_text_repel(data = uniondata, aes(label = country_map), max.overlaps=10,label.padding=1,
                   segment.color = NA, family = "sans", size = 9, color = "black") +
   xlab("Proportion of population") +
-  ylab("Proportion of sample from traditional studies") +
+  ylab("Proportion of sample from traditional psychological studies") +
 
   scale_color_manual(name = "Country groups",
     values = c("#F8766D","#00BA38","#619CFF","blue"),
@@ -1150,11 +1150,11 @@ author_data <- author_data %>%
     wpd = sum(wpd, na.rm = TRUE),
     leading_author_bts = sum(leading_author_bts, na.rm = TRUE),
     leading_author_ps2014 = sum(leading_author_ps2014, na.rm = TRUE),
-    percentage_author_ps2014 = sum(percentage_author_ps2014, na.rm = TRUE),
-    percentage_author_bts = sum(percentage_author_bts, na.rm = TRUE),  
-    percentage_wpd = sum(percentage_wpd, na.rm = TRUE),
-    percentage_leading_author_bts = sum(percentage_leading_author_bts, na.rm = TRUE),
-    percentage_leading_author_ps2014 = sum(percentage_leading_author_ps2014, na.rm = TRUE)
+    percentage_author_ps2014_100 = sum(percentage_author_ps2014_100, na.rm = TRUE),
+    percentage_author_bts_100 = sum(percentage_author_bts_100, na.rm = TRUE),  
+    percentage_wpd_100 = sum(percentage_wpd_100, na.rm = TRUE),
+    percentage_leading_author_bts_100 = sum(percentage_leading_author_bts_100, na.rm = TRUE),
+    percentage_leading_author_ps2014_100 = sum(percentage_leading_author_ps2014_100, na.rm = TRUE)
   )%>%
   filter(Country_groups != "other")%>%
   mutate(across(everything(), ~ ifelse(. == 0, 0.1e-08, .)))
@@ -1180,8 +1180,8 @@ froot<-function(x,lambda,thresh,df){
 lambda <- UMPBT(df <- 4, thresh <- 10)
 
 # 01 All author: ps2014 vs bts
-observed1 <- author_data$percentage_author_ps2014
-expected1 <- author_data$percentage_author_bts
+observed1 <- author_data$percentage_author_ps2014_100
+expected1 <- author_data$percentage_author_bts_100
 chi_square_result1 <- chisq.test(x = observed1, p = expected1 / sum(expected1))
 
 BF1 <- dchisq(x = chi_square_result1$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result1$statistic, df = 4)
@@ -1189,8 +1189,8 @@ log_BF1 <- log(BF1)
 log_BF1
 
 # 02 All author: bts vs wpd
-observed2 <- author_data$percentage_author_bts
-expected2 <- author_data$percentage_wpd
+observed2 <- author_data$percentage_author_bts_100
+expected2 <- author_data$percentage_wpd_100
 chi_square_result2 <- chisq.test(x = observed2, p = expected2 / sum(expected2))
 
 BF2 <- dchisq(x = chi_square_result2$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result2$statistic, df = 4)
@@ -1198,8 +1198,8 @@ log_BF2 <- log(BF2)
 log_BF2
 
 # 03 Leading author: ps2014 vs bts
-observed3 <- author_data$percentage_leading_author_ps2014
-expected3 <- author_data$percentage_leading_author_bts
+observed3 <- author_data$percentage_leading_author_ps2014_100
+expected3 <- author_data$percentage_leading_author_bts_100
 chi_square_result3 <- chisq.test(x = observed3, p = expected3 / sum(expected3))
 
 BF3 <- dchisq(x = chi_square_result3$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result3$statistic, df = 4)
@@ -1207,8 +1207,8 @@ log_BF3 <- log(BF3)
 log_BF3
 
 # 04 Leading author: bts vs wpd
-observed4 <- author_data$percentage_leading_author_bts
-expected4 <- author_data$percentage_wpd
+observed4 <- author_data$percentage_leading_author_bts_100
+expected4 <- author_data$percentage_wpd_100
 
 chi_square_result4 <- chisq.test(x = observed4, p = expected4 / sum(expected4))
 
