@@ -194,12 +194,12 @@ pp1 <- tibble(x       = c(200, 400),
   xlab("Sample size of big team size") +
   theme(
     legend.position = "none",
-    panel.grid.major = element_blank(),   # 移除主网格线
-    panel.grid.minor = element_blank(),   # 移除次网格线
-    panel.border = element_blank(),       # 移除边框
-    panel.background = element_blank(),   # 移除背景颜色
-    axis.line.x = element_line(color = "black"), # 添加 x 轴线
-    axis.line.y = element_line(color = "black")  # 添加 y 轴线
+    panel.grid.major = element_blank(),   
+    panel.grid.minor = element_blank(),  
+    panel.border = element_blank(),       
+    panel.background = element_blank(),  
+    axis.line.x = element_line(color = "black"), 
+    axis.line.y = element_line(color = "black") 
   )
 pp1
 ggsave(filename = "pp1.pdf", plot = pp1, device = "pdf", width = 4, height = 4)
@@ -227,12 +227,12 @@ pp2 <- tibble(x       = c(200, 400),
   xlab("Sample size of big team size") +
 theme(
     legend.position = "none",
-    panel.grid.major = element_blank(),   # 移除主网格线
-    panel.grid.minor = element_blank(),   # 移除次网格线
-    panel.border = element_blank(),       # 移除边框
-    panel.background = element_blank(),   # 移除背景颜色
-    axis.line.x = element_line(color = "black"), # 添加 x 轴线
-    axis.line.y = element_line(color = "black")  # 添加 y 轴线
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank(),  
+    panel.border = element_blank(),      
+    panel.background = element_blank(),   
+    axis.line.x = element_line(color = "black"), 
+    axis.line.y = element_line(color = "black")  
   )
 pp2
 ggsave(filename = "pp2.pdf", plot = pp2, device = "pdf", width = 4, height = 4)
@@ -250,7 +250,6 @@ For the slope parameters β1 and γ1, we use the changing slope to plot the prio
 ```{r}
 set.seed(11)
 
-# 生成数据和绘图的函数
 generate_data_and_plot <- function(sd, title) {
   tibble(i = 1:100,
          a = rnorm(100, mean = 6, sd = 2.7)) %>%
@@ -276,48 +275,47 @@ generate_data_and_plot <- function(sd, title) {
     facet_wrap(~ prior, labeller = label_parsed)
 }
 
-# 生成四个图
+
 pp1 <- generate_data_and_plot(0.01, expression(paste(gamma[1] %~% Normal(0*', '*0.01))))+theme(
     legend.position = "none",
-    panel.grid.major = element_blank(),   # 移除主网格线
-    panel.grid.minor = element_blank(),   # 移除次网格线
-    panel.border = element_blank(),       # 移除边框
-    panel.background = element_blank(),   # 移除背景颜色
-    axis.line.x = element_line(color = "black"), # 添加 x 轴线
-    axis.line.y = element_line(color = "black")  # 添加 y 轴线
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank(),   
+    panel.border = element_blank(),       
+    panel.background = element_blank(),   
+    axis.line.x = element_line(color = "black"), 
+    axis.line.y = element_line(color = "black") 
   )
 pp2 <- generate_data_and_plot(0.05, expression(paste(gamma[1] %~% Normal(0*', '*0.05))))+theme(
     legend.position = "none",
-    panel.grid.major = element_blank(),   # 移除主网格线
-    panel.grid.minor = element_blank(),   # 移除次网格线
-    panel.border = element_blank(),       # 移除边框
-    panel.background = element_blank(),   # 移除背景颜色
-    axis.line.x = element_line(color = "black"), # 添加 x 轴线
-    axis.line.y = element_line(color = "black")  # 添加 y 轴线
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank(), 
+    panel.border = element_blank(),      
+    panel.background = element_blank(),  
+    axis.line.x = element_line(color = "black"),
+    axis.line.y = element_line(color = "black")  
   )
 pp3 <- generate_data_and_plot(0.1, expression(paste(gamma[1] %~% Normal(0*', '*0.1))))+theme(
     legend.position = "none",
-    panel.grid.major = element_blank(),   # 移除主网格线
-    panel.grid.minor = element_blank(),   # 移除次网格线
-    panel.border = element_blank(),       # 移除边框
-    panel.background = element_blank(),   # 移除背景颜色
-    axis.line.x = element_line(color = "black"), # 添加 x 轴线
-    axis.line.y = element_line(color = "black")  # 添加 y 轴线
+    panel.grid.major = element_blank(),  
+    panel.grid.minor = element_blank(),   
+    panel.border = element_blank(),       
+    panel.background = element_blank(),  
+    axis.line.x = element_line(color = "black"), 
+    axis.line.y = element_line(color = "black")  
   )
 pp4 <- generate_data_and_plot(1, expression(paste(gamma[1] %~% Normal(0*', '*1))))+theme(
     legend.position = "none",
-    panel.grid.major = element_blank(),   # 移除主网格线
-    panel.grid.minor = element_blank(),   # 移除次网格线
-    panel.border = element_blank(),       # 移除边框
-    panel.background = element_blank(),   # 移除背景颜色
-    axis.line.x = element_line(color = "black"), # 添加 x 轴线
-    axis.line.y = element_line(color = "black")  # 添加 y 轴线
+    panel.grid.major = element_blank(),   
+    panel.grid.minor = element_blank(),   
+    panel.border = element_blank(),       
+    panel.background = element_blank(),   
+    axis.line.x = element_line(color = "black"), 
+    axis.line.y = element_line(color = "black") 
   )
 
-# 合并图形
 pp <- gridExtra::grid.arrange(pp1, pp2, pp3, pp4, ncol = 1)
 
-# 保存图形
+
 ggsave(filename = "ppp.pdf", plot = pp, device = "pdf", width = 8, height = 18)
 ```
 The prior selection can meet two criteria (as shown below): (1) it is within the possible range of values (there are values on the x-axis, and the sample size can take the larger value of 1,200,000); (2) the change in the data is not extreme.
@@ -327,7 +325,6 @@ Based on the above criteria, the priors we finally chose were β1 ~ Normal (0, 0
 ```{r}
 set.seed(11)
 
-# 生成数据和绘图的函数
 generate_data_and_plot <- function(sd, title) {
   tibble(i = 1:100,
          a = rnorm(100, mean = 6, sd = 2.7)) %>%
@@ -348,19 +345,19 @@ generate_data_and_plot <- function(sd, title) {
     facet_wrap(~ prior, labeller = label_parsed)
 }
 
-# 生成四个图
+
 pp1 <- generate_data_and_plot(0.1, expression(paste(gamma[1] %~% Normal(0*', '*0.1))))+theme(
     legend.position = "none",
-    panel.grid.major = element_blank(),   # 移除主网格线
-    panel.grid.minor = element_blank(),   # 移除次网格线
-    panel.border = element_blank(),       # 移除边框
-    panel.background = element_blank(),   # 移除背景颜色
-    axis.line.x = element_line(color = "black"), # 添加 x 轴线
-    axis.line.y = element_line(color = "black")  # 添加 y 轴线
+    panel.grid.major = element_blank(),   
+    panel.grid.minor = element_blank(),  
+    panel.border = element_blank(),      
+    panel.background = element_blank(),   
+    axis.line.x = element_line(color = "black"), 
+    axis.line.y = element_line(color = "black")  
   )
 
 pp1
-# 保存图形
+
 ggsave(filename = "pp.pdf", plot = pp1, device = "pdf", width = 6, height = 6)
 ```
 
@@ -497,19 +494,19 @@ gdp_zero_inflated_negbinomial_bts2
 ```
 
 ```{r}
-# 提取最高密度区间（HDI）
+# Extract the highest density interval (HDI)
 library(bayestestR)
 
-# 提取后验样本
+# Extract posterior samples
 posterior_samples <- as.data.frame(gdp_zero_inflated_negbinomial_bts2)
 
-# 提取中位数
+# Extract median
 posterior_medians <- apply(posterior_samples, 2, median)
 
-# 提取HDI
+# Extract HDI
 hdi_values <- hdi(posterior_samples, ci = 0.95)
 
-# 将结果整合
+# Integration results
 result_df <- data.frame(
   Parameter = names(posterior_medians),
   Median = posterior_medians,
@@ -517,14 +514,14 @@ result_df <- data.frame(
   HDI_Upper = hdi_values$CI_high
 )
 
-# 查看结果
+
 result_df
 
 posterior_interval(gdp_zero_inflated_negbinomial_bts2, prob = 0.95)
 bayestestR::hdi(gdp_zero_inflated_negbinomial_bts2, component = c("all"),ci = 0.95)
 bayestestR::ci(gdp_zero_inflated_negbinomial_bts2, component = c("all"),ci = 0.95)
 ```
-### 结果解释
+### Interpreting results
 (1)Intercept=5.43 means that when log (GDP per capita)=0, i.e. GDP per capita=1 ($1000), the model predicts a sample size of exp (5.15)=95.58.
 
 (2)log_GDP_per_capita=0.34 means that when GDP per capital increases by 1%, the model's predicted sample size increases by 0.34%.
@@ -555,15 +552,15 @@ theme(
     axis.line.y.left   = element_line(color = 'black'),
     legend.position = "none")
 
- # 从拟合模型中抽取后验预测样本
+ # Extract posterior prediction samples from the fitting model
 posterior_preds <- posterior_predict(gdp_zero_inflated_negbinomial_bts2, ndraws = 1000)
 
 y = gdpdata$bts_sample_size
 #posterior_preds <- t(posterior_preds)
 y_df <- as.data.frame(y)
-y_df
+
 posterior_preds_df <- as.data.frame(posterior_preds)
-posterior_preds_df 
+
  ppc_stat(gdp_zero_inflated_negbinomial_bts2,y = y, yrep = posterior_preds,
  stat = "mean")
  ppc_stat(gdp_zero_inflated_negbinomial_bts2,y = y, yrep = posterior_preds,
@@ -596,7 +593,7 @@ gdp1 <- ggplot(combined_data2, aes(x = log_GDP_per_capita, y = value, color = so
                     labels = c("Traditional studies", "Big team science")) +
   geom_text_repel(data = combined_data2, aes(label = country_2), max.overlaps=2,label.padding=5,
                    family = "sans", size = 6,
-                  nudge_y = 0.2,  # 调节标签在y轴上的位置
+                  nudge_y = 0.2,  # Adjust the position of the label on the y-axis
                   nudge_x = 0.2,
                 show.legend = FALSE) + 
   ylab("Log(sample size)") +
@@ -613,27 +610,9 @@ gdp1 <- ggplot(combined_data2, aes(x = log_GDP_per_capita, y = value, color = so
   guides(color = guide_legend(override.aes = list(linetype = c("solid", "dashed"))))
 
 gdp1
-# 保存图形为 PDF 文件
+# Save for PDF
 #ggsave(filename = "GDP.pdf", plot = gdp1, device = "pdf", width = 12, height = 12)
 
 
 ```
 
-
-## R Markdown
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
