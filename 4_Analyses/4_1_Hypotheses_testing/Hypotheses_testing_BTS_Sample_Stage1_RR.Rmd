@@ -1128,7 +1128,7 @@ pp4 <- pp3 + inset_element(zoom_plt1, 0.3, 0.4, 0.9, 1)+
 
 ```{r}  
 combined_plot_people <-   pp4 + pp2+
-  plot_layout(ncol = 2) + # 设置两列布局
+  plot_layout(ncol = 2) + 
 plot_annotation(tag_levels = list(c('A', '','B', '')), theme=theme(plot.tag = element_text(size = 28)))
 
 
