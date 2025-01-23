@@ -505,10 +505,10 @@ country_people <- ggplot2::ggplot(wppdata4) +
   scale_fill_manual(name = "Proportion of people",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggtitle("Geographical distribution of world population")+
-  theme(plot.title = element_text(hjust = 0.5, size = 15),
+ggtitle("Geographical distribution of the world population")+
+  theme(plot.title = element_text(hjust = 0.5, size = 12),
         legend.text = element_text(size = 10),  
-        legend.title = element_text(size = 12),  
+        legend.title = element_text(size = 11),  
         legend.key.size = unit(3, "pt"),  
         legend.key.height = unit(3, "pt"),  
         legend.key.width = unit(15, "pt")  
@@ -521,7 +521,7 @@ country_people
 country_PS2014 + country_PSA001 +country_people +  patchwork::plot_layout(ncol = 1, nrow = 3, 
                                  heights = c(4,4))+
 patchwork::plot_annotation(tag_levels = 'A')
-ggplot2::ggsave("Figure 2.pdf", width = 9, height = 13.5)
+ggplot2::ggsave("Figure 1.pdf", width = 9, height = 13.5)
 ```
 
 # Map of Geographical distribution of author
@@ -608,10 +608,10 @@ author_psa001 <- ggplot2::ggplot(author_bts_no_na) +
   scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggtitle("Geographical distribution of all authors from big team science")+
-  theme(plot.title = element_text(hjust = 0.5, size = 15),
+ggtitle("Geographical distribution of the affiliations of all authors from big team science")+
+  theme(plot.title = element_text(hjust = 0.5, size = 12),
         legend.text = element_text(size = 10), 
-        legend.title = element_text(size = 12),  
+        legend.title = element_text(size = 11),  
         legend.key.size = unit(3, "pt"),  
         legend.key.height = unit(3, "pt"),  
         legend.key.width = unit(15, "pt") 
@@ -636,10 +636,10 @@ author_ps2014 <- ggplot2::ggplot(author_ps2022_no_na) +
   ggplot2::scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggplot2::ggtitle("Geographical distribution of all authors from traditional psychological studies")+
-  ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 15),
+ggplot2::ggtitle("Geographical distribution of the affiliations of all authors from traditional psychological studies")+
+  ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 12),
         legend.text = element_text(size = 10),  
-        legend.title = element_text(size = 12), 
+        legend.title = element_text(size = 11), 
         legend.key.size = unit(3, "pt"),  
         legend.key.height = unit(3, "pt"), 
         legend.key.width = unit(15, "pt") 
@@ -651,7 +651,7 @@ author_ps2014
 author_ps2014 + author_psa001 + country_people + patchwork::plot_layout(ncol = 1, nrow = 3, heights = c(4, 4)) +
   patchwork::plot_annotation(tag_levels = 'A')  
 
-ggplot2::ggsave("Figure 5.pdf", width = 9, height = 13.5)
+ggplot2::ggsave("Figure 4.pdf", width = 9, height = 13.5)
 ```
 
 ## PSA001 (leading authors)
@@ -671,10 +671,10 @@ author_bts_leading <- ggplot2::ggplot(author_bts_no_na) +
   ggplot2::scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggplot2::ggtitle("Geographical distribution of leading authors from big team science")+
-  ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 15),
+ggplot2::ggtitle("Geographical distribution of the affiliations of leading authors from big team science")+
+  ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 12),
         legend.text = element_text(size = 10),  
-        legend.title = element_text(size = 12), 
+        legend.title = element_text(size = 11), 
         legend.key.size = unit(3, "pt"),  
         legend.key.height = unit(3, "pt"),  
         legend.key.width = unit(15, "pt")  
@@ -699,10 +699,10 @@ author_ps2014_leading <- ggplot2::ggplot(author_ps2022_no_na) +
   ggplot2::scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
                     limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
-ggplot2::ggtitle("Geographical distribution of leading authors from traditional psychological studies")+
-  ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 15),
+ggplot2::ggtitle("Geographical distribution of the affiliations of leading authors from traditional psychological studies")+
+  ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 12),
         legend.text = element_text(size = 10), 
-        legend.title = element_text(size = 12), 
+        legend.title = element_text(size = 11), 
         legend.key.size = unit(3, "pt"),  
         legend.key.height = unit(3, "pt"),  
         legend.key.width = unit(15, "pt")  
@@ -714,7 +714,7 @@ author_ps2014_leading
 author_ps2014_leading + author_bts_leading + country_people + patchwork::plot_layout(ncol = 1, nrow = 3, heights = c(4, 4)) +
   patchwork::plot_annotation(tag_levels = 'A')  
 
-ggplot2::ggsave("Figure 6.pdf", width = 9, height = 13.5)
+ggplot2::ggsave("Figure 5.pdf", width = 9, height = 13.5)
 ```
 
 # Sex & Age
@@ -943,7 +943,7 @@ scale_color_manual(name="Sample source", values = c("BTS" ="#E41A1C", "tradition
   
   ylim(c(-39, 39))  
 fig3c
-ggsave("Figure 3.pdf", fig3c, device = "pdf", width = 12, height = 9)
+ggsave("Figure 2.pdf", fig3c, device = "pdf", width = 12, height = 9)
 ```
 
 # sample’ country distributions visualisations
@@ -1133,7 +1133,7 @@ plot_annotation(tag_levels = list(c('A', '','B', '')), theme=theme(plot.tag = el
 
 
 # Save the plot as a pdf image
-ggsave(filename = "Figure 4.pdf", plot = combined_plot_people, device = "pdf", width = 24, height = 14)
+ggsave(filename = "Figure 3.pdf", plot = combined_plot_people, device = "pdf", width = 24, height = 14)
 ```
 
 # Comparing all or leading authors
