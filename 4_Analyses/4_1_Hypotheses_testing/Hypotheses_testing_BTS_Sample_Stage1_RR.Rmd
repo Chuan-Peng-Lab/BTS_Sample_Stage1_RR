@@ -369,14 +369,14 @@ PS2014_map
 ```{r}  
 # maybe try binning
 PS2014_map$n_binned <- 
-  if_else(PS2014_map$ps2014 >= 0.16, "0.16-1",
-  if_else(PS2014_map$ps2014 < 0.16 & PS2014_map$ps2014 >= 0.08, "0.08-0.16" , 
-   if_else(PS2014_map$ps2014 < 0.08 & PS2014_map$ps2014 >= 0.04, "0.04-0.08" ,
-  if_else(PS2014_map$ps2014 < 0.04 & PS2014_map$ps2014 >= 0.02, "0.02-0.04" ,    
-  if_else(PS2014_map$ps2014 < 0.02 & PS2014_map$ps2014 >= 0.01, "0.01-0.02" ,
-  if_else(PS2014_map$ps2014 < 0.01 & PS2014_map$ps2014 >= 0.005, "0.005-0.01" ,  
-  if_else(PS2014_map$ps2014 < 0.005 & PS2014_map$ps2014 >= 0.0025, "0.0025-0.005",
-      "0-0.0025"
+  if_else(PS2014_map$ps2014 >= 0.16, "16%-43%",
+  if_else(PS2014_map$ps2014 < 0.16 & PS2014_map$ps2014 >= 0.08, "8%-16%" , 
+   if_else(PS2014_map$ps2014 < 0.08 & PS2014_map$ps2014 >= 0.04, "4%-8%" ,
+  if_else(PS2014_map$ps2014 < 0.04 & PS2014_map$ps2014 >= 0.02, "2%-4%" ,    
+  if_else(PS2014_map$ps2014 < 0.02 & PS2014_map$ps2014 >= 0.01, "1%-2%" ,
+  if_else(PS2014_map$ps2014 < 0.01 & PS2014_map$ps2014 >= 0.005, "0.5%-1%" ,  
+  if_else(PS2014_map$ps2014 < 0.005 & PS2014_map$ps2014 >= 0.0025, "0.25%-0.5%",
+      "0-0.25%"
     )
   )
  )
@@ -412,34 +412,19 @@ min_map
 
 ```{r}  
 df_PSA001_country$n_binned <- 
-  if_else(df_PSA001_country$percentage_sample >= 0.16, "0.16-1",
-  if_else(df_PSA001_country$percentage_sample < 0.16 & df_PSA001_country$percentage_sample >= 0.08, "0.08-0.16" , 
-   if_else(df_PSA001_country$percentage_sample < 0.04 & df_PSA001_country$percentage_sample >= 0.08, "0.04-0.08" ,
-  if_else(df_PSA001_country$percentage_sample < 0.04 & df_PSA001_country$percentage_sample >= 0.02, "0.02-0.04" ,    
-  if_else(df_PSA001_country$percentage_sample < 0.02 & df_PSA001_country$percentage_sample >= 0.01, "0.01-0.02" ,
-  if_else(df_PSA001_country$percentage_sample < 0.01 & df_PSA001_country$percentage_sample >= 0.005, "0.005-0.01" , 
-  if_else(df_PSA001_country$percentage_sample < 0.005 & df_PSA001_country$percentage_sample >= 0.0025, "0.0025-0.005",
-      "0-0.0025"
+  if_else(df_PSA001_country$percentage_sample >= 0.16, "16%-43%",
+  if_else(df_PSA001_country$percentage_sample < 0.16 & df_PSA001_country$percentage_sample >= 0.08, "8%-16%" , 
+   if_else(df_PSA001_country$percentage_sample < 0.04 & df_PSA001_country$percentage_sample >= 0.08, "4%-8%" ,
+  if_else(df_PSA001_country$percentage_sample < 0.04 & df_PSA001_country$percentage_sample >= 0.02, "2%-4%" ,    
+  if_else(df_PSA001_country$percentage_sample < 0.02 & df_PSA001_country$percentage_sample >= 0.01, "1%-2%" ,
+  if_else(df_PSA001_country$percentage_sample < 0.01 & df_PSA001_country$percentage_sample >= 0.005, "0.5%-1%" , 
+  if_else(df_PSA001_country$percentage_sample < 0.005 & df_PSA001_country$percentage_sample >= 0.0025, "0.25%-0.5%",
+      "0-0.25%"
     )))))))
 df_PSA001_country
 ```
 
-```{r}  
-wppdata3$n_binned <- 
-  if_else(wppdata3$percentage_pop >= 0.16, "0.16-1",
-  if_else(wppdata3$percentage_pop < 0.16 & wppdata3$percentage_pop >= 0.08, "0.08-0.16" , 
-   if_else(wppdata3$percentage_pop < 0.08 & wppdata3$percentage_pop >= 0.04, "0.04-0.08" , 
-  if_else(wppdata3$percentage_pop < 0.04 & wppdata3$percentage_pop >= 0.02, "0.02-0.04" , 
-   if_else(wppdata3$percentage_pop < 0.02 & wppdata3$percentage_pop >= 0.01, "0.01-0.02" , 
-   if_else(wppdata3$percentage_pop < 0.01 & wppdata3$percentage_pop >= 0.005, "0.005-0.01" ,         
-  if_else(wppdata3$percentage_pop < 0.005 & wppdata3$percentage_pop >= 0.0025, "0.0025-0.005",
-      "0-0.0025"
-    )
-  )
- )
-))))
-wppdata3
-```
+
 
 # Map of Geographical distribution of sample
 ## PS2014 (sample)
@@ -452,9 +437,9 @@ country_PS2014 <- ggplot2::ggplot(PS2014_map) +
   theme_void() + 
   xlim(c(-30, 329)) + 
   ylim(c(-60, 90)) + 
-  scale_fill_manual(name = "Proportion of PS2014",
+  scale_fill_manual(name = "Proportion of people",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
-                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+                    limits = c("0-0.25%", "0.25%-0.5%", "0.5%-1%", "1%-2%", "2%-4%", "4%-8%", "8%-16%", "16%-43%")) +
 ggtitle("Geographical distribution of sample from traditional psychological studies")+
   theme(plot.title = element_text(hjust = 0.5, size = 13),
         legend.text = element_text(size = 10),  
@@ -476,9 +461,9 @@ country_PSA001 <- ggplot2::ggplot(df_PSA001_country) +
   theme_void() + 
    xlim(c(-30, 329)) + 
   ylim(c(-60, 90)) + 
-  scale_fill_manual(name = "Proportion of PSA001",
+  scale_fill_manual(name = "Proportion of people",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
-                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+                    limits = c("0-0.25%", "0.25%-0.5%", "0.5%-1%", "1%-2%", "2%-4%", "4%-8%", "8%-16%", "16%-43%")) +
 ggtitle("Geographical distribution of sample from big team science")+
   theme(plot.title = element_text(hjust = 0.5, size = 13),
         legend.text = element_text(size = 10),  
@@ -492,9 +477,21 @@ country_PSA001
 
 ## world population data 
 ```{r}
-wppdata4 <- wppdata3[complete.cases(wppdata3$percentage_pop), ]
+wppdata4 <- wppdata3 %>%
+  mutate(
+    n_binned = if_else(percentage_pop >= 0.16, "16%-43%",
+      if_else(percentage_pop >= 0.08, "8%-16%",
+        if_else(percentage_pop >= 0.04, "4%-8%",
+          if_else(percentage_pop >= 0.02, "2%-4%",
+            if_else(percentage_pop >= 0.01, "1%-2%",
+              if_else(percentage_pop >= 0.005, "0.5%-1%",
+                if_else(percentage_pop >= 0.0025, "0.25%-0.5%", "0-0.25%")
+              )))))))
+
+wppdata4
+wppdata5 <- wppdata4[complete.cases(wppdata4$percentage_pop), ]
 # map of World people data 
-country_people <- ggplot2::ggplot(wppdata4) +
+country_people <- ggplot2::ggplot(wppdata5) +
   ggplot2::geom_map(aes(map_id = country_map, fill = n_binned), map = world_map_new) +
   ggplot2::geom_polygon(data = world_map_new, 
                aes(x = long, y = lat, group = group), 
@@ -504,7 +501,7 @@ country_people <- ggplot2::ggplot(wppdata4) +
   ylim(c(-60, 90)) + 
   scale_fill_manual(name = "Proportion of people",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
-                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+                    limits = c("0-0.25%", "0.25%-0.5%", "0.5%-1%", "1%-2%", "2%-4%", "4%-8%", "8%-16%", "16%-43%")) +
 ggtitle("Geographical distribution of the world population")+
   theme(plot.title = element_text(hjust = 0.5, size = 13),
         legend.text = element_text(size = 10),  
@@ -533,58 +530,58 @@ author
 ```{r}  
 # maybe try binning for bts
 author$n_binned_bts <- 
-  if_else(author$percentage_author_bts >= 0.16, "0.16-1",
+  if_else(author$percentage_author_bts >= 0.16, "16%-69%",
 
   
-  if_else(author$percentage_author_bts < 0.16 & author$percentage_author_bts >= 0.08, "0.08-0.16" , 
-   if_else(author$percentage_author_bts < 0.04 & author$percentage_author_bts >= 0.08, "0.04-0.08" ,
+  if_else(author$percentage_author_bts < 0.16 & author$percentage_author_bts >= 0.08, "8%-16%" , 
+   if_else(author$percentage_author_bts < 0.04 & author$percentage_author_bts >= 0.08, "4%-8%" ,
    
-  if_else(author$percentage_author_bts < 0.04 & author$percentage_author_bts >= 0.02, "0.02-0.04" ,    
-  if_else(author$percentage_author_bts < 0.02 & author$percentage_author_bts >= 0.01, "0.01-0.02" ,
-      if_else(author$percentage_author_bts < 0.01 & author$percentage_author_bts >= 0.005, "0.005-0.01" ,
+  if_else(author$percentage_author_bts < 0.04 & author$percentage_author_bts >= 0.02, "2%-4%" ,    
+  if_else(author$percentage_author_bts < 0.02 & author$percentage_author_bts >= 0.01, "1%-2%" ,
+      if_else(author$percentage_author_bts < 0.01 & author$percentage_author_bts >= 0.005, "0.5%-1%" ,
       
-  if_else(author$percentage_author_bts < 0.005 & author$percentage_author_bts >= 0.0025, "0.0025-0.005" ,
-      "0-0.0025"  
+  if_else(author$percentage_author_bts < 0.005 & author$percentage_author_bts >= 0.0025, "0.25%-0.5%" ,
+      "0-0.25%"  
   ))
  )
 ))))
 # maybe try binning for ps2014
 author$n_binned_ps2014 <- 
-  if_else(author$percentage_author_ps2014 >= 0.16, "0.16-1",
-  if_else(author$percentage_author_ps2014 < 0.16 & author$percentage_author_ps2014 >= 0.08, "0.08-0.16" , 
-   if_else(author$percentage_author_ps2014 < 0.04 & author$percentage_author_ps2014 >= 0.08, "0.04-0.08" ,
-  if_else(author$percentage_author_ps2014 < 0.04 & author$percentage_author_ps2014 >= 0.02, "0.02-0.04" ,
-   if_else(author$percentage_author_ps2014 < 0.02 & author$percentage_author_ps2014 >= 0.01, "0.01-0.02" ,
-    if_else(author$percentage_author_ps2014 < 0.01 & author$percentage_author_ps2014 >= 0.005, "0.005-0.01" ,        
-  if_else(author$percentage_author_ps2014 < 0.005 & author$percentage_author_ps2014 >= 0.0025, "0.0025-0.005" ,
-      "0-0.0025"
+  if_else(author$percentage_author_ps2014 >= 0.16, "16%-69%",
+  if_else(author$percentage_author_ps2014 < 0.16 & author$percentage_author_ps2014 >= 0.08, "8%-16%" , 
+   if_else(author$percentage_author_ps2014 < 0.04 & author$percentage_author_ps2014 >= 0.08, "4%-8%" ,
+  if_else(author$percentage_author_ps2014 < 0.04 & author$percentage_author_ps2014 >= 0.02, "2%-4%" ,
+   if_else(author$percentage_author_ps2014 < 0.02 & author$percentage_author_ps2014 >= 0.01, "1%-2%" ,
+    if_else(author$percentage_author_ps2014 < 0.01 & author$percentage_author_ps2014 >= 0.005, "0.5%-1%" ,        
+  if_else(author$percentage_author_ps2014 < 0.005 & author$percentage_author_ps2014 >= 0.0025, "0.25%-0.5%" ,
+      "0-0.25%"
   )
  ))
 ))))
 # maybe try binning for leading_author_bts
 author$n_binned_leading_bts <- 
-  if_else(author$percentage_leading_author_bts >= 0.16, "0.16-1",
-  if_else(author$percentage_leading_author_bts < 0.16 & author$percentage_leading_author_bts >= 0.08, "0.08-0.16" , 
-   if_else(author$percentage_leading_author_bts < 0.04 & author$percentage_leading_author_bts >= 0.08, "0.04-0.08" ,
-  if_else(author$percentage_leading_author_bts < 0.04 & author$percentage_leading_author_bts >= 0.02, "0.02-0.04" ,
-   if_else(author$percentage_leading_author_bts < 0.02 & author$percentage_leading_author_bts >= 0.01, "0.01-0.02" ,
-    if_else(author$percentage_leading_author_bts < 0.01 & author$percentage_leading_author_bts >= 0.005, "0.005-0.01" ,        
-  if_else(author$percentage_leading_author_bts < 0.005 & author$percentage_leading_author_bts >= 0.0025, "0.0025-0.005" ,
-      "0-0.0025"
+  if_else(author$percentage_leading_author_bts >= 0.16, "16%-77%",
+  if_else(author$percentage_leading_author_bts < 0.16 & author$percentage_leading_author_bts >= 0.08, "8%-16%" , 
+   if_else(author$percentage_leading_author_bts < 0.04 & author$percentage_leading_author_bts >= 0.08, "4%-8%" ,
+  if_else(author$percentage_leading_author_bts < 0.04 & author$percentage_leading_author_bts >= 0.02, "2%-4%" ,
+   if_else(author$percentage_leading_author_bts < 0.02 & author$percentage_leading_author_bts >= 0.01, "1%-2%" ,
+    if_else(author$percentage_leading_author_bts < 0.01 & author$percentage_leading_author_bts >= 0.005, "0.5%-1%" ,        
+  if_else(author$percentage_leading_author_bts < 0.005 & author$percentage_leading_author_bts >= 0.0025, "0.25%-0.5%" ,
+      "0-0.25%"
   )
  ))
 ))))
 
 # maybe try binning for leading_author_ps2014
 author$n_binned_leading_ps2014 <- 
-  if_else(author$percentage_leading_author_ps2014 >= 0.16, "0.16-1",
-  if_else(author$percentage_leading_author_ps2014 < 0.16 & author$percentage_leading_author_ps2014 >= 0.08, "0.08-0.16" , 
-   if_else(author$percentage_leading_author_ps2014 < 0.04 & author$percentage_leading_author_ps2014 >= 0.08, "0.04-0.08" ,
-  if_else(author$percentage_leading_author_ps2014 < 0.04 & author$percentage_leading_author_ps2014 >= 0.02, "0.02-0.04" ,
-   if_else(author$percentage_leading_author_ps2014 < 0.02 & author$percentage_leading_author_ps2014 >= 0.01, "0.01-0.02" ,
-    if_else(author$percentage_leading_author_ps2014 < 0.01 & author$percentage_leading_author_ps2014 >= 0.005, "0.005-0.01" ,        
-  if_else(author$percentage_leading_author_ps2014 < 0.005 & author$percentage_leading_author_ps2014 >= 0.0025, "0.0025-0.005" ,
-      "0-0.0025"
+  if_else(author$percentage_leading_author_ps2014 >= 0.16, "16%-77%",
+  if_else(author$percentage_leading_author_ps2014 < 0.16 & author$percentage_leading_author_ps2014 >= 0.08, "8%-16%" , 
+   if_else(author$percentage_leading_author_ps2014 < 0.04 & author$percentage_leading_author_ps2014 >= 0.08, "4%-8%" ,
+  if_else(author$percentage_leading_author_ps2014 < 0.04 & author$percentage_leading_author_ps2014 >= 0.02, "2%-4%" ,
+   if_else(author$percentage_leading_author_ps2014 < 0.02 & author$percentage_leading_author_ps2014 >= 0.01, "1%-2%" ,
+    if_else(author$percentage_leading_author_ps2014 < 0.01 & author$percentage_leading_author_ps2014 >= 0.005, "0.5%-1%" ,        
+  if_else(author$percentage_leading_author_ps2014 < 0.005 & author$percentage_leading_author_ps2014 >= 0.0025, "0.25%-0.5%" ,
+      "0-0.25%"
   )
  ))
 ))))
@@ -607,7 +604,7 @@ author_psa001 <- ggplot2::ggplot(author_bts_no_na) +
   ylim(c(-60, 90)) +
   scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
-                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+                    limits = c("0-0.25%", "0.25%-0.5%", "0.5%-1%", "1%-2%", "2%-4%", "4%-8%", "8%-16%", "16%-69%")) +
 ggtitle("Geographical distribution of all author affiliations from big team science")+
   theme(plot.title = element_text(hjust = 0.5, size = 13),
         legend.text = element_text(size = 10), 
@@ -635,7 +632,7 @@ author_ps2014 <- ggplot2::ggplot(author_ps2022_no_na) +
   ylim(c(-60, 90)) +
   ggplot2::scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
-                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+                    limits = c("0-0.25%", "0.25%-0.5%", "0.5%-1%", "1%-2%", "2%-4%", "4%-8%", "8%-16%", "16%-69%")) +
 ggplot2::ggtitle("Geographical distribution of all author affiliations from traditional psychological studies")+
   ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 13),
         legend.text = element_text(size = 10),  
@@ -645,6 +642,44 @@ ggplot2::ggtitle("Geographical distribution of all author affiliations from trad
         legend.key.width = unit(15, "pt") 
         )
 author_ps2014
+```
+
+## world population data 
+```{r}
+wppdata4 <- wppdata3 %>%
+  mutate(
+    n_binned = if_else(percentage_pop >= 0.16, "16%-69%",
+      if_else(percentage_pop >= 0.08, "8%-16%",
+        if_else(percentage_pop >= 0.04, "4%-8%",
+          if_else(percentage_pop >= 0.02, "2%-4%",
+            if_else(percentage_pop >= 0.01, "1%-2%",
+              if_else(percentage_pop >= 0.005, "0.5%-1%",
+                if_else(percentage_pop >= 0.0025, "0.25%-0.5%", "0-0.25%")
+              )))))))
+
+wppdata4
+wppdata5 <- wppdata4[complete.cases(wppdata4$percentage_pop), ]
+# map of World people data 
+country_people <- ggplot2::ggplot(wppdata5) +
+  ggplot2::geom_map(aes(map_id = country_map, fill = n_binned), map = world_map_new) +
+  ggplot2::geom_polygon(data = world_map_new, 
+               aes(x = long, y = lat, group = group), 
+               colour = 'black', size=0.1, fill = NA) + 
+  theme_void() + 
+   xlim(c(-30, 329)) + 
+  ylim(c(-60, 90)) + 
+  scale_fill_manual(name = "Proportion of people",
+                    values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
+                    limits = c("0-0.25%", "0.25%-0.5%", "0.5%-1%", "1%-2%", "2%-4%", "4%-8%", "8%-16%", "16%-69%")) +
+ggtitle("Geographical distribution of the world population")+
+  theme(plot.title = element_text(hjust = 0.5, size = 13),
+        legend.text = element_text(size = 10),  
+        legend.title = element_text(size = 12),  
+        legend.key.size = unit(3, "pt"),  
+        legend.key.height = unit(3, "pt"),  
+        legend.key.width = unit(15, "pt")  
+        )
+country_people
 ```
 
 ```{r}  
@@ -670,7 +705,7 @@ author_bts_leading <- ggplot2::ggplot(author_bts_no_na) +
   ylim(c(-60, 90)) +
   ggplot2::scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
-                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+                    limits = c("0-0.25%", "0.25%-0.5%", "0.5%-1%", "1%-2%", "2%-4%", "4%-8%", "8%-16%", "16%-77%")) +
 ggplot2::ggtitle("Geographical distribution of leading author affiliations from big team science")+
   ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 13),
         legend.text = element_text(size = 10),  
@@ -698,7 +733,7 @@ author_ps2014_leading <- ggplot2::ggplot(author_ps2022_no_na) +
   ylim(c(-60, 90)) +
   ggplot2::scale_fill_manual(name = "Proportion of authors",
                     values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
-                    limits = c("0-0.0025", "0.0025-0.005", "0.005-0.01", "0.01-0.02", "0.02-0.04", "0.04-0.08","0.08-0.16", "0.16-1")) +
+                    limits = c("0-0.25%", "0.25%-0.5%", "0.5%-1%", "1%-2%", "2%-4%", "4%-8%", "8%-16%", "16%-77%")) +
 ggplot2::ggtitle("Geographical distribution of leading author affiliations from traditional psychological studies")+
   ggplot2::theme(plot.title = element_text(hjust = 0.5, size = 13),
         legend.text = element_text(size = 10), 
@@ -708,6 +743,44 @@ ggplot2::ggtitle("Geographical distribution of leading author affiliations from 
         legend.key.width = unit(15, "pt")  
         )
 author_ps2014_leading
+```
+
+## world population data 
+```{r}
+wppdata4 <- wppdata3 %>%
+  mutate(
+    n_binned = if_else(percentage_pop >= 0.16, "16%-77%",
+      if_else(percentage_pop >= 0.08, "8%-16%",
+        if_else(percentage_pop >= 0.04, "4%-8%",
+          if_else(percentage_pop >= 0.02, "2%-4%",
+            if_else(percentage_pop >= 0.01, "1%-2%",
+              if_else(percentage_pop >= 0.005, "0.5%-1%",
+                if_else(percentage_pop >= 0.0025, "0.25%-0.5%", "0-0.25%")
+              )))))))
+
+wppdata4
+wppdata5 <- wppdata4[complete.cases(wppdata4$percentage_pop), ]
+# map of World people data 
+country_people <- ggplot2::ggplot(wppdata5) +
+  ggplot2::geom_map(aes(map_id = country_map, fill = n_binned), map = world_map_new) +
+  ggplot2::geom_polygon(data = world_map_new, 
+               aes(x = long, y = lat, group = group), 
+               colour = 'black', size=0.1, fill = NA) + 
+  theme_void() + 
+   xlim(c(-30, 329)) + 
+  ylim(c(-60, 90)) + 
+  scale_fill_manual(name = "Proportion of people",
+                    values = c("#CCE5FF","#99CCFF", "#66B2FF","#3399FF","#0080FF" ,"#0066CC","#004C99","#003366"),
+                    limits = c("0-0.25%", "0.25%-0.5%", "0.5%-1%", "1%-2%", "2%-4%", "4%-8%", "8%-16%", "16%-77%")) +
+ggtitle("Geographical distribution of the world population")+
+  theme(plot.title = element_text(hjust = 0.5, size = 13),
+        legend.text = element_text(size = 10),  
+        legend.title = element_text(size = 12),  
+        legend.key.size = unit(3, "pt"),  
+        legend.key.height = unit(3, "pt"),  
+        legend.key.width = unit(15, "pt")  
+        )
+country_people
 ```
 
 ```{r}  
@@ -746,6 +819,20 @@ df_PSA001_Age <- df %>%
   dplyr::mutate(Site = "BTS",
                 sex = ifelse(sex == "f" , "female","male"))
 df_PSA001_Age
+
+
+# 计算 male 总样本量
+male_n <- sum(df_PSA001_Age$n[df_PSA001_Age$sex == "male"], na.rm = TRUE)
+
+# 计算总样本量
+total_n <- sum(df_PSA001_Age$n, na.rm = TRUE)
+
+# 计算 male 占比
+male_ratio <- male_n / total_n
+
+# 输出结果
+cat("男性样本量占比：", round(male_ratio, 4), "\n")
+
 ```
 
 ## age_simulation
@@ -908,43 +995,99 @@ age_simulation
 
 ## Sex & Age visualisations
 ```{r}
-fig3c <- ggplot(data = wpp_age60, aes(x = ageBins, y = ifelse(sex == "male", -Proportion, Proportion), fill = sex)) +
-  geom_col(alpha = 0.5, width = 1) +
-  geom_line(data = df_PSA001_Age, aes(x = ageBins_pyr,
-                                      y = ifelse(sex == "male", -Proportion, Proportion),
-                                      group = sex, color = Site), linetype = "solid", size = 1, inherit.aes = FALSE) +
-  geom_line(data = age_simulation, aes(x = ageBins_PS,
-                                       y = ifelse(sex == "male", -Proportion, Proportion), group = sex, color = Site), linetype = "solid", size = 1, inherit.aes = FALSE) +
+# 创建一个 Source 列 
+age_simulation$Source <- factor("Traditional psychological studies", levels = c("Traditional psychological studies", "Big team science", "World population data"))
+df_PSA001_Age$Source <- factor("Big team science", levels = c("Traditional psychological studies", "Big team science", "World population data"))
+wpp_age60$Source <- factor("World population data", levels = c("Traditional psychological studies", "Big team science", "World population data"))
+
+# 合并到主图
+fig3c <- ggplot() +
+  # Traditional 折线图
+  geom_line(data = age_simulation,
+            aes(x = ageBins_PS,
+                y = ifelse(sex == "male", -Proportion, Proportion),
+                color = sex,fill = sex,
+                linetype = Source,
+                group = interaction(sex, Source)),
+            size = 0.5) +
+
+  # BTS 折线图
+  geom_line(data = df_PSA001_Age,
+            aes(x = ageBins_pyr,
+                y = ifelse(sex == "male", -Proportion, Proportion),
+                color = sex,fill = sex,
+                linetype = Source,
+                group = interaction(sex, Source)),
+            size = 0.5) +
+      
+  # 柱状图（世界数据）
+  geom_col(data = wpp_age60,
+           aes(x = ageBins,
+               y = ifelse(sex == "male", -Proportion, Proportion),
+               fill = sex,
+               color = sex,
+               linetype = Source),
+           alpha = 0.5, width = 1, size = 0.1) +
+     
+  
+  scale_color_manual(name = "Sex",
+                     values = c("male" = "#00BFC4", "female" = "#F8766D")) +
+  scale_fill_manual(name = "Sex",
+                    values = c("male" = "#00BFC4", "female" = "#F8766D")) +
+
+  scale_linetype_manual(name = "Data Source",
+                        values = c("Traditional psychological studies" = "dashed", "Big team science" = "solid", "World population data" = "blank",
+                        breaks = c("Traditional psychological studies", "Big team science", "World population data"))) +
+
+  # 设置图例显示为圆点
+  guides(
+  color = guide_legend(order = 1, override.aes = list(shape = 1,    # 方框
+                                                      size = 5, 
+                                                      fill = c("#00BFC4", "#F8766D"),  # 男蓝 女红
+                                                      color = c("#00BFC4", "#F8766D"),                # 方框边框颜色
+                                                      linetype = "solid",              # 中间一条横线
+                                                      stroke = 0)),                  # 边框粗细
+  fill = guide_legend(  # 原 fill = "none" 改为显示图例
+      order = 1,
+      override.aes = list(
+        color = c("#00BFC4", "#F8766D"),  # 边框颜色
+        size = 0.5  # 边框粗细
+      )
+    ),  # fill图例不要了，避免重复
+  linetype = guide_legend(order = 2, override.aes = list(color = "black", size = 1.5))
+)+
+
+
+  # 其他主题保持不变
   coord_flip() +
-  labs(y = "Proportion", x = "Age bins", color = NULL) +
+  labs(y = "Proportion", x = "Age bins") +
   annotate("text", label = "italic(Male)", x = 13, y = -10.5, parse = TRUE, size = 8, family = "serif") +
-  annotate("text", label = "italic(Female)", x = 13, y = 13.5, parse = TRUE, size = 8, family = "serif") + 
-  
-  scale_fill_manual(name="World population data", values = c("male" = "#00BFC4", "female" = "#F8766D"))  +
-  
-scale_color_manual(name="Sample source", values = c("BTS" ="#E41A1C", "traditional psychological studies" =  "#377EB8")) +
-  guides(fill = guide_legend(order = 1), color = guide_legend(order = 2)) +  
-  theme_classic() + 
+  annotate("text", label = "italic(Female)", x = 13, y = 13.5, parse = TRUE, size = 8, family = "serif") +
+  theme_classic() +
   theme(
-    legend.position = "right",     
-    legend.spacing = unit(1, "cm"),   
-    legend.margin = margin(-10, 0.5, 5, 0.5),  
+    legend.position = "right",
+    legend.spacing = unit(1, "cm"),
+    legend.margin = margin(-10, 0.5, 5, 0.5),
     aspect.ratio = 9 / 8,
     legend.text = element_text(size = 14, family = "serif"),
     legend.title = element_text(size = 16, family = "serif"),
     axis.title = element_text(size = 22, family = "serif"),
     axis.text = element_text(size = 14, family = "serif"),
     panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
+    panel.grid.minor = element_blank()
   ) +
+  scale_x_discrete(
+    limits = c("0~4", "5~9", "10~14", "15~19", "20~24", "25~29", "30~34", "35~39",
+               "40~44", "45~49", "50~54", "55~59", ">=60")
+  ) +
+  expand_limits(y = c(-39, 39))  # 更安全的替代 ylim()
 
-  scale_x_discrete(limits = c("0~4", "5~9", "10~14", "15~19", "20~24", "25~29", "30~34", "35~39", "40~44", "45~49", "50~54", "55~59", ">=60"),
-                   breaks = c("0~4", "5~9", "10~14", "15~19", "20~24", "25~29", "30~34", "35~39", "40~44", "45~49", "50~54", "55~59", ">=60"))+
-  
-  ylim(c(-39, 39))  
 fig3c
+
 ggsave("Figure 2.pdf", fig3c, device = "pdf", width = 12, height = 9)
 ```
+
+
 
 # sample’ country distributions visualisations
 ```{r}
@@ -979,22 +1122,22 @@ uniondata$ps2014[uniondata$country_map == "DE"] <- 0.001257
 pp1 <- 
 ggplot(data = uniondata, aes(x = percentage_pop, y = percentage_n, color = Country_groups)) +
    geom_point(stat = "identity", position = "identity", size = 9) +
-  geom_rect(aes(xmin=0, xmax=0.04, ymin=0, ymax=0.04), fill= NA,color="grey80", size = 1)+
+  geom_rect(aes(xmin=0, xmax=0.06, ymin=0, ymax=0.06), fill= NA,color="grey80", size = 1)+
   geom_text_repel(data = uniondata, aes(label = country_map), max.overlaps=3,label.padding=1,
                   segment.color = NA, family = "sans", size = 9, color = "black") +
   xlab("Proportion of population") +
   ylab("Proportion of sample from BTS") +
 
  scale_color_manual(name = "Country groups",
-    values = c("#F8766D","#00BA38","#619CFF","blue"),
+    values = c("red", "pink", "#ADD8E6", "blue"),
                     breaks = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country"),
                     labels = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country"),
     guide = guide_legend(nrow = 2)) +
 
-  geom_segment(aes(x = 0, y = 0, xend = 0.095, yend = 0.095),color = "black",size = 0.5,linetype = "dashed") +
- 
-  geom_segment(aes(x = 0, y = 0.04, xend = 0.066, yend = 0.25),color = "grey80",size = 1,linetype = "dashed")+
-  geom_segment(aes(x = 0.04, y = 0, xend = 0.23, yend = 0.095),color = "grey80",size = 1,linetype = "dashed")+
+  geom_segment(aes(x = 0, y = 0, xend = 0.38, yend = 0.38),color = "black",size = 0.5,linetype = "dashed") +
+  
+  geom_segment(aes(x = 0, y = 0.06, xend = 0.27, yend = 1),color = "grey80",size = 1,linetype = "dashed")+
+  geom_segment(aes(x = 0.06, y = 0, xend = 0.93, yend = 0.39),color = "grey80",size = 1,linetype = "dashed")+
 
   theme(
         legend.position = "bottom",
@@ -1007,11 +1150,11 @@ ggplot(data = uniondata, aes(x = percentage_pop, y = percentage_n, color = Count
         axis.line = element_line(color = "black"),
          
         aspect.ratio = 1   ) +
-  xlim(c(0, 0.25)) + 
-  ylim(c(0, 0.25))  
+  xlim(c(0, 1)) + 
+  ylim(c(0, 1))  
 
 zoom_data <- uniondata %>%
-  filter(between(percentage_n, 0, 0.04))%>%
+  filter(between(percentage_n, 0, 0.06))%>%
   arrange(percentage_n) %>%
   mutate(idx = row_number())
 
@@ -1022,10 +1165,10 @@ zoom_plt <- zoom_data %>%
   geom_text_repel(data = uniondata, aes(label = country_map), max.overlaps=3,label.padding=1,
                   segment.color = NA, family = "sans", size = 9, color = "black") +
   geom_abline(slope = 1, intercept = 0, size = 0.5,linetype = "dashed", color = "black") +
-  scale_y_continuous(limits = c(0, 0.04)) +
-  scale_x_continuous(limits = c(0, 0.04))+
+  scale_y_continuous(limits = c(0, 0.06)) +
+  scale_x_continuous(limits = c(0, 0.06))+
   scale_color_manual(name = "Country groups",
-    values = c("#F8766D","#00BA38","#619CFF","blue"),
+    values = c("red", "pink", "#ADD8E6", "blue"),
                     breaks = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country"),
                     labels = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country")) +
   theme_void()+
@@ -1046,7 +1189,7 @@ pp2 <- pp1 + inset_element(zoom_plt, 0.3, 0.4, 0.9, 1)+
   plot_annotation(theme=theme(
       plot.title = element_text( size = 12, color = "black", hjust = 0.5, margin = margin(5,0,10,0)), ))
 
-
+pp2
   #ggsave(filename = "PSA_Population_percentage_by_Country_enlarge.pdf", plot = pp2,  dpi = 300)
 ```
 
@@ -1055,22 +1198,22 @@ pp2 <- pp1 + inset_element(zoom_plt, 0.3, 0.4, 0.9, 1)+
 pp3 <- 
 ggplot(data = uniondata, aes(x = percentage_pop, y = ps2014, color = Country_groups)) +
    geom_point(stat = "identity", position = "identity", size = 9) +
-  geom_rect(aes(xmin=0, xmax=0.045, ymin=0, ymax=0.045), fill= NA,color="grey80", size = 1)+
+  geom_rect(aes(xmin=0, xmax=0.06, ymin=0, ymax=0.06), fill= NA,color="grey80", size = 1)+
   geom_text_repel(data = uniondata, aes(label = country_map), max.overlaps=10,label.padding=1,
                   segment.color = NA, family = "sans", size = 9, color = "black") +
   xlab("Proportion of population") +
   ylab("Proportion of sample from traditional psychological studies") +
 
   scale_color_manual(name = "Country groups",
-    values = c("#F8766D","#00BA38","#619CFF","blue"),
+    values = c("red", "pink", "#ADD8E6", "blue"),
                     breaks = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country"),
                     labels = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country"),
     guide = guide_legend(nrow = 2)) +
 
   geom_segment(aes(x = 0, y = 0, xend = 0.38, yend = 0.38),color = "black",size = 0.5,linetype = "dashed") +
   
-  geom_segment(aes(x = 0, y = 0.045, xend = 0.27, yend = 1),color = "grey80",size = 1,linetype = "dashed")+
-  geom_segment(aes(x = 0.045, y = 0, xend = 0.93, yend = 0.39),color = "grey80",size = 1,linetype = "dashed")+
+  geom_segment(aes(x = 0, y = 0.06, xend = 0.27, yend = 1),color = "grey80",size = 1,linetype = "dashed")+
+  geom_segment(aes(x = 0.06, y = 0, xend = 0.93, yend = 0.39),color = "grey80",size = 1,linetype = "dashed")+
 
   theme(
         legend.position = "bottom",
@@ -1097,10 +1240,10 @@ zoom_plt1 <- zoom_data1 %>%
   geom_text_repel(data = uniondata, aes(label = country_map), max.overlaps=10,label.padding=1,
                   segment.color = NA, family = "sans", size = 9, color = "black") +
   geom_abline(slope = 1, intercept = 0, size = 0.5,linetype = "dashed", color = "black") +
-  scale_y_continuous(limits = c(0, 0.045)) +
-  scale_x_continuous(limits = c(0, 0.045))+
+  scale_y_continuous(limits = c(0, 0.06)) +
+  scale_x_continuous(limits = c(0, 0.06))+
   scale_color_manual(name = "Country groups",
-    values = c("#F8766D","#00BA38","#619CFF","blue"),
+    values = c("red", "pink", "#ADD8E6", "blue"),
                     breaks = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country"),
                     labels = c("High income countries", "Upper middle income country", "Lower middle income country","Lower income country")) +
   theme_void()+
@@ -1122,7 +1265,7 @@ zoom_plt1
 pp4 <- pp3 + inset_element(zoom_plt1, 0.3, 0.4, 0.9, 1)+ 
   plot_annotation(theme=theme(
       plot.title = element_text( size = 12, color = "black", hjust = 0.5, margin = margin(5,0,10,0)), ))
-
+pp4
   #ggsave(filename = "PS2014_&_World_Population_by_Country_enlarge.pdf", plot = pp4,  dpi = 300)
 ```
 
@@ -1135,6 +1278,1709 @@ plot_annotation(tag_levels = list(c('A', '','B', '')), theme=theme(plot.tag = el
 # Save the plot as a pdf image
 ggsave(filename = "Figure 3.pdf", plot = combined_plot_people, device = "pdf", width = 24, height = 14)
 ```
+
+
+
+#敏感性分析
+##sex
+###数据预处理
+```{r}
+Liu_2024_sex <- read_csv("Liu_2024_sex.csv") %>%
+  # 移除 study_n 为缺失值的行
+  filter(!is.na(n)) %>%
+  mutate(
+    female_n = round(female * n / 100),
+    male_n = n - female_n
+  )
+Liu_2024_sex <- Liu_2024_sex %>%
+  rowwise() %>%
+  mutate(
+    observed = list(c(male_n, female_n)),
+    expected = list(c(0.503, 0.497) * sum(c(male_n, female_n))),
+    chi2_test = list(chisq.test(x = observed, p = c(0.503, 0.497))),
+    chi2 = chi2_test$statistic,
+    df = chi2_test$parameter,
+    p_value = chi2_test$p.value
+  ) %>%
+  ungroup() %>%
+  select(-observed, -expected, -chi2_test)
+Liu_2024_sex
+```
+
+### Meta-analysis of sex 
+```{r}
+library(dplyr)
+library(effectsize)
+library(metafor)
+
+# 定义人口基准比例
+expected_ratio <- c(0.503, 0.497)  # 世界男性/女性人口比例
+
+# 计算 fei 效应量并构建分析数据框
+Liu_2024_meta <- Liu_2024_sex %>%
+  rowwise() %>%
+  mutate(
+    O = list(c(male_n, female_n)),
+    p_E = list(expected_ratio),
+    fei = effectsize::fei(O, p = p_E)[[1]],
+    .keep = "all"
+  ) %>%
+  ungroup()
+
+# 使用 Fisher’s Z 转换进行元分析
+meta_data <- escalc(measure = "ZCOR", ri = Liu_2024_meta$fei, ni = Liu_2024_meta$n)
+
+# 随机效应模型
+res <- rma(yi, vi, data = meta_data, method = "REML")
+
+# 提取 Fisher's Z 合并估计及其置信区间
+z_est <- res$b[1]
+z_ci_lb <- res$ci.lb
+z_ci_ub <- res$ci.ub
+
+# 转换为 fei 效应量
+fei_est_sex <- tanh(z_est)
+fei_ci_lb_sex <- tanh(z_ci_lb)
+fei_ci_ub_sex <- tanh(z_ci_ub)
+fei_ci_lb_sex 
+# 输出结果
+cat("合并后的平均 fei 效应量为：", round(fei_est_sex, 3), "\n")
+cat("95% 置信区间：(", round(fei_ci_lb_sex, 3), ", ", round(fei_ci_ub_sex, 3), ")\n")
+
+# 森林图
+forest(res, slab = Liu_2024_meta$paper, xlab = "fei (Frequency Effect Index)")
+
+# 异质性信息
+text(
+  x = min(res$ci.lb) - 0.3,
+  y = nrow(Liu_2024_meta) + 2,
+  labels = paste(
+    "I² =", round(res$I2), "%",
+    "  Q =", round(res$QE, 2),
+    "  p =", round(res$QEp, 3)
+  )
+)
+
+# 合并总样本进行卡方拟合优度检验
+total_observed <- c(sum(Liu_2024_sex$male_n), sum(Liu_2024_sex$female_n))
+combined_chi2 <- chisq.test(x = total_observed, p = expected_ratio)
+
+# 输出总卡方结果
+cat("\nCombined Chi-square Test:\n")
+print(combined_chi2)
+
+```
+
+###性别的敏感性分析
+```{r}
+# --- 贝叶斯因子计算核心函数 ---
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+
+vf1 <- Vectorize(f1)
+
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+# ------------------------------
+# 参数设置
+# ------------------------------
+set.seed(123)
+n_seq <- seq(100, 1000, by = 100)
+n_seq
+sim_per_n <- 1000
+w_true <- fei_to_w(fei_ci_lb_sex,p = c(0.503, 0.497))   # 真效应（用于 BF10）
+df <- 1
+bf_thresh <- 5^(1:10)
+bf_thresh
+p0 <- c(0.503, 0.497)
+#lambda_crit <- UMPBT(df, bf_thresh)
+#lambda_crit <- sapply(bf_thresh, function(bf) UMPBT(df, bf))
+#lambda_crit
+w_true
+# ------------------------------
+# 定义模拟函数
+# ------------------------------
+simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N = 100) {
+  results <- lapply(seq_along(bf_thresh_seq), function(i) {
+    bf_thresh_i <- bf_thresh_seq[i]
+    lambda_crit_i <- UMPBT(df, bf_thresh_i)
+
+    # 构造观察比例 p
+    p_obs <- p0 + c(w * sqrt(p0[1]), -w * sqrt(p0[2]))
+
+    # 模拟观察频数数据
+    set.seed(123)
+    obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)
+
+    # 卡方统计量
+    chisq_values <- apply(obs_counts, 2, function(x) {
+      sum((x - N * p0)^2 / (N * p0))
+    })
+
+    # 贝叶斯因子
+    BF <- froot_bf(chisq_values, lambda_crit_i, df)
+
+    if (all(w == 0)) {
+      category <- "BF01"
+      prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+    } else {
+      category <- "BF10"
+      prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+    }
+
+    data.frame(
+      Sample_Size = N,
+      BF_thresh = bf_thresh_i,
+      Category = category,
+      lambda_crit = lambda_crit_i,
+      BF_10 = prop_BF10,
+      BF_10_raw = BF,         # 可保留第一组原始 BF 值
+      chisq = chisq_values,
+      p_obs_1 = p_obs[1],
+      p_obs_2 = p_obs[2]
+    )
+  })
+
+  BF_power <- bind_rows(results)
+  return(BF_power)
+}
+
+# 所有样本量
+sample_sizes <- c(50, 100, 200, 400)
+bf_thresh_seq <- 1:10
+
+# 模拟并合并数据
+all_results <- purrr::map_dfr(sample_sizes, function(N) {
+  df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = N)
+  df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = N)
+  df <- bind_rows(df_bf10, df_bf01)
+  df
+})
+library(dplyr)
+library(ggplot2)
+
+# 整理标签
+sim_results_df <- all_results %>%
+  select(Sample_Size, BF_10, BF_thresh, Effect_Size = Category) %>%
+  mutate(
+    Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                         labels = c("True positive rate", "False positive rate")),
+    Sample_Size = as.factor(Sample_Size)  # 转为因子，便于映射颜色或形状
+  )
+
+P1 <- ggplot(sim_results_df, aes(x = BF_thresh, y = BF_10, 
+                                 color = Effect_Size, shape = Sample_Size)) +
+  geom_point(size = 4) +
+  geom_line(aes(group = interaction(Sample_Size, Effect_Size), color = Effect_Size), linewidth = 1) +
+ 
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") +
+  
+  labs(
+    x = "BF_10 Threshold",
+    y = "Proportion of BF >= Threshold",
+    color = "Type of Simulation",
+    shape = "Sample Size"
+  ) +
+  scale_x_continuous(limits = c(0, 11), breaks = 0:10, expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 1.1), breaks = sort(c(seq(0, 1, 0.2), 0.05)), expand = c(0, 0)) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black", size = 1),
+    axis.ticks = element_line(color = "black"),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 24),
+    axis.text.x = element_text(size = 22),
+    axis.text.y = element_text(size = 22),
+    legend.title = element_text(size = 28),
+    legend.text = element_text(size = 24),
+    legend.position = "bottom",
+    legend.direction = "vertical"
+  )
+
+P1
+
+
+```
+
+
+
+```{r}
+# --- 贝叶斯因子计算核心函数 ---
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+
+vf1 <- Vectorize(f1)
+
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+# ------------------------------
+# 参数设置
+# ------------------------------
+set.seed(123)
+n_seq <- seq(200, 2000, by = 200)
+n_seq
+sim_per_n <- 1000
+w_true <- fei_to_w(fei_ci_lb_sex,p = c(0.503, 0.497))   # 真效应（用于 BF10）
+df <- 1
+
+p0 <- c(0.503, 0.497)
+#lambda_crit <- UMPBT(df, bf_thresh)
+#lambda_crit <- sapply(bf_thresh, function(bf) UMPBT(df, bf))
+#lambda_crit
+w_true
+# ------------------------------
+# 定义模拟函数
+# ------------------------------
+simulate_BF <- function(n_seq, sim_per_n, w, df, label) {
+  results <- lapply(seq_along(n_seq), function(i) {
+    N <- n_seq[i]
+    
+    # 对应第 i 个 bf_thresh 和 lambda_crit
+    bf_thresh_i <- 4^i
+    lambda_crit_i <- UMPBT(df, bf_thresh_i)
+
+    # 构造观察比例 p
+    p_obs <- p0 + c(w * sqrt(p0[1]), -w * sqrt(p0[2]))
+
+    # 模拟观察频数数据
+    set.seed(123)
+    obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)  # 每列是一次模拟
+
+    # 卡方统计量
+    chisq_values <- apply(obs_counts, 2, function(x) {
+      sum((x - N * p0)^2 / (N * p0))
+    })
+
+    # 计算贝叶斯因子
+    BF <- froot_bf(chisq_values, lambda_crit_i, df)
+
+    if (all(w == 0)) {
+      category <- "BF01"
+      prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+    } else {
+      category <- "BF10"
+      prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+    }
+
+    data.frame(
+      Sample_Size = N,
+      Category = category,
+      lambda_crit = lambda_crit_i,
+      BF_10 = prop_BF10,
+      BF_10_ture = BF,
+      chisq = chisq_values[1],      # 可选择保留部分值
+      p_obs_1 = p_obs[1],           # 拆开方便整合
+      p_obs_2 = p_obs[2]
+    )
+  })
+
+  BF_power <- bind_rows(results)
+  return(BF_power)
+}
+# ------------------------------
+# 分别模拟 BF10（真效应） 和 BF01（无效应）
+# ------------------------------
+df_bf10 <- simulate_BF(n_seq, sim_per_n, w = w_true, df,  "BF10")
+df_bf01 <- simulate_BF(n_seq, sim_per_n, w = 0,       df, "BF01")
+df_bf10 
+df_bf01
+
+# 合并数据
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+sim_results_df
+sim_results_df <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, Condition = Category) %>%
+  mutate( Effect_Size = factor(Condition, levels = c("BF10", "BF01"),
+                            labels = c("True positive rate", "False positive rate")))
+# ------------------------------
+# 绘图1：比例随样本量变化
+# ------------------------------
+P2 <- ggplot(sim_results_df, aes(x = Sample_Size, y =  BF_10, color = Effect_Size)) +
+  geom_point(size = 4) +
+  geom_line(size = 1) +  # 添加线  
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") + 
+  labs(
+    
+    x = "Sample Size",
+    y = "The proportion of BF >= threshold",
+    color = "Type of Simulation"  # 如果需要自定义图例标题
+  ) +
+  # 设置x轴和y轴的范围从0开始
+  scale_x_continuous(limits = c(0, 2100), breaks = seq(0, 2000, by = 200), expand = c(0, 0)) +
+  # 设置y轴从0开始，最大为1
+  scale_y_continuous(limits = c(-0.05, 1.1), breaks = sort(c(seq(0, 1, by = 0.2), 0.05)), expand = c(0, 0)) +
+  theme_minimal(base_size = 14) +  # 可以保留，也可以省略
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black", size = 1),
+    axis.ticks = element_line(color = "black"),
+    
+    # 字体大小调整部分（均为原来的3倍）
+    plot.title = element_text(size = 28, face = "bold", hjust = 0.5),  # 标题
+    axis.title.x = element_text(size = 24),  # x轴标题
+    axis.title.y = element_text(size = 24),  # y轴标题
+    axis.text.x = element_text(size = 22),   # x轴刻度
+    axis.text.y = element_text(size = 22),   # y轴刻度
+    legend.title = element_text(size = 28),  # 图例标题
+    legend.text = element_text(size = 24) ,
+    legend.position = "bottom",
+    legend.direction = "vertical"  
+  )
+P2
+
+combined_plot_sex <-  P1+P2+
+
+plot_annotation(tag_levels = list(c('A', 'B')))
+
+
+
+ggsave(filename = "Fig S1.pdf", plot = combined_plot_sex, device = "pdf", width = 18, height = 11)
+```
+
+
+
+## Age simulation
+###数据预处理
+```{r}
+Liu_2024_age <- read_csv("Liu_2024_age.csv") %>%
+  filter(!is.na(n)) 
+Liu_2024_age
+
+WPP2022_age <- read_csv("WPP2022_age.csv")
+WPP2022_age
+# 确保列名是字符型
+age_cols <- c(as.character(0:99), "100+")
+
+# 按年龄段分组求和
+age_summary <- WPP2022_age %>%
+  filter(Type == "World", Year == 2021) %>%
+  select(all_of(age_cols)) %>%
+  summarise(
+    `<=17`   = rowSums(select(., as.character(0:17))),
+    `18~25`  = rowSums(select(., as.character(18:25))),
+    `26~40`  = rowSums(select(., as.character(26:40))),
+    `41~59`  = rowSums(select(., as.character(41:59))),
+    `>=60`   = rowSums(select(., c(as.character(60:99), "100+")))
+  ) %>%
+  tidyr::pivot_longer(cols = everything(), names_to = "ageBins", values_to = "population")%>%
+  mutate(population_ratio = population / sum(population))
+
+# 查看结果
+age_summary
+
+age_summary$population_ratio
+```
+
+#年龄数据模拟与元分析
+```{r}
+# 定义模拟函数
+Sim_Sens_mult <- function(Mean1, diff_age, SD1, SD2, sampe_N) {
+  
+  Mean2 <- Mean1 + diff_age
+
+  ageData1 <- round((pnorm(c(18,26,41,60), mean = Mean1, sd = SD1) * sampe_N))
+  ageData2 <- round((pnorm(c(18,26,41,60), mean = Mean2, sd = SD2) * sampe_N))
+
+  sim_age_df <- setNames(data.frame(matrix(ncol = 3, nrow = 5)), c("ageBins", "sim1", "sim2"))
+  sim_age_df$ageBins <- c("<=17", "18~25", "26~40", "41~59",  ">=60")
+  sim_age_df$sim1[0:4] <- ageData1
+  sim_age_df$sim2[0:4] <- ageData2
+
+  sim_age_df <- sim_age_df %>%
+    mutate(sim1_new = sim1 - lag(sim1),
+           sim1_new = ifelse(is.na(sim1_new), sim1, sim1_new),
+           sim2_new = sim2 - lag(sim2),
+           sim2_new = ifelse(is.na(sim2_new), sim2, sim2_new),
+           sim1_new = ifelse((is.na(sim1_new) | sim1_new == 0), 1, sim1_new),
+           sim2_new = ifelse((is.na(sim2_new) | sim2_new == 0), 1, sim2_new),
+           ageBins = factor(ageBins, levels = c("<=17", "18~25", "26~40", "41~59",  ">=60"))) %>%
+    select(ageBins, sim1_new, sim2_new) %>%
+    rename(obs = sim1_new,
+           expected = sim2_new)
+  
+  return(sim_age_df)
+}
+Liu_2024_age$age_mean
+Liu_2024_age$sd
+Liu_2024_age$n
+
+Liu_2024_age <- read_csv("Liu_2024_age.csv") %>%
+  filter(!is.na(n)) 
+Liu_2024_age
+
+# 执行模拟
+results <- lapply(1:nrow(Liu_2024_age), function(i) {
+  df <- Sim_Sens_mult(
+    Mean1 = Liu_2024_age$age_mean[i], 
+    diff_age = 0, 
+    SD1 = Liu_2024_age$sd[i], 
+    SD2 = Liu_2024_age$sd[i], 
+    sampe_N = Liu_2024_age$n[i]
+  )
+  
+  df$paper <- Liu_2024_age$paper[i]
+  df$n <- Liu_2024_age$n[i]
+  df
+})
+
+# 合并所有模拟结果
+long_df <- bind_rows(results)
+
+# 转换为宽格式
+final_df <- long_df %>%
+  select(paper, n, ageBins, obs) %>%
+  pivot_wider(names_from = ageBins, values_from = obs)
+
+# 查看结果
+print(final_df)
+
+
+library(dplyr)
+
+# 提取世界人口比例（确保顺序为 <=17 到 >=60）
+expected_ratio <- age_summary$population_ratio
+
+# 计算卡方值并添加为列
+final_df <- final_df %>%
+  rowwise() %>%
+  mutate(
+    observed = list(c_across(`<=17`:`>=60`)),         # 提取观察频数向量
+    expected = list(expected_ratio * n),              # 计算期望频数向量
+    chi2 = sum((unlist(observed) - unlist(expected))^2 / unlist(expected)),  # 卡方统计量
+    df = length(unlist(observed)) - 1                 # 自由度 = 类别数 - 1
+  ) %>%
+  ungroup() %>%
+  select(-observed, -expected)  # 可选：移除中间变量
+final_df
+
+library(effectsize)
+
+
+# 确保 age_summary$population_ratio 已准备好
+expected_ratio <- age_summary$population_ratio
+
+# 逐行计算 fei 和 w
+final_df <- final_df %>%
+  rowwise() %>%
+  mutate(
+    O = list(c_across(`<=17`:`>=60`)),               # 提取观察频数
+    p_E = list(expected_ratio),                      # 提取期望概率
+    fei = fei(O, p = p_E)[[1]],                      # 计算 FEI 值
+    w = fei_to_w(fei, p = expected_ratio)            # 转换为 Cohen's w
+  ) %>%
+  ungroup() %>%
+  select(-O, -p_E)  # 可选：删除中间变量列
+
+final_df
+```
+
+### 年龄元分析
+```{r}
+library(metafor)
+
+# 使用 Fisher's Z 转换并计算效应量与方差
+meta_data <- escalc(measure = "ZCOR", ri = final_df$fei, ni = final_df$n)
+
+# 随机效应模型元分析
+res <- rma(yi, vi, data = meta_data, method = "REML")
+
+# 输出元分析结果
+summary(res)
+
+# 提取合并效应量及其置信区间（仍是 Fisher's Z）
+z_est <- res$b[1]
+z_ci_lb <- res$ci.lb
+z_ci_ub <- res$ci.ub
+
+# 反转为 fei 尺度
+fei_est_age <- tanh(z_est)
+fei_ci_lb_age <- tanh(z_ci_lb)
+fei_ci_ub_age <- tanh(z_ci_ub)
+w_true <- fei_to_w(fei_ci_lb_age,p = expected_ratio) 
+w_true
+# 输出结果
+cat("合并后的平均 fei 效应量为：", round(fei_est_age, 3), "\n")
+cat("95% 置信区间：(", round(fei_ci_lb_age, 3), ", ", round(fei_ci_ub_age, 3), ")\n")
+
+
+forest(res, slab = final_df$paper)
+```
+
+
+###年龄敏感性分析
+```{r}
+# --- 贝叶斯因子计算核心函数 ---
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+
+vf1 <- Vectorize(f1)
+
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+
+# ------------------------------
+# 参数设置
+# ------------------------------
+set.seed(123)
+n_seq <- seq(100, 2000, by = 100)
+sim_per_n <- 1000
+w_true <- fei_to_w(fei_ci_lb_age,p = expected_ratio) 
+#fei_to_w(fei_ci_lb,p = expected_ratio)
+# 真效应（用于 BF10）
+df <- 4
+bf_thresh <- 5^(1:10)
+p0 <- expected_ratio
+#lambda_crit <- UMPBT(df, bf_thresh)
+w_true
+# ------------------------------
+# 定义模拟函数
+# ------------------------------
+simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N ) {
+  results <- lapply(seq_along(bf_thresh_seq), function(i){
+    bf_thresh_i <- bf_thresh_seq[i]
+   lambda_crit_i <- UMPBT(df, bf_thresh_i)
+        # 构造观察比例 p
+if (all(w == 0)) {
+      p_obs <- p0
+    } else {
+      # 使用扰动向量构造具有期望w的分布
+      delta <- rnorm(length(p0))
+      delta <- delta - mean(delta)  # 保证扰动之和为 0
+      delta <- delta / sqrt(sum((delta^2) / p0))  # 标准化为 w 距离单位向量
+      p_obs <- p0 + sqrt(p0) * w[1] * delta  # 用 w 的第一个值控制扰动大小
+      p_obs[p_obs < 0] <- 0  # 剔除负值
+      p_obs <- p_obs / sum(p_obs)  # 重新归一化为合法分布
+    }
+
+
+    # 模拟多项式观察数据（每列是一组模拟）
+    set.seed(123)
+    obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)
+obs_counts
+    # 卡方统计量
+    chisq_values <- apply(obs_counts, 2, function(x) {
+      sum((x - N * expected_ratio)^2 / (N * expected_ratio))
+    })
+
+    # 计算贝叶斯因子
+    BF <- froot_bf(chisq_values, lambda_crit_i, df)
+    
+
+  if (all(w == 0)) {
+            category <- "BF01"
+            prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+        } else {
+            category <- "BF10"
+            prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+        }
+        
+        data.frame(
+            Sample_Size = N,
+            BF_thresh = bf_thresh_i,
+            Category = category,
+            lambda_crit = lambda_crit_i,
+            BF_10 = prop_BF10,
+            BF_10_raw = BF[1],         # 可保留第一组原始 BF 值
+            chisq = chisq_values[1],
+            p_obs_1 = p_obs[1],
+            p_obs_2 = p_obs[2]
+        )
+    })
+    
+    BF_power <- bind_rows(results)
+    return(BF_power)
+}
+# ------------------------------
+# 分别模拟 BF10（真效应） 和 BF01（无效应）
+# ------------------------------
+bf_thresh_seq <- 1:10
+df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 4, label = "BF10", N = 50)
+df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 4, label = "BF01", N = 50)
+
+# 合并数据
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+
+# 修改标签
+sim_results_df1 <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("True positive rate", "False positive rate")))
+sim_results_df1
+
+bf_thresh_seq <- 1:10
+df_bf10_2 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 4, label = "BF10", N = 100)
+df_bf01_2 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 4, label = "BF01", N = 100)
+
+# 合并数据
+sim_results_df2 <- bind_rows(df_bf10_2, df_bf01_2)
+
+# 修改标签
+sim_results_df2 <- sim_results_df2 %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("True positive rate", "False positive rate")))
+
+bf_thresh_seq <- 1:10
+df_bf10_3 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 4, label = "BF10", N = 200)
+df_bf01_3 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 4, label = "BF01", N = 200)
+
+# 合并数据
+sim_results_df3 <- bind_rows(df_bf10_3, df_bf01_3)
+
+# 修改标签
+sim_results_df3 <- sim_results_df3 %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("True positive rate", "False positive rate")))
+
+bf_thresh_seq <- 1:10
+df_bf10_4 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 4, label = "BF10", N = 400)
+df_bf01_4 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 4, label = "BF01", N = 400)
+
+# 合并数据
+sim_results_df4 <- bind_rows(df_bf10_4, df_bf01_4)
+
+# 修改标签
+sim_results_df4 <- sim_results_df4 %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("True positive rate", "False positive rate")))
+sim_results_df4
+
+
+sim_results_all <- bind_rows(sim_results_df1, sim_results_df2, sim_results_df3, sim_results_df4)
+
+sim_results_all
+sim_results_all$Sample_Size <- as.factor(sim_results_all$Sample_Size)
+sim_results_all
+
+
+P3 <- ggplot(sim_results_all, aes(x = BF_thresh, y = BF_10, 
+                                 color = Effect_Size, shape = Sample_Size)) +
+  geom_point(size = 4) +
+  geom_line(aes(group = interaction(Sample_Size, Effect_Size), color = Effect_Size), linewidth = 1) +
+ 
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") +
+  
+  labs(
+    x = "BF_10 Threshold",
+    y = "Proportion of BF >= Threshold",
+    color = "Type of Simulation",
+    shape = "Sample Size"
+  ) +
+  scale_x_continuous(limits = c(0, 11), breaks = 0:10, expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 1.1), breaks = sort(c(seq(0, 1, 0.2), 0.05)), expand = c(0, 0)) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black", size = 1),
+    axis.ticks = element_line(color = "black"),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 24),
+    axis.text.x = element_text(size = 22),
+    axis.text.y = element_text(size = 22),
+    legend.title = element_text(size = 28),
+    legend.text = element_text(size = 24), 
+    legend.position = "bottom",
+    legend.direction = "vertical"
+  )
+P3
+ggsave(filename = "Fig 3.pdf", plot = P3, device = "pdf", width = 12, height = 7)
+```
+
+```{r}
+# --- 贝叶斯因子计算核心函数 ---
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+
+vf1 <- Vectorize(f1)
+
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+
+# ------------------------------
+# 参数设置
+# ------------------------------
+set.seed(123)
+n_seq <- seq(100, 1000, by = 100)
+sim_per_n <- 1000
+w_true <- fei_to_w(fei_ci_lb_age,p = expected_ratio) 
+#fei_to_w(fei_ci_lb,p = expected_ratio)
+# 真效应（用于 BF10）
+df <- 4
+p0 <- expected_ratio
+#lambda_crit <- UMPBT(df, bf_thresh)
+w_true
+# ------------------------------
+# 定义模拟函数
+# ------------------------------
+simulate_BF <- function(n_seq, sim_per_n, w, df, label) {
+  results <- lapply(seq_along(n_seq), function(i) {
+    N <- n_seq[i]
+    
+    # 对应第 i 个 bf_thresh 和 lambda_crit
+    bf_thresh_i <- 4^i
+    lambda_crit_i <- UMPBT(df, bf_thresh_i)
+        # 构造观察比例 p
+if (all(w == 0)) {
+      p_obs <- p0
+    } else {
+      # 使用扰动向量构造具有期望w的分布
+      delta <- rnorm(length(p0))
+      delta <- delta - mean(delta)  # 保证扰动之和为 0
+      delta <- delta / sqrt(sum((delta^2) / p0))  # 标准化为 w 距离单位向量
+      p_obs <- p0 + sqrt(p0) * w[1] * delta  # 用 w 的第一个值控制扰动大小
+      p_obs[p_obs < 0] <- 0  # 剔除负值
+      p_obs <- p_obs / sum(p_obs)  # 重新归一化为合法分布
+    }
+
+
+    # 模拟多项式观察数据（每列是一组模拟）
+    set.seed(123)
+    obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)
+obs_counts
+    # 卡方统计量
+    chisq_values <- apply(obs_counts, 2, function(x) {
+      sum((x - N * expected_ratio)^2 / (N * expected_ratio))
+    })
+
+    # 计算贝叶斯因子
+    BF <- froot_bf(chisq_values, lambda_crit_i, df)
+    
+  if (all(w == 0)) {
+            category <- "BF01"
+            prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+        } else {
+            category <- "BF10"
+            prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+        }
+        
+        data.frame(
+            Sample_Size = N,
+            BF_thresh = bf_thresh_i,
+            Category = category,
+            lambda_crit = lambda_crit_i,
+            BF_10 = prop_BF10,
+            BF_10_raw = BF[1],         # 可保留第一组原始 BF 值
+            chisq = chisq_values[1],
+            p_obs_1 = p_obs[1],
+            p_obs_2 = p_obs[2]
+        )
+    })
+    BF_power <- bind_rows(results)
+    return(BF_power)
+}
+# ------------------------------
+# 分别模拟 BF10（真效应） 和 BF01（无效应）
+# ------------------------------
+df_bf10 <- simulate_BF(n_seq, sim_per_n, w = w_true, df,  "BF10")
+df_bf01 <- simulate_BF(n_seq, sim_per_n, w = 0,       df, "BF01")
+df_bf10 
+df_bf01
+
+# 合并数据
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+sim_results_df
+sim_results_df <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, Condition = Category) %>%
+  mutate( Effect_Size = factor(Condition, levels = c("BF10", "BF01"),
+                            labels = c("True positive rate", "False positive rate")))
+
+
+P4 <- ggplot(sim_results_df, aes(x = Sample_Size, y =  BF_10, color = Effect_Size)) +
+  geom_point(size = 4) +
+  geom_line(size = 1) +  # 添加线  
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") + 
+  labs(
+    x = "Sample Size",
+    y = "The proportion of BF >= threshold",
+    color = "Type of Simulation"  # 如果需要自定义图例标题
+  ) +
+  # 设置x轴和y轴的范围从0开始
+  scale_x_continuous(limits = c(0, 1100), breaks = seq(0, 1000, by = 100), expand = c(0, 0)) +
+  # 设置y轴从0开始，最大为1
+  scale_y_continuous(limits = c(-0.05, 1.1), breaks = sort(c(seq(0, 1, by = 0.2), 0.05)), expand = c(0, 0)) +
+  theme_minimal(base_size = 14) +  # 可以保留，也可以省略
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black", size = 1),
+    axis.ticks = element_line(color = "black"),
+    
+    # 字体大小调整部分（均为原来的3倍）
+    plot.title = element_text(size = 28, face = "bold", hjust = 0.5),  # 标题
+    axis.title.x = element_text(size = 24),  # x轴标题
+    axis.title.y = element_text(size = 24),  # y轴标题
+    axis.text.x = element_text(size = 22),   # x轴刻度
+    axis.text.y = element_text(size = 22),   # y轴刻度
+    legend.title = element_text(size = 28),  # 图例标题
+    legend.text = element_text(size = 24), 
+    legend.position = "bottom",
+    legend.direction = "vertical"   # 图例内容
+  )
+P4
+combined_plot_age <-  P3+P4+
+plot_annotation(tag_levels = list(c('A', 'B')))
+
+ggsave(filename = "Fig S2.pdf", plot = combined_plot_age, device = "pdf", width = 18, height = 11)
+```
+
+
+## Education level
+### 数据预处理
+```{r}
+Liu_2024_edu <- read_csv("Liu_2024_edu.csv") %>%
+  # 移除 study_n 为缺失值的行
+  filter(!is.na(n)) %>%
+  mutate(
+    un_university_n = round(un_university * n / 100),
+    university_n = n - un_university_n
+  )
+Liu_2024_edu <- Liu_2024_edu %>%
+  rowwise() %>%
+  mutate(
+    observed = list(c(university_n, un_university_n)),
+    expected = list(c(0.158, 0.842) * sum(c(university_n, un_university_n))),
+    chi2_test = list(chisq.test(x = observed, p = c(0.158, 0.842))),
+    chi2 = chi2_test$statistic,
+    df = chi2_test$parameter,
+    p_value = chi2_test$p.value
+  ) %>%
+  ungroup() %>%
+  select(-observed, -expected, -chi2_test)
+Liu_2024_edu
+```
+
+### Meta-analysis of edu 
+```{r}
+library(dplyr)
+library(effectsize)
+library(metafor)
+
+# 定义人口基准比例
+expected_ratio <- c(0.158, 0.842)  # 世界男性/女性人口比例
+
+# 计算 fei 效应量并构建分析数据框
+Liu_2024_meta <- Liu_2024_edu %>%
+  rowwise() %>%
+  mutate(
+    O = list(c(university_n, un_university_n)),
+    p_E = list(expected_ratio),
+    fei = effectsize::fei(O, p = p_E)[[1]],
+    .keep = "all"
+  ) %>%
+  ungroup()
+
+# 使用 Fisher’s Z 转换进行元分析
+meta_data <- escalc(measure = "ZCOR", ri = Liu_2024_meta$fei, ni = Liu_2024_meta$n)
+
+# 随机效应模型
+res <- rma(yi, vi, data = meta_data, method = "REML")
+
+# 提取 Fisher's Z 合并估计及其置信区间
+z_est <- res$b[1]
+z_ci_lb <- res$ci.lb
+z_ci_ub <- res$ci.ub
+
+# 转换为 fei 效应量
+fei_est_edu <- tanh(z_est)
+fei_ci_lb_edu <- tanh(z_ci_lb)
+fei_ci_ub_edu <- tanh(z_ci_ub)
+fei_ci_lb_edu 
+# 输出结果
+cat("pooled effect size fei ：", round(fei_est_edu, 3), "\n")
+cat("95% CI：(", round(fei_ci_lb_edu, 3), ", ", round(fei_ci_ub_edu, 3), ")\n")
+
+# 森林图
+forest(res, slab = Liu_2024_meta$paper, xlab = "fei (Frequency Effect Index)")
+
+# 异质性信息
+text(
+  x = min(res$ci.lb) - 0.3,
+  y = nrow(Liu_2024_meta) + 2,
+  labels = paste(
+    "I² =", round(res$I2), "%",
+    "  Q =", round(res$QE, 2),
+    "  p =", round(res$QEp, 3)
+  )
+)
+
+# 合并总样本进行卡方拟合优度检验
+total_observed <- c(sum(Liu_2024_edu$university_n), sum(Liu_2024_edu$un_university_n))
+combined_chi2 <- chisq.test(x = total_observed, p = expected_ratio)
+
+# 输出总卡方结果
+cat("\nCombined Chi-square Test:\n")
+print(combined_chi2)
+
+```
+
+###education的敏感性分析
+```{r}
+# --- 贝叶斯因子计算核心函数 ---
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+
+vf1 <- Vectorize(f1)
+
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+# ------------------------------
+# 参数设置
+# ------------------------------
+set.seed(123)
+n_seq <- seq(100, 1000, by = 100)
+n_seq
+sim_per_n <- 1000
+w_true <- fei_to_w(fei_ci_lb_edu, p = c(0.158, 0.842))
+
+df <- 1
+bf_thresh <- 5^(1:10)
+bf_thresh
+p0 <- c(0.158, 0.842)
+#lambda_crit <- UMPBT(df, bf_thresh)
+#lambda_crit <- sapply(bf_thresh, function(bf) UMPBT(df, bf))
+#lambda_crit
+w_true
+# ------------------------------
+# 定义模拟函数
+# ------------------------------
+simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N) {
+  results <- lapply(seq_along(bf_thresh_seq), function(i) {
+    bf_thresh_i <- bf_thresh_seq[i]
+    lambda_crit_i <- UMPBT(df, bf_thresh_i)
+
+    # 构造观察比例 p
+    p_obs <- p0 + c(w * sqrt(p0[1]), -w * sqrt(p0[2]))
+
+    # 模拟观察频数数据
+    set.seed(123)
+    obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)
+
+    # 卡方统计量
+    chisq_values <- apply(obs_counts, 2, function(x) {
+      sum((x - N * p0)^2 / (N * p0))
+    })
+
+    # 贝叶斯因子
+    BF <- froot_bf(chisq_values, lambda_crit_i, df)
+
+    if (all(w == 0)) {
+      category <- "BF01"
+      prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+    } else {
+      category <- "BF10"
+      prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+    }
+
+    data.frame(
+      Sample_Size = N,
+      BF_thresh = bf_thresh_i,
+      Category = category,
+      lambda_crit = lambda_crit_i,
+      BF_10 = prop_BF10,
+      BF_10_raw = BF,         # 可保留第一组原始 BF 值
+      chisq = chisq_values,
+      p_obs_1 = p_obs[1],
+      p_obs_2 = p_obs[2]
+    )
+  })
+
+  BF_power <- bind_rows(results)
+  return(BF_power)
+}
+
+# 所有样本量
+sample_sizes <- c(50, 100, 200,400)
+bf_thresh_seq <- 1:10
+
+# 模拟并合并数据
+all_results <- purrr::map_dfr(sample_sizes, function(N) {
+  df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = N)
+  df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = N)
+  df <- bind_rows(df_bf10, df_bf01)
+  df
+})
+library(dplyr)
+library(ggplot2)
+
+# 整理标签
+sim_results_df <- all_results %>%
+  select(Sample_Size, BF_10, BF_thresh, Effect_Size = Category) %>%
+  mutate(
+    Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                         labels = c("True positive rate", "False positive rate")),
+    Sample_Size = as.factor(Sample_Size)  # 转为因子，便于映射颜色或形状
+  )
+
+P5 <- ggplot(sim_results_df, aes(x = BF_thresh, y = BF_10, 
+                                 color = Effect_Size, shape = Sample_Size)) +
+  geom_point(size = 4) +
+  geom_line(aes(group = interaction(Sample_Size, Effect_Size), color = Effect_Size), linewidth = 1) +
+ 
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") +
+  
+  labs(
+    x = "BF_10 Threshold",
+    y = "Proportion of BF >= Threshold",
+    color = "Type of Simulation",
+    shape = "Sample Size"
+  ) +
+  scale_x_continuous(limits = c(0, 11), breaks = 0:10, expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 1.1), breaks = sort(c(seq(0, 1, 0.2), 0.05)), expand = c(0, 0)) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black", size = 1),
+    axis.ticks = element_line(color = "black"),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 24),
+    axis.text.x = element_text(size = 22),
+    axis.text.y = element_text(size = 22),
+    legend.title = element_text(size = 28),
+    legend.text = element_text(size = 24), 
+    legend.position = "bottom",
+    legend.direction = "vertical"
+  )
+
+P5
+```
+
+
+
+```{r}
+# --- 贝叶斯因子计算核心函数 ---
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+
+vf1 <- Vectorize(f1)
+
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+# ------------------------------
+# 参数设置
+# ------------------------------
+set.seed(123)
+n_seq <- seq(50, 500, by = 50)
+n_seq
+sim_per_n <- 1000
+w_true <- fei_to_w(fei_ci_lb_edu,p = c(0.158, 0.842))   # 真效应（用于 BF10）
+df <- 1
+
+p0 <- c(0.158, 0.842)
+#lambda_crit <- UMPBT(df, bf_thresh)
+#lambda_crit <- sapply(bf_thresh, function(bf) UMPBT(df, bf))
+#lambda_crit
+w_true
+# ------------------------------
+# 定义模拟函数
+# ------------------------------
+simulate_BF <- function(n_seq, sim_per_n, w, df, label) {
+  results <- lapply(seq_along(n_seq), function(i) {
+    N <- n_seq[i]
+    
+    # 对应第 i 个 bf_thresh 和 lambda_crit
+    bf_thresh_i <- 4^i
+    lambda_crit_i <- UMPBT(df, bf_thresh_i)
+
+    # 构造观察比例 p
+    p_obs <- p0 + c(w * sqrt(p0[1]), -w * sqrt(p0[2]))
+
+    # 模拟观察频数数据
+    set.seed(123)
+    obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)  # 每列是一次模拟
+
+    # 卡方统计量
+    chisq_values <- apply(obs_counts, 2, function(x) {
+      sum((x - N * p0)^2 / (N * p0))
+    })
+
+    # 计算贝叶斯因子
+    BF <- froot_bf(chisq_values, lambda_crit_i, df)
+
+    if (all(w == 0)) {
+      category <- "BF01"
+      prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+    } else {
+      category <- "BF10"
+      prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+    }
+
+    data.frame(
+      Sample_Size = N,
+      Category = category,
+      lambda_crit = lambda_crit_i,
+      BF_10 = prop_BF10,
+      BF_10_ture = BF,
+      chisq = chisq_values[1],      # 可选择保留部分值
+      p_obs_1 = p_obs[1],           # 拆开方便整合
+      p_obs_2 = p_obs[2]
+    )
+  })
+
+  BF_power <- bind_rows(results)
+  return(BF_power)
+}
+# ------------------------------
+# 分别模拟 BF10（真效应） 和 BF01（无效应）
+# ------------------------------
+df_bf10 <- simulate_BF(n_seq, sim_per_n, w = w_true, df,  "BF10")
+df_bf01 <- simulate_BF(n_seq, sim_per_n, w = 0,       df, "BF01")
+df_bf10 
+df_bf01
+
+# 合并数据
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+sim_results_df
+sim_results_df <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, Condition = Category) %>%
+  mutate( Effect_Size = factor(Condition, levels = c("BF10", "BF01"),
+                            labels = c("True positive rate", "False positive rate")))
+# ------------------------------
+# 绘图1：比例随样本量变化
+# ------------------------------
+P6 <- ggplot(sim_results_df, aes(x = Sample_Size, y =  BF_10, color = Effect_Size)) +
+  geom_point(size = 4) +
+  geom_line(size = 1) +  # 添加线  
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") + 
+  labs(
+    
+    x = "Sample Size",
+    y = "The proportion of BF >= threshold",
+    color = "Type of Simulation"  # 如果需要自定义图例标题
+  ) +
+  # 设置x轴和y轴的范围从0开始
+  scale_x_continuous(limits = c(0, 550), breaks = seq(0, 500, by = 50), expand = c(0, 0)) +
+  # 设置y轴从0开始，最大为1
+  scale_y_continuous(limits = c(-0.05, 1.1), breaks = sort(c(seq(0, 1, by = 0.2), 0.05)), expand = c(0, 0)) +
+  theme_minimal(base_size = 14) +  # 可以保留，也可以省略
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black", size = 1),
+    axis.ticks = element_line(color = "black"),
+    
+    # 字体大小调整部分（均为原来的3倍）
+    plot.title = element_text(size = 28, face = "bold", hjust = 0.5),  # 标题
+    axis.title.x = element_text(size = 24),  # x轴标题
+    axis.title.y = element_text(size = 24),  # y轴标题
+    axis.text.x = element_text(size = 22),   # x轴刻度
+    axis.text.y = element_text(size = 22),   # y轴刻度
+    legend.title = element_text(size = 28),  # 图例标题
+    legend.text = element_text(size = 24) , 
+    legend.position = "bottom",
+    legend.direction = "vertical"
+  )
+P6
+combined_plot_edu <-  P5+P6+
+plot_annotation(tag_levels = list(c('A', 'B')))
+
+ggsave(filename = "Fig S3.pdf", plot = combined_plot_edu, device = "pdf", width = 18, height = 11)
+
+```
+
+
+## country simulation
+###数据预处理
+```{r}
+Liu_2024_country <- read_csv("Liu_2024_country.csv") 
+Liu_2024_country[is.na(Liu_2024_country)] <- 1e-09
+Liu_2024_country
+library(dplyr)
+
+# 按 Country_groups 中的 4 个因子对 pop 进行加总
+WPP2022 <- read_csv("WPP2022.csv")
+library(dplyr)
+
+# 对缺失的 Country_groups 进行过滤后，按因子分组并加总
+summary_df <- WPP2022 %>%
+  filter(!is.na(Country_groups)) %>%             # 忽略 Country_groups 中的缺失值
+  group_by(Country_groups) %>%
+  summarise(pop_sum = sum(pop, na.rm = TRUE)) %>%  # 对 pop 进行加总
+  ungroup()
+
+# 计算总人口数
+total_pop <- sum(summary_df$pop_sum)
+
+# 计算每个因子的比例
+summary_df <- summary_df %>%
+  mutate(prop = pop_sum / total_pop)
+summary_df <- summary_df %>%
+  mutate(Country_groups = factor(Country_groups,
+                                 levels = c("High income countries",
+                                            "Upper middle income country",
+                                            "Lower middle income country",
+                                            "Lower income country"))) %>%
+  arrange(Country_groups)
+summary_df 
+```
+
+#country数据模拟与元分析
+```{r}
+
+# 计算卡方值并添加为列
+library(dplyr)
+library(purrr)
+library(broom)
+
+# 指定列顺序（必须与 summary_df$prop 顺序一致）
+group_cols <- c("High income countries", 
+                "Upper middle income country", 
+                "Lower middle income country", 
+                "Lower income country")
+
+# 提取期望比例
+expected_prop <- summary_df$prop
+
+# 对每一行进行卡方检验
+Liu_2024_country <- Liu_2024_country %>%
+  mutate(n = `High income countries` + 
+              `Upper middle income country` + 
+              `Lower middle income country` + 
+              `Lower income country`)%>%
+  rowwise() %>%
+  mutate(
+    observed = list(c_across(all_of(group_cols))),
+    chi_result = list(chisq.test(x = unlist(observed), p = expected_prop, rescale.p = TRUE) %>% tidy()),
+    chi_square = chi_result$statistic,
+    df = chi_result$parameter
+  ) %>%
+  select(-observed, -chi_result) %>%
+  ungroup()
+Liu_2024_country 
+
+
+library(effectsize)
+
+library(dplyr)
+library(purrr)
+
+# 指定四列顺序，与 summary_df$prop 一致
+group_cols <- c("High income countries", 
+                "Upper middle income country", 
+                "Lower middle income country", 
+                "Lower income country")
+
+# 提取期望比例向量，并标准化
+expected_prop <- summary_df %>%
+  arrange(factor(Country_groups, 
+                 levels = c("High income countries", 
+                            "Upper middle income country", 
+                            "Lower middle income country", 
+                            "Lower income country"))) %>%
+  pull(prop)
+
+expected_prop <- expected_prop / sum(expected_prop)  # 确保和为1
+
+Liu_2024_country <- Liu_2024_country %>%
+  rowwise() %>%
+  mutate(
+    observed = list(c_across(all_of(group_cols))),
+    fei = fei(observed, p = expected_prop)[[1]],
+    w = fei_to_w(fei, p = expected_prop)
+  ) %>%
+  select(-observed) %>%
+  ungroup()
+
+Liu_2024_country
+```
+
+### meta-analysis of country 
+```{r}
+library(metafor)
+
+meta_data <- escalc(measure = "ZCOR", ri = Liu_2024_country$fei, ni = Liu_2024_country$n)
+
+res <- rma(yi, vi, data = meta_data, method = "REML")
+
+summary(res)
+
+z_est <- res$b[1]
+z_ci_lb <- res$ci.lb
+z_ci_ub <- res$ci.ub
+
+fei_est_country <- tanh(z_est)
+fei_ci_lb_country <- tanh(z_ci_lb)
+fei_ci_ub_country <- tanh(z_ci_ub)
+w_true <- fei_to_w(fei_ci_lb_country,p = expected_prop) 
+w_true
+
+cat("fei：", round(fei_est_country, 3), "\n")
+cat("95%CI：(", round(fei_ci_lb_country, 3), ", ", round(fei_ci_ub_country, 3), ")\n")
+
+```
+
+
+###年龄敏感性分析
+```{r}
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+
+vf1 <- Vectorize(f1)
+
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+
+set.seed(123)
+n_seq <- seq(100, 2000, by = 100)
+sim_per_n <- 1000
+w_true <- fei_to_w(fei_ci_lb_country,p = expected_prop) 
+
+df <- 3
+
+p0 <- expected_prop
+
+simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N ) {
+  results <- lapply(seq_along(bf_thresh_seq), function(i){
+    bf_thresh_i <- bf_thresh_seq[i]
+   lambda_crit_i <- UMPBT(df, bf_thresh_i)
+        
+if (all(w == 0)) {
+      p_obs <- p0
+    } else {
+     
+      delta <- rnorm(length(p0))
+      delta <- delta - mean(delta)  
+      delta <- delta / sqrt(sum((delta^2) / p0))  
+      p_obs <- p0 + sqrt(p0) * w[1] * delta  
+      p_obs[p_obs < 0] <- 0  
+      p_obs <- p_obs / sum(p_obs) 
+    }
+
+    set.seed(123)
+    obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)
+obs_counts
+
+    chisq_values <- apply(obs_counts, 2, function(x) {
+      sum((x - N * expected_prop)^2 / (N * expected_prop))
+    })
+
+    BF <- froot_bf(chisq_values, lambda_crit_i, df)
+    
+
+  if (all(w == 0)) {
+            category <- "BF01"
+            prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+        } else {
+            category <- "BF10"
+            prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+        }
+        
+        data.frame(
+            Sample_Size = N,
+            BF_thresh = bf_thresh_i,
+            Category = category,
+            lambda_crit = lambda_crit_i,
+            BF_10 = prop_BF10,
+            BF_10_raw = BF,        
+            chisq = chisq_values,
+            p_obs_1 = p_obs[1],
+            p_obs_2 = p_obs[2]
+        )
+    })
+    
+    BF_power <- bind_rows(results)
+    return(BF_power)
+}
+
+bf_thresh_seq <- 1:10
+df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 3, label = "BF10", N = 50)
+df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 3, label = "BF01", N = 50)
+
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+
+sim_results_df1 <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("True positive rate", "False positive rate")))
+sim_results_df1
+
+bf_thresh_seq <- 1:10
+df_bf10_2 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 3, label = "BF10", N = 100)
+df_bf01_2 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 3, label = "BF01", N = 100)
+
+sim_results_df2 <- bind_rows(df_bf10_2, df_bf01_2)
+
+sim_results_df2 <- sim_results_df2 %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("True positive rate", "False positive rate")))
+
+bf_thresh_seq <- 1:10
+df_bf10_3 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 3, label = "BF10", N = 200)
+df_bf01_3 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 3, label = "BF01", N = 200)
+
+sim_results_df3 <- bind_rows(df_bf10_3, df_bf01_3)
+
+sim_results_df3 <- sim_results_df3 %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("True positive rate", "False positive rate")))
+
+bf_thresh_seq <- 1:10
+df_bf10_4 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 3, label = "BF10", N = 400)
+df_bf01_4 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 3, label = "BF01", N = 400)
+
+sim_results_df4 <- bind_rows(df_bf10_4, df_bf01_4)
+
+sim_results_df4 <- sim_results_df4 %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("True positive rate", "False positive rate")))
+sim_results_df4
+
+
+sim_results_all <- bind_rows(sim_results_df1, sim_results_df2, sim_results_df3, sim_results_df4)
+
+sim_results_all
+sim_results_all$Sample_Size <- as.factor(sim_results_all$Sample_Size)
+sim_results_all
+
+
+P7 <- ggplot(sim_results_all, aes(x = BF_thresh, y = BF_10, 
+                                 color = Effect_Size, shape = Sample_Size)) +
+  geom_point(size = 4) +
+  geom_line(aes(group = interaction(Sample_Size, Effect_Size), color = Effect_Size), linewidth = 1) +
+ 
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") +
+  
+  labs(
+    x = "BF_10 Threshold",
+    y = "Proportion of BF >= Threshold",
+    color = "Type of Simulation",
+    shape = "Sample Size"
+  ) +
+  scale_x_continuous(limits = c(0, 11), breaks = 0:10, expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 1.1), breaks = sort(c(seq(0, 1, 0.2), 0.05)), expand = c(0, 0)) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black", size = 1),
+    axis.ticks = element_line(color = "black"),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 24),
+    axis.text.x = element_text(size = 22),
+    axis.text.y = element_text(size = 22),
+    legend.title = element_text(size = 28),
+    legend.text = element_text(size = 24), 
+    legend.position = "bottom",
+    legend.direction = "vertical"
+  )
+P7
+
+```
+
+```{r}
+
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+
+vf1 <- Vectorize(f1)
+
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+
+
+set.seed(123)
+n_seq <- seq(50, 500, by = 50)
+sim_per_n <- 1000
+w_true <- fei_to_w(fei_ci_lb_country,p = expected_prop) 
+
+df <- 3
+p0 <- expected_prop
+
+simulate_BF <- function(n_seq, sim_per_n, w, df, label) {
+  results <- lapply(seq_along(n_seq), function(i) {
+    N <- n_seq[i]
+    
+    
+    bf_thresh_i <- 4^i
+    lambda_crit_i <- UMPBT(df, bf_thresh_i)
+       
+if (all(w == 0)) {
+      p_obs <- p0
+    } else {
+     
+      delta <- rnorm(length(p0))
+      delta <- delta - mean(delta)  
+      delta <- delta / sqrt(sum((delta^2) / p0))  
+      p_obs <- p0 + sqrt(p0) * w[1] * delta  
+      p_obs[p_obs < 0] <- 0  
+      p_obs <- p_obs / sum(p_obs)  
+    }
+
+    set.seed(123)
+    obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)
+obs_counts
+    
+    chisq_values <- apply(obs_counts, 2, function(x) {
+      sum((x - N * expected_prop)^2 / (N * expected_prop))
+    })
+
+    # 计算贝叶斯因子
+    BF <- froot_bf(chisq_values, lambda_crit_i, df)
+    
+  if (all(w == 0)) {
+            category <- "BF01"
+           prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+        } else {
+            category <- "BF10"
+            prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
+        }
+        
+        data.frame(
+            Sample_Size = N,
+            BF_thresh = bf_thresh_i,
+            Category = category,
+            lambda_crit = lambda_crit_i,
+            BF_10 = prop_BF10,
+            BF_10_raw = BF[1],         
+            chisq = chisq_values[1],
+            p_obs_1 = p_obs[1],
+            p_obs_2 = p_obs[2]
+        )
+    })
+    BF_power <- bind_rows(results)
+    return(BF_power)
+}
+
+df_bf10 <- simulate_BF(n_seq, sim_per_n, w = w_true, df,  "BF10")
+df_bf01 <- simulate_BF(n_seq, sim_per_n, w = 0,       df, "BF01")
+df_bf10 
+df_bf01
+
+
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+sim_results_df
+sim_results_df <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, Condition = Category) %>%
+  mutate( Effect_Size = factor(Condition, levels = c("BF10", "BF01"),
+                            labels = c("True positive rate", "False positive rate")))
+
+
+P8 <- ggplot(sim_results_df, aes(x = Sample_Size, y =  BF_10, color = Effect_Size)) +
+  geom_point(size = 4) +
+  geom_line(size = 1) +   
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") + 
+  labs(
+    x = "Sample Size",
+    y = "The proportion of BF >= threshold",
+    color = "Type of Simulation"  
+  ) +
+  
+  scale_x_continuous(limits = c(0, 550), breaks = seq(0, 500, by = 50), expand = c(0, 0)) +
+ 
+  scale_y_continuous(limits = c(-0.05, 1.1), breaks = sort(c(seq(0, 1, by = 0.2), 0.05)), expand = c(0, 0)) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black", size = 1),
+    axis.ticks = element_line(color = "black"),
+    plot.title = element_text(size = 28, face = "bold", hjust = 0.5),  
+    axis.title.x = element_text(size = 24),  
+    axis.title.y = element_text(size = 24),  
+    axis.text.x = element_text(size = 22),  
+    axis.text.y = element_text(size = 22),   
+    legend.title = element_text(size = 28),  
+    legend.text = element_text(size = 24) , 
+    legend.position = "bottom",
+    legend.direction = "vertical"   
+  )
+P8
+combined_plot_country <-  P7+P8+
+plot_annotation(tag_levels = list(c('A', 'B')))
+
+ggsave(filename = "Fig S4.pdf", plot = combined_plot_country, device = "pdf", width = 18, height = 11)
+```
+
+
 
 # Comparing all or leading authors
 ```{r}
@@ -1150,70 +2996,80 @@ author_data <- author_data %>%
     wpd = sum(wpd, na.rm = TRUE),
     leading_author_bts = sum(leading_author_bts, na.rm = TRUE),
     leading_author_ps2014 = sum(leading_author_ps2014, na.rm = TRUE),
-    percentage_author_ps2014_100 = sum(percentage_author_ps2014_100, na.rm = TRUE),
-    percentage_author_bts_100 = sum(percentage_author_bts_100, na.rm = TRUE),  
-    percentage_wpd_100 = sum(percentage_wpd_100, na.rm = TRUE),
-    percentage_leading_author_bts_100 = sum(percentage_leading_author_bts_100, na.rm = TRUE),
-    percentage_leading_author_ps2014_100 = sum(percentage_leading_author_ps2014_100, na.rm = TRUE)
+    percentage_author_ps2014 = sum(percentage_author_ps2014, na.rm = TRUE),
+    percentage_author_bts = sum(percentage_author_bts, na.rm = TRUE),  
+    percentage_wpd = sum(percentage_wpd, na.rm = TRUE),
+    percentage_leading_author_bts = sum(percentage_leading_author_bts, na.rm = TRUE),
+    percentage_leading_author_ps2014 = sum(percentage_leading_author_ps2014, na.rm = TRUE)
   )%>%
   filter(Country_groups != "other")%>%
   mutate(across(everything(), ~ ifelse(. == 0, 0.1e-08, .)))
 author_data
 ```
 
-
 ```{r}
 # Define the function for converting chi square values and df to Bayesian factors
-froot<-function(x,lambda,thresh,df){
- dchisq(x,df, ncp =lambda)/dchisq(x,df)-thresh
+## The purpose of subtracting thresh in the froot() function is to compute the optimal noncentral parameter lambda. To calculate the Bayes factor, use the front_bf() function.
+froot_bf <- function(x, lambda, df){
+ dchisq(x, df, ncp = lambda)/dchisq(x, df)
+}
+
+froot <- function(x, lambda, thresh, df){
+ dchisq(x, df, ncp = lambda)/dchisq(x, df) - thresh
  }
- f1<- function(lambda,thresh,df){
- r<-uniroot(froot,lambda=lambda,thresh=thresh,df=df,c(0.01,1000))$root
+
+ f1 <- function(lambda, thresh, df){
+ r <- uniroot(froot, lambda = lambda, thresh = thresh, df = df, c(0.01, 1000))$root
  }
- vf1<-Vectorize(f1)
- UMPBT<-function(df, thresh){
- optout<- optimize(vf1,c(0,100),thresh=thresh,df=df)
- z<-optout$minimum
+ vf1 <- Vectorize(f1)
+ 
+ UMPBT <- function(df, thresh){
+ optout <- optimize(vf1, c(0, 100),thresh = thresh, df = df)
+ z <- optout$minimum
  return(z)
  }
 
-lambda <- UMPBT(df <- 4, thresh <- 10)
-
 # 01 All author: ps2014 vs bts
-observed1 <- author_data$percentage_author_ps2014_100
-expected1 <- author_data$percentage_author_bts_100
-chi_square_result1 <- chisq.test(x = observed1, p = expected1 / sum(expected1))
-
-BF1 <- dchisq(x = chi_square_result1$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result1$statistic, df = 4)
-log_BF1 <- log(BF1)
+observed1 <- author_data$author_ps2014
+expected1 <- author_data$percentage_author_bts
+chi_square_result1 <- chisq.test(x = observed1, p = expected1)
+thresh <- 4^floor(sum(author_data$author_ps2014) / 50)
+lambda<- UMPBT(df = chi_square_result1$parameter,thresh=thresh)
+BF1 <- froot_bf(x = chi_square_result1$statistic, lambda=lambda, df = chi_square_result1$parameter)
+log_BF1 <- log(BF1/thresh)
 log_BF1
 
 # 02 All author: bts vs wpd
-observed2 <- author_data$percentage_author_bts_100
-expected2 <- author_data$percentage_wpd_100
+observed2 <- author_data$author_bts
+expected2 <- author_data$percentage_wpd
 chi_square_result2 <- chisq.test(x = observed2, p = expected2 / sum(expected2))
-
-BF2 <- dchisq(x = chi_square_result2$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result2$statistic, df = 4)
-log_BF2 <- log(BF2)
+thresh <- 4^floor(sum(author_data$author_bts) / 50)
+lambda<- UMPBT(df = chi_square_result2$parameter,thresh=thresh)
+BF2 <- froot_bf(x = chi_square_result2$statistic, lambda=lambda, df = chi_square_result2$parameter)
+log_BF2 <- log(BF2/thresh)
 log_BF2
 
 # 03 Leading author: ps2014 vs bts
-observed3 <- author_data$percentage_leading_author_ps2014_100
-expected3 <- author_data$percentage_leading_author_bts_100
-chi_square_result3 <- chisq.test(x = observed3, p = expected3 / sum(expected3))
+observed3 <- author_data$leading_author_ps2014
+expected3 <- author_data$percentage_leading_author_bts
+chi_square_result3 <- chisq.test(x = observed3, p = expected3)
+thresh <- 4^ceiling(sum(author_data$leading_author_ps2014) / 50) # Due to the sample size of pilot data being less than 50, rounding up is temporarily adopted
+lambda<- UMPBT(df = chi_square_result3$parameter,thresh=thresh)
 
-BF3 <- dchisq(x = chi_square_result3$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result3$statistic, df = 4)
-log_BF3 <- log(BF3)
+BF3 <- froot_bf(x = chi_square_result3$statistic, lambda=lambda, df = chi_square_result3$parameter)
+log_BF3 <- log(BF3/thresh)
 log_BF3
 
 # 04 Leading author: bts vs wpd
-observed4 <- author_data$percentage_leading_author_bts_100
-expected4 <- author_data$percentage_wpd_100
-
+observed4 <- author_data$leading_author_bts
+expected4 <- author_data$percentage_wpd
 chi_square_result4 <- chisq.test(x = observed4, p = expected4 / sum(expected4))
+thresh <- 4^floor(sum(author_data$leading_author_bts) / 50) 
+lambda<- UMPBT(df = chi_square_result4$parameter,thresh=thresh)
 
-BF4 <- dchisq(x = chi_square_result4$statistic, df = 4, ncp = lambda) / dchisq(x = chi_square_result4$statistic, df = 4)
-log_BF4 <- log(BF4)
+BF4 <- froot_bf(x = chi_square_result4$statistic, lambda=lambda, df = chi_square_result4$parameter)
+log_BF4 <- log(BF4/thresh)
 log_BF4
 ```
+
 

@@ -173,70 +173,94 @@ Using the properties of the log-normal distribution, the β₀ ~ Normal (0, 4.67
 We have made a visual comparison between the intercept priors β₀ ~ Normal (6, 2.67) and β₀ ~ Normal (0, 4.67) (see figure below). 
 
 ```{r}
-pp1 <- tibble(x       = c(200, 400),
-       y       = c(0.00082, 0.00054),
-       meanlog = c(0, 6),
-       sdlog   = c(4.67, 2.67)) %>% 
+
+x_zoom_range <- c(0, 5000)
+y_zoom_range <- c(0, 0.001)
+
+main_data <- tibble(x = c(400, 600),
+                    y = c(0.00062, 0.00054),
+                    meanlog = c(0, 6),
+                    sdlog = c(4.67, 2.67)) %>% 
   expand_grid(number = seq(from = 0, to = 1190000, length.out = 300000)) %>% 
   mutate(density = dlnorm(number, meanlog, sdlog),
-         group   = str_c("alpha%~%Normal(", meanlog, ", ", sdlog, ")")) %>% 
-  
+         group = str_c("alpha%~%Normal(", meanlog, ", ", sdlog, ")"))
+
+main_plt <- main_data %>%
   ggplot(aes(fill = group, color = group)) +
   geom_area(aes(x = number, y = density),
             alpha = 3/4, linewidth = 0, position = "identity") +
   geom_text(data = . %>% group_by(group) %>% slice(1),
             aes(x = x, y = y, label = group),
-            family = "Times", parse = T,  hjust = 0) +
+            family = "Times", parse = TRUE, hjust = 0) +
   scale_fill_manual(values = wesanderson::wes_palette("Moonrise2")[1:2]) +
   scale_color_manual(values = wesanderson::wes_palette("Moonrise2")[1:2]) +
-  scale_y_continuous(NULL, breaks = NULL)+
+  scale_y_continuous(NULL, breaks = NULL) +
   ylim(0, 0.0013) +
-  xlab("Sample size of big team size") +
+  xlab("Sample size of big team science") +
+
+
+  annotate("rect",
+           xmin = x_zoom_range[1], xmax = x_zoom_range[2],
+           ymin = y_zoom_range[1], ymax = y_zoom_range[2],
+           color = "grey80", linetype = "dashed", fill = NA, size = 1) +
+
+   
+  annotate("segment", x = 0, y = 0.001, xend = 1190000 *0.34, yend = 0.0013 * 0.94,
+           color = "grey80", linetype = "dashed", size = 1) +
+  annotate("segment", x = 3000, y = 0, xend = 1190000 * 0.86, yend = 0.0013 * 0.22,
+           color = "grey80", linetype = "dashed", size = 1)+ 
+
   theme(
     legend.position = "none",
-    panel.grid.major = element_blank(),   
-    panel.grid.minor = element_blank(),  
-    panel.border = element_blank(),       
-    panel.background = element_blank(),  
-    axis.line.x = element_line(color = "black"), 
-    axis.line.y = element_line(color = "black") 
+    panel.grid = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank(),
+    axis.line.x = element_line(color = "black"),
+    axis.line.y = element_line(color = "black")
   )
-pp1
-ggsave(filename = "pp1.pdf", plot = pp1, device = "pdf", width = 4, height = 4)
-```
 
-```{r}
-pp2 <- tibble(x       = c(200, 400),
-       y       = c(0.00082, 0.00054),
-       meanlog = c(0, 6),
-       sdlog   = c(4.67, 2.67)) %>% 
-  expand_grid(number = seq(from = 0, to = 5000, length.out = 30000)) %>% 
-  mutate(density = dlnorm(number, meanlog, sdlog),
-         group   = str_c("alpha%~%Normal(", meanlog, ", ", sdlog, ")")) %>% 
-  
+
+zoom_data <- main_data %>% filter(number <= 5000)
+
+zoom_plt <- zoom_data %>%
   ggplot(aes(fill = group, color = group)) +
   geom_area(aes(x = number, y = density),
             alpha = 3/4, linewidth = 0, position = "identity") +
   geom_text(data = . %>% group_by(group) %>% slice(1),
             aes(x = x, y = y, label = group),
-            family = "Times", parse = T,  hjust = 0) +
+            family = "Times", parse = TRUE, hjust = 0) +
   scale_fill_manual(values = wesanderson::wes_palette("Moonrise2")[1:2]) +
   scale_color_manual(values = wesanderson::wes_palette("Moonrise2")[1:2]) +
-  scale_y_continuous(NULL, breaks = NULL)+
-  ylim(0, 0.0013) +
-  xlab("Sample size of big team size") +
-theme(
+  scale_y_continuous(limits = y_zoom_range) +
+  scale_x_continuous(limits = x_zoom_range) +
+  theme_minimal(base_family = "Times") +
+  theme(
+    plot.background = element_rect(fill = NA, color = "grey80", size = 2),
     legend.position = "none",
-    panel.grid.major = element_blank(),  
-    panel.grid.minor = element_blank(),  
-    panel.border = element_blank(),      
-    panel.background = element_blank(),   
-    axis.line.x = element_line(color = "black"), 
-    axis.line.y = element_line(color = "black")  
+    aspect.ratio = 1,
+    panel.grid = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_text(size = 8),
+    axis.ticks = element_line(color = "black"),
+    axis.line.x = element_line(color = "black"),
+    axis.line.y = element_line(color = "black")
   )
-pp2
-ggsave(filename = "pp2.pdf", plot = pp2, device = "pdf", width = 4, height = 4)
+
+combined_plot <- main_plt +
+  inset_element(zoom_plt,
+                left = 0.2, bottom = 0.25,
+                right = 0.99, top = 0.9)
+
+combined_plot
+ggsave(filename = "pp1.pdf", plot = combined_plot, device = "pdf", width = 6, height = 4)
 ```
+
+
+
+
+
 Notably, the prior β₀ ~ Normal (0, 4.67) is more extreme, with a median of e⁰ = 1, whereas the median for β₀ ~ Normal (6, 2.67) is e⁶ = 403.
 
 Given that one big team science study sampled from 187 countries, and that there are approximately 230 countries and regions worldwide, it is reasonable to conclude that most big team science studies sampled from a majority of countries worldwide. However, as the majority of BTS studies sampled from only a few dozen countries, the median sample size per country is likely to represent those countries that are less frequently included in big team science studies. For this median, sample sizes in the range of a few hundred are appropriate. Therefore, β₀ ~ Normal (6, 2.67) is the more appropriate prior.

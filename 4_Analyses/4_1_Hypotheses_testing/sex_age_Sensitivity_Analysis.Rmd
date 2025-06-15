@@ -1,0 +1,1463 @@
+---
+title: "Simulation_age_sex"
+author: "liu_weibiao"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r define BF for Multinomial test, message=FALSE, warning=FALSE}
+BayesMultiNomial <- function(dataset, factor, observed, expected, default_prior = TRUE, prior = NA){
+  # datase - the input dataframe
+  # factor - column name of the factor,
+  # observed - column name of the column contains counts information for the observed,
+  # expected - column name of the column contains counts information for the expected,
+  # default_prior - whether use the default, defused prior
+  # prior - priors defined by users
+  
+  fact_level <- dataset %>% dplyr::select(all_of(factor)) %>% dplyr::pull()
+  observed_data <- dataset %>% dplyr::select(all_of(observed)) %>% dplyr::pull()
+  names(observed_data) <- fact_level
+  expected_data <- dataset %>% dplyr::select(all_of(expected)) %>% dplyr::pull()
+  n_levels <- length(observed_data)
+  
+  
+  if (default_prior & all(is.na(prior))) {
+    prior <- rep(1, n_levels)
+  } else{
+    if (is.character(prior)){
+      prior <- dataset %>% dplyr::select(all_of(prior)) %>% dplyr::pull()
+    } else if (is.array(prior)){
+      prior <-  prior
+    } else if (is.numeric(prior)){
+      prior <-  prior
+    } else{
+      print("prior much a column of the input data or a vector")
+    }
+  }
+  
+  alphas <- prior
+  counts <- observed_data
+  thetas <- expected_data
+  
+  if(sum(thetas) != 1) {
+    thetas <- thetas/sum(thetas)
+    }
+  
+  expected <- setNames(sum(counts)*thetas, names(counts))
+  
+  lbeta.xa <- sum(lgamma(alphas + counts)) - lgamma(sum(alphas + counts))
+  lbeta.a  <- sum(lgamma(alphas)) - lgamma(sum(alphas))
+
+  if (any(rowSums(cbind(thetas, counts)) == 0)) {
+    LogBF10 <- (lbeta.xa-lbeta.a)
+  } else {
+    LogBF10 <- (lbeta.xa-lbeta.a) + (0 - sum(counts * log(thetas))) 
+  }
+
+  BF <- data.frame(LogBF10 = LogBF10,
+                   BF10    = exp(LogBF10),
+                   BF01    = 1/exp(LogBF10))
+
+  return(list(BF       = BF,
+              expected = expected))
+  
+}
+```
+
+### Justification for the Bayesian multinomial test
+
+
+
+```{r smallest effect size of interest, eval=FALSE}
+df_rad2018 <- read.csv("Rad_2018_suppl.csv") %>%
+  dplyr::mutate(male_num = as.numeric(male_num),
+                female_num = as.numeric(female_num)) %>%
+  dplyr::filter(!is.na(male_num)) %>%
+  dplyr::select(1:2, 13:14) %>%
+  dplyr::mutate(prop = male_num/(male_num + female_num),
+                deviation = prop - 0.5,
+                dev_abs = abs(deviation)) %>%
+  dplyr::arrange(dev_abs)
+df_rad2018
+effect_size <- bootES::bootES(df_rad2018$dev_abs, plot=TRUE)
+effect_size
+```
+
+
+```{r define function for testing sex ratio, message=TRUE, warning=FALSE,eval=FALSE}
+# define a function to run the simulation for sex ratio
+Sim_Power_binormial <- function(seed = 12345, sim_N = 1000, ss = 1000, effect = 0, nil_effect = 0.5, prior = 1){
+  
+  # seed: the seed for randomization
+  # sim_N: number of simulation
+  # ss: sample size in the simulation
+  # effect: deviation from null
+  # nil_effect: null effect
+  
+  set.seed(seed)
+  
+  sim_1 <- data.frame(obs = rbinom(sim_N, size = ss, prob = nil_effect + effect ))
+  sim_1$sex <- "male"
+  sim_1$iter <- seq(sim_N)
+  sim_2 <- data.frame(obs = ss - sim_1$obs)
+  sim_2$sex <- "female"
+  sim_2$iter <- seq(sim_N)
+  
+  sim <- sim_1 %>% 
+    dplyr::bind_rows(., sim_2) %>% 
+    dplyr::arrange(iter)
+  
+  test_BF <- data.frame(matrix(nrow = sim_N, ncol = 3))
+  colnames(test_BF) <- c("Iter", "1st_prop", "BF10")
+  
+  for (ii in seq(sim_N)){
+    test_df <- sim %>%
+      dplyr::filter(iter == ii) %>%
+      dplyr::mutate(expected = nil_effect * ss)
+    
+    # test_df1$obs <- c(test_df1$expected[1] - ii, test_df1$expected[2] + ii)
+    tmp_BF <- BayesMultiNomial(test_df, factor = 'sex', observed = 'obs', 
+                               expected = 'expected', 
+                               prior = rep(prior, 2))
+    test_BF$Iter[ii] <- ii
+    test_BF$`1st_prop`[ii] <- test_df$expected[1] - ii
+    # test_BF$`log_BF10`[ii] <- tmp_BF$BF$LogBF10
+    test_BF$`BF10`[ii] <- tmp_BF$BF$BF10
+    
+  }
+  
+  BF_power <- data.frame(matrix(nrow = 1, ncol = 6))
+  colnames(BF_power) <- c("Category", "Prob", "Prior","Sample_Size", "BF_6", "BF_10")
+  
+  if (effect == 0) {
+    BF_power$Prob <- nil_effect + effect
+    BF_power$Sample_Size <- ss
+    BF_power$Prior <- prior
+    BF_power$Category <- "BF01"
+    # BF_power$BF_1 <- sum(test_BF$BF10 < 1)/1000 
+    BF_power$BF_6 <- sum(test_BF$BF10 <= 1/6)/1000 
+    BF_power$BF_10 <- sum(test_BF$BF10 <= 1/10)/1000 
+  } else {
+    BF_power$Prob <- nil_effect + effect
+    BF_power$Category <- "BF10"
+    BF_power$Sample_Size <- ss
+    BF_power$Prior <- prior
+    # BF_power$BF_1 <- sum(test_BF$BF10 > 1)/1000 
+    BF_power$BF_6 <- sum(test_BF$BF10 >= 6)/1000 
+    BF_power$BF_10 <- sum(test_BF$BF10 >= 10)/1000 
+  }
+  return(BF_power)
+}
+
+### false positive rate
+Sim_False_Pos_Binom <- Sim_Power_binormial()
+Sim_False_Pos_Binom
+```
+
+
+```{r}
+Sim_Power_binormial <- function(seed = 12345, sim_N = 1000, ss = 10000, effect = 0, nil_effect = 0.5, prior = 1) {
+  set.seed(seed)
+
+  # 初始化结果数据框
+  results <- data.frame(
+    Iter = integer(sim_N),
+    Sample_Size = integer(sim_N),
+    Expected_Proportion = numeric(sim_N),
+    Observed_Male = integer(sim_N),
+    Observed_Female = integer(sim_N),
+    Expected_Male = numeric(sim_N),
+    Expected_Female = numeric(sim_N),
+    Chi_Squared = numeric(sim_N),
+    LogBF10 = numeric(sim_N),
+    BF10 = numeric(sim_N)
+  )
+
+  for (ii in seq_len(sim_N)) {
+    # 模拟观测数据
+    male_count <- rbinom(1, size = ss, prob = nil_effect + effect)
+    female_count <- ss - male_count
+
+    expected_male <- ss * nil_effect
+    expected_female <- ss * (1 - nil_effect)
+
+    # 构造 data frame 输入给 BayesMultiNomial
+    test_df <- data.frame(
+      sex = c("male", "female"),
+      obs = c(male_count, female_count),
+      expected = c(nil_effect, 1 - nil_effect)
+    )
+
+    # 计算贝叶斯因子
+    tmp_BF <- BayesMultiNomial(
+      dataset = test_df,
+      factor = "sex",
+      observed = "obs",
+      expected = "expected",
+      prior = rep(prior, 2)
+    )
+
+    # 卡方值计算（用于对比）
+    chi_sq <- ((male_count - expected_male)^2 / expected_male) +
+              ((female_count - expected_female)^2 / expected_female)
+
+    # 存储结果
+    results[ii, ] <- c(
+      Iter = ii,
+      Sample_Size = ss,
+      Expected_Proportion = nil_effect,
+      Observed_Male = male_count,
+      Observed_Female = female_count,
+      Expected_Male = expected_male,
+      Expected_Female = expected_female,
+      Chi_Squared = chi_sq,
+      LogBF10 = tmp_BF$BF$LogBF10,
+      BF10 = tmp_BF$BF$BF10
+    )
+  }
+
+  return(results)
+}
+
+# 运行模拟
+simulation_results <- Sim_Power_binormial()
+
+# 查看前几行结果
+simulation_results
+
+```
+
+```{r}
+Sim_Power_binormial <- function(seed = 12345, sim_N = 1000, ss = 1000, effect = 0, nil_effect = 0.5, prior = 1) {
+  set.seed(seed)
+
+  # 初始化结果数据框
+  results <- data.frame(
+    Iter = integer(sim_N),
+    Sample_Size = integer(sim_N),
+    Expected_Proportion = numeric(sim_N),
+    Observed_Male = integer(sim_N),
+    Observed_Female = integer(sim_N),
+    Expected_Male = numeric(sim_N),
+    Expected_Female = numeric(sim_N),
+    Chi_Squared = numeric(sim_N),
+    LogBF10 = numeric(sim_N),
+    BF10 = numeric(sim_N)
+  )
+
+  for (ii in seq_len(sim_N)) {
+    # 模拟观测数据
+    male_count <- rbinom(1, size = ss, prob = nil_effect + effect)
+    female_count <- ss - male_count
+
+    expected_male <- ss * nil_effect
+    expected_female <- ss * (1 - nil_effect)
+
+    # 构造 data frame 输入给 BayesMultiNomial
+    test_df <- data.frame(
+      sex = c("male", "female"),
+      obs = c(male_count, female_count),
+      expected = c(nil_effect, 1 - nil_effect)
+    )
+
+    # 计算贝叶斯因子
+    tmp_BF <- BayesMultiNomial(
+      dataset = test_df,
+      factor = "sex",
+      observed = "obs",
+      expected = "expected",
+      prior = rep(prior, 2)
+    )
+
+    # 卡方值计算（用于对比）
+    chi_sq <- ((male_count - expected_male)^2 / expected_male) +
+              ((female_count - expected_female)^2 / expected_female)
+
+    # 存储结果
+    results[ii, ] <- c(
+      Iter = ii,
+      Sample_Size = ss,
+      Expected_Proportion = nil_effect,
+      Observed_Male = male_count,
+      Observed_Female = female_count,
+      Expected_Male = expected_male,
+      Expected_Female = expected_female,
+      Chi_Squared = chi_sq,
+      LogBF10 = tmp_BF$BF$LogBF10,
+      BF10 = tmp_BF$BF$BF10
+    )
+  }
+
+  return(results)
+}
+
+# 运行模拟
+simulation_results <- Sim_Power_binormial()
+
+# 查看前几行结果
+simulation_results
+
+```
+
+
+
+```{r}
+Sim_Power_binormial <- function(seed = 12345, sim_N = 1000, ss = 1000, effect = 0, nil_effect = 0.5, prior = 1) {
+  set.seed(seed)
+
+  # 初始化结果数据框
+  results <- data.frame(
+    Iter = integer(sim_N),
+    Sample_Size = integer(sim_N),
+    Expected_Proportion = numeric(sim_N),
+    Observed_Male = integer(sim_N),
+    Observed_Female = integer(sim_N),
+    Expected_Male = numeric(sim_N),
+    Expected_Female = numeric(sim_N),
+    Chi_Squared = numeric(sim_N),
+    LogBF10 = numeric(sim_N),
+    BF10 = numeric(sim_N)
+  )
+
+  for (ii in seq_len(sim_N)) {
+    # 使用 rmultinom 模拟观测数据
+    probs <- c(nil_effect + effect, 1 - nil_effect - effect)
+    counts <- rmultinom(n = 1, size = ss, prob = probs)
+    male_count <- counts[1, 1]
+    female_count <- counts[2, 1]
+
+    expected_male <- ss * nil_effect
+    expected_female <- ss * (1 - nil_effect)
+
+    # 构造 BayesMultiNomial 输入数据
+    test_df <- data.frame(
+      sex = c("male", "female"),
+      obs = c(male_count, female_count),
+      expected = c(nil_effect, 1 - nil_effect)
+    )
+
+    # 计算贝叶斯因子
+    tmp_BF <- BayesMultiNomial(
+      dataset = test_df,
+      factor = "sex",
+      observed = "obs",
+      expected = "expected",
+      prior = rep(prior, 2)
+    )
+
+    # 计算卡方值
+    chi_sq <- ((male_count - expected_male)^2 / expected_male) +
+              ((female_count - expected_female)^2 / expected_female)
+
+    # 存储结果
+    results[ii, ] <- c(
+      Iter = ii,
+      Sample_Size = ss,
+      Expected_Proportion = nil_effect,
+      Observed_Male = male_count,
+      Observed_Female = female_count,
+      Expected_Male = expected_male,
+      Expected_Female = expected_female,
+      Chi_Squared = chi_sq,
+      LogBF10 = tmp_BF$BF$LogBF10,
+      BF10 = tmp_BF$BF$BF10
+    )
+  }
+
+  return(results)
+}
+# 运行模拟
+simulation_results <- Sim_Power_binormial()
+
+# 查看前几行结果
+simulation_results
+```
+
+```{r}
+# --- 贝叶斯因子计算核心函数 ---
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+
+vf1 <- Vectorize(f1)
+
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+# ------------------------------
+# 参数设置
+# ------------------------------
+set.seed(123)
+n_seq <- seq(100, 2000, by = 100)
+sim_per_n <- 1000
+w_true <- fei_to_w(0.164,p = c(0.503, 0.497))   # 真效应（用于 BF10）
+df <- 1
+bf_thresh <- 10
+p0 <- c(0.503, 0.497)
+lambda_crit <- UMPBT(df, bf_thresh)
+w_true
+# ------------------------------
+# 定义模拟函数
+# ------------------------------
+simulate_BF <- function(n_seq, sim_per_n, w, df, lambda_crit, label) {
+  results <- lapply(n_seq, function(N) {
+    # 构造观察比例 p
+p_obs <- p0 + c(w * sqrt(p0[1]), -w * sqrt(p0[2]))
+
+# 模拟观察频数数据
+set.seed(123)
+obs_counts <- rmultinom(n = 1000, size = N, prob = p_obs)  # 每列是一次模拟
+
+# 可验证每次卡方统计量是否接近指定的 lambda
+chisq_values <- apply(obs_counts, 2, function(x) {
+  sum((x - N * p0)^2 / (N * p0))
+})
+    BF <- froot_bf(chisq_values, lambda_crit, df)
+     if (all(w == 0)) {
+      category <- "BF01"
+      prop_BF10 <- mean(BF <= 1/10)
+    } else {
+      category <- "BF10"
+      prop_BF10 <- mean(BF >= 10)
+    }
+
+    data.frame(
+      Sample_Size = N,
+      Category = category,
+      BF_10 = prop_BF10,
+      chisq = chisq_values,
+     t(p_obs),
+      t(obs_counts)
+    )
+  })
+
+  BF_power <- bind_rows(results)
+  return(BF_power)
+}
+
+# ------------------------------
+# 分别模拟 BF10（真效应） 和 BF01（无效应）
+# ------------------------------
+df_bf10 <- simulate_BF(n_seq, sim_per_n, w = w_true, df, lambda_crit, "BF10")
+df_bf01 <- simulate_BF(1000, sim_per_n, w = 0,       df, lambda_crit, "BF01")
+df_bf10 
+df_bf01
+```
+
+```{r}
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+vf1 <- Vectorize(f1)
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+#chi2_test_BFF(chi2_stat = 65, n = 10)
+lambda_crit <- UMPBT(1,10)
+lambda_crit
+froot_bf(0.28, lambda_crit, 1)
+chisq.test(x = c(510,490), p = c(0.5,0.5))
+
+lambda_crit <- UMPBT(1,10)
+lambda_crit
+froot_bf(6724, lambda_crit, 1)
+chisq.test(x = c(5100,4900), p = c(0.5,0.5))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+0.165
+lambda_crit <- UMPBT(1,10)
+lambda_crit
+froot_bf(0.28, lambda_crit, 1)
+
+
+chisq.test(x = c(510,490), p = c(0.5,0.5))
+
+lambda_crit <- UMPBT(1,10)
+lambda_crit
+froot_bf(40, lambda_crit, 1)
+chisq.test(x = c(51000,49000), p = c(0.5,0.5))
+
+chisq.test(x = c(30,39,20,8,1e-09), p = c(0.30, 0.12, 0.22, 0.22, 0.14))
+chisq.test(x = c(950,25,24,1), p = c(0.16, 0.4, 0.3, 0.14))
+
+
+lambda_crit <- UMPBT(3,4^20)
+lambda_crit
+froot_bf(1288, lambda_crit, 3)
+
+```
+
+```{r}
+obs_counts <- rmultinom(n = 1000, size = 100, prob = c(0.503,0.497))
+# 将 rmultinom 的输出转换为数据框
+obs_df1 <- as.data.frame(t(obs_counts))
+
+# 可选：添加列名（例如 Male 和 Female）
+colnames(obs_df1) <- c("Male", "Female")
+
+# 查看结果
+obs_df1
+
+524
+
+df <- fei(x = c(781,100,99,20), p = c(0.158, 0.357, 0.399, 0.086))
+df$Fei
+
+386
+chisq.test(x = c(403,597), p = c(0.503,0.497))
+chisq.test(x = c(742,258), p = c(0.842, 0.158))
+
+df <- fei(x = c(403,597), p = c(0.503,0.497))
+df$Fei
+df <- fei(x = c(517,483), p = c(0.842, 0.158))
+df$Fei
+
+
+chisq.test(x = c(403,597), p = c(0.503,0.497))
+chisq.test(x = c(672,328), p = c(0.842, 0.158))
+
+df <- fei(x = c(403,597), p = c(0.503,0.497))
+df$Fei
+df <- fei(x = c(672,328), p = c(0.842, 0.158))
+df$Fei
+```
+
+
+
+```{r}
+obs_df1 <- as.data.frame(t(rmultinom(n = 1000, size = 100, prob = c(0.503, 0.497))))
+colnames(obs_df1) <- c("Male", "Female")
+
+chi_stats <- t(apply(obs_df1, 1, function(x) {
+  test <- chisq.test(x, p = c(0.503, 0.497))
+  c(chi_squared = test$statistic, p_value = test$p.value)
+}))
+
+obs_df1 <- cbind(obs_df1, as.data.frame(chi_stats))
+obs_df1
+sum(obs_df1$p_value < 0.01)
+
+
+
+obs_df5 <- as.data.frame(t(rmultinom(n = 1000, size = 500, prob = c(0.503, 0.497))))
+colnames(obs_df5) <- c("Male", "Female")
+
+chi_stats <- t(apply(obs_df5, 1, function(x) {
+  test <- chisq.test(x, p = c(0.503, 0.497))
+  c(chi_squared = test$statistic, p_value = test$p.value)
+}))
+
+obs_df5 <- cbind(obs_df5, as.data.frame(chi_stats))
+obs_df5
+sum(obs_df5$p_value < 0.01)
+
+
+size = 1000000
+obs_df10 <- as.data.frame(t(rmultinom(n = 10000, size = size, prob = c(0.503, 0.497))))
+colnames(obs_df10) <- c("Male", "Female")
+
+chi_stats <- t(apply(obs_df10, 1, function(x) {
+  test <- chisq.test(x, p = c(0.503, 0.497))
+  c(chi_squared = test$statistic, p_value = test$p.value)
+}))
+
+obs_df10 <- cbind(obs_df10, as.data.frame(chi_stats))
+obs_df10
+sum(obs_df10$p_value < 0.01)/10000
+
+```
+
+
+
+
+
+(0.302, 0.122, 0.221, 0.218, 0.137)
+```{r}
+df <- fei(x = c(300,387,200,60,53), p = c(0.302, 0.122, 0.221, 0.218, 0.137))
+df$Fei
+df <- fei(x = c(30,39,20,8,3), p = c(0.30, 0.12, 0.22, 0.22, 0.14))
+df$Fei
+```
+
+```{r}
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+vf1 <- Vectorize(f1)
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+# 计算卡方值的函数
+chi_square_from_effect_size <- function(w, n) {
+  chi2 <- w^2 * n
+  return(chi2)
+}
+# 设定效应量和样本量
+w <- 0.165  # 中等效应量
+n <- 1000  # 样本量
+
+# 计算卡方值
+chi2_100 <- chi_square_from_effect_size(w=0.164, n=1000)
+chi2_200 <- chi_square_from_effect_size(w=0.165, n=24000)
+chi2_300 <- chi_square_from_effect_size(w=0.165, n=600)
+chi2_400 <- chi_square_from_effect_size(w=0.165, n=800)
+
+lambda_crit_1 <- UMPBT(1,4)
+
+bf_1 <-froot_bf(chi2_100, lambda_crit_1, 1) # n=100
+
+lambda_crit_2 <- UMPBT(5,4^100)
+lambda_crit_2
+bf_2 <-froot_bf(chi2_200, lambda_crit_2, 1) # n=200
+bf_2/4^120
+lambda_crit_3 <- UMPBT(1,4^3)
+
+bf_3 <-froot_bf(chi2_300, lambda_crit_3, 1) # n=300
+
+lambda_crit_4 <- UMPBT(1,4^4)
+bf_4 <-froot_bf(chi2_400, lambda_crit_4, 1) # n=400
+
+
+
+
+# 计算卡方值
+chi2_100 <- chi_square_from_effect_size(w=0.86, n=100)
+lambda_crit_4 <- UMPBT(3,3)
+bf_4 <-froot_bf(chi2_100, lambda_crit_4, 3) 
+
+
+
+chisq.test(x = c(200,200,200,200,200), p = c(0.67,0.15,0.05,0.12,0.01))
+
+lambda_crit <- UMPBT(4,4^10)
+lambda_crit
+froot_bf(4000, lambda_crit, 4)
+
+
+
+
+chi2_200 <- chi_square_from_effect_size(w=8, n=100)
+chi2_200
+
+lambda_crit_2 <- UMPBT(4,4)
+lambda_crit_2
+bf_2 <-froot_bf(chi2_200, lambda_crit_2, 4) # n=200
+bf_2
+
+```
+
+```{r}
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+vf1 <- Vectorize(f1)
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+# 计算卡方值的函数
+chi_square_from_effect_size <- function(w, n) {
+  chi2 <- w^2 * n
+  return(chi2)
+}
+# 设定效应量和样本量
+w <- 0.165  # 中等效应量
+n <- 1000  # 样本量
+
+# 计算卡方值
+chi2_100 <- chi_square_from_effect_size(w=0.164, n=24000)
+chi2_200 <- chi_square_from_effect_size(w=0.164, n=30000)
+
+lambda_crit_1 <- UMPBT(1,4^120) #基于自由度与bf阈值选择最优非中心参数
+bf_1 <-froot_bf(chi2_100, lambda_crit_1, 1) # n=100
+bf_1
+
+lambda_crit_2 <- UMPBT(1,4^150)
+bf_2 <-froot_bf(chi2_200, lambda_crit_1, 1) # n=200
+bf_2
+```
+
+
+
+```{r}
+log(10)/300
+
+4^5
+
+log(100)/600
+log(10^100)/30000
+
+49*7*7
+
+92.68908/16
+1147.254/64
+14088.74/256
+
+17.92584/5.793068
+55.03414/17.92584
+log(2.718281828459045)
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# --- 贝叶斯因子计算核心函数 ---
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+
+vf1 <- Vectorize(f1)
+
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+# ------------------------------
+# 参数设置
+# ------------------------------
+set.seed(123)
+n_seq <- seq(100, 1000, by = 100)
+n_seq
+sim_per_n <- 1000
+w_true <- 0.86   # 真效应（用于 BF10）
+df <- 1
+bf_thresh <- 5^(1:10)
+bf_thresh
+p0 <- c(0.503, 0.497)
+#lambda_crit <- UMPBT(df, bf_thresh)
+#lambda_crit <- sapply(bf_thresh, function(bf) UMPBT(df, bf))
+#lambda_crit
+w_true
+# ------------------------------
+# 定义模拟函数
+# ------------------------------
+simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N = 100) {
+  results <- lapply(seq_along(bf_thresh_seq), function(i) {
+    bf_thresh_i <- bf_thresh_seq[i]
+    lambda_crit_i <- UMPBT(df, bf_thresh_i)
+
+    # 构造观察比例 p
+    p_obs <- p0 + c(w * sqrt(p0[1]), -w * sqrt(p0[2]))
+
+    # 模拟观察频数数据
+    set.seed(123)
+    obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)
+
+    # 卡方统计量
+    chisq_values <- apply(obs_counts, 2, function(x) {
+      sum((x - N * p0)^2 / (N * p0))
+    })
+
+    # 贝叶斯因子
+    BF <- froot_bf(chisq_values, lambda_crit_i, df)
+
+    if (all(w == 0)) {
+      category <- "BF01"
+      prop_BF10 <- mean(BF >= bf_thresh_i, na.rm = TRUE)
+    } else {
+      category <- "BF10"
+      prop_BF10 <- mean(BF >= bf_thresh_i, na.rm = TRUE)
+    }
+
+    data.frame(
+      Sample_Size = N,
+      BF_thresh = bf_thresh_i,
+      Category = category,
+      lambda_crit = lambda_crit_i,
+      BF_10 = prop_BF10,
+      BF_10_raw = BF[1],         # 可保留第一组原始 BF 值
+      chisq = chisq_values[1],
+      p_obs_1 = p_obs[1],
+      p_obs_2 = p_obs[2]
+    )
+  })
+
+  BF_power <- bind_rows(results)
+  return(BF_power)
+}
+
+# ------------------------------
+# 分别模拟 BF10（真效应） 和 BF01（无效应）
+# ------------------------------
+bf_thresh_seq <- 1:10
+df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = 100)
+df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = 100)
+
+df_bf10 
+df_bf01
+
+# 合并数据
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+sim_results_df
+sim_results_df <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Condition = Category) %>%
+  mutate(Condition = factor(Condition, levels = c("BF10", "BF01")))
+# ------------------------------
+# 绘图1：比例随样本量变化
+# ------------------------------
+ggplot(sim_results_df, aes(x = BF_thresh, y =  BF_10, color = Condition)) +
+  geom_point(size = 2) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") + 
+  labs(
+x = "Sample_Size",
+    y = "BF_10"
+  ) +
+      coord_cartesian(ylim = c(0, 1)) +
+  theme_minimal(base_size = 14)+
+  theme(
+    panel.grid = element_blank(),  
+    axis.line = element_line(color = "black", size = 0.5), 
+    axis.ticks = element_line(color = "black")    
+  )
+
+
+bf_thresh_seq <- 1:10
+df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = 200)
+df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = 200)
+
+df_bf10 
+df_bf01
+
+# 合并数据
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+sim_results_df
+sim_results_df <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Condition = Category) %>%
+  mutate(Condition = factor(Condition, levels = c("BF10", "BF01")))
+# ------------------------------
+# 绘图1：比例随样本量变化
+# ------------------------------
+ggplot(sim_results_df, aes(x = BF_thresh, y =  BF_10, color = Condition)) +
+  geom_point(size = 2) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") + 
+  labs(
+x = "Sample_Size",
+    y = "BF_10"
+  ) +
+      coord_cartesian(ylim = c(0, 1)) +
+  theme_minimal(base_size = 14)+
+  theme(
+    panel.grid = element_blank(),  
+    axis.line = element_line(color = "black", size = 0.5), 
+    axis.ticks = element_line(color = "black")    
+  )
+
+bf_thresh_seq <- 1:10
+df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = 300)
+df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = 300)
+
+df_bf10 
+df_bf01
+
+# 合并数据
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+sim_results_df
+sim_results_df <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Condition = Category) %>%
+  mutate(Condition = factor(Condition, levels = c("BF10", "BF01")))
+# ------------------------------
+# 绘图1：比例随样本量变化
+# ------------------------------
+ggplot(sim_results_df, aes(x = BF_thresh, y =  BF_10, color = Condition)) +
+  geom_point(size = 2) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") + 
+  labs(
+x = "Sample_Size",
+    y = "BF_10"
+  ) +
+      coord_cartesian(ylim = c(0, 1)) +
+  theme_minimal(base_size = 14)+
+  theme(
+    panel.grid = element_blank(),  
+    axis.line = element_line(color = "black", size = 0.5), 
+    axis.ticks = element_line(color = "black")    
+  )
+
+```
+
+
+
+```{r}
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+froot <- function(x, lambda, thresh, df) {
+   dchisq(x, df)/dchisq(x, df, ncp = lambda) - thresh
+}
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+vf1 <- Vectorize(f1)
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+
+lambda_crit <- UMPBT(1, 10)
+lambda_crit
+
+froot_bf(0.16, lambda_crit, 1)
+chisq.test(x = c(52,48), p = c(0.5,0.5))
+```
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+# 1. 对于给定 lambda，找 x，使得密度比等于阈值
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+
+# 2. 找到这个 x
+f1 <- function(lambda, thresh, df) {
+  res <- tryCatch({
+    uniroot(froot, interval = c(0.01, 1000), lambda = lambda, thresh = thresh, df = df)$root
+  }, error = function(e) {
+    return(Inf)  # 如果找不到根，就返回极大值
+  })
+  return(res)
+}
+
+vf1 <- Vectorize(f1)
+
+# 3. 找 lambda，使这个 x 最小
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0.01, 100), thresh = thresh, df = df)$minimum
+}
+
+# 例子
+lambda_crit <- UMPBT(df = 1, thresh = 1/10)
+print(lambda_crit)
+
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# --- 贝叶斯因子计算核心函数 ---
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+
+vf1 <- Vectorize(f1)
+
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+# ------------------------------
+# 参数设置
+# ------------------------------
+set.seed(123)
+n_seq <- seq(100, 1000, by = 100)
+n_seq
+sim_per_n <- 1000
+w_true <- fei_to_w(fei_ci_lb_sex,p = c(0.503, 0.497))   # 真效应（用于 BF10）
+df <- 1
+bf_thresh <- 5^(1:10)
+bf_thresh
+p0 <- c(0.503, 0.497)
+#lambda_crit <- UMPBT(df, bf_thresh)
+#lambda_crit <- sapply(bf_thresh, function(bf) UMPBT(df, bf))
+#lambda_crit
+w_true
+# ------------------------------
+# 定义模拟函数
+# ------------------------------
+simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N = 100) {
+  results <- lapply(seq_along(bf_thresh_seq), function(i) {
+    bf_thresh_i <- bf_thresh_seq[i]
+    lambda_crit_i <- UMPBT(df, bf_thresh_i)
+
+    # 构造观察比例 p
+    p_obs <- p0 + c(w * sqrt(p0[1]), -w * sqrt(p0[2]))
+
+    # 模拟观察频数数据
+    set.seed(123)
+    obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)
+
+    # 卡方统计量
+    chisq_values <- apply(obs_counts, 2, function(x) {
+      sum((x - N * p0)^2 / (N * p0))
+    })
+
+    # 贝叶斯因子
+    BF <- froot_bf(chisq_values, lambda_crit_i, df)
+
+    if (all(w == 0)) {
+      category <- "BF01"
+      prop_BF10 <- mean(BF >= bf_thresh_i, na.rm = TRUE)
+    } else {
+      category <- "BF10"
+      prop_BF10 <- mean(BF >= bf_thresh_i, na.rm = TRUE)
+    }
+
+    data.frame(
+      Sample_Size = N,
+      BF_thresh = bf_thresh_i,
+      Category = category,
+      lambda_crit = lambda_crit_i,
+      BF_10 = prop_BF10,
+      BF_10_raw = BF[1],         # 可保留第一组原始 BF 值
+      chisq = chisq_values[1],
+      p_obs_1 = p_obs[1],
+      p_obs_2 = p_obs[2]
+    )
+  })
+
+  BF_power <- bind_rows(results)
+  return(BF_power)
+}
+
+# ------------------------------
+# 分别模拟 BF10（真效应） 和 BF01（无效应）
+# ------------------------------
+bf_thresh_seq <- 1:10
+df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = 100)
+df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = 100)
+
+df_bf10 
+df_bf01
+
+# 合并数据
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+
+# 修改标签
+sim_results_df <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("Fei = 0.164", "Fei = 0")))
+
+# 绘图
+P1 <- ggplot(sim_results_df, aes(x = BF_thresh, y =  BF_10, color = Effect_Size)) +
+  geom_point(size = 4) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") + 
+  labs(
+    title = "Sample Size = 100",
+    x = "BF_10",
+    y = "The proportion of BF >= threshold",
+    color = "Effect Size"  # 如果需要自定义图例标题
+  ) +
+  coord_cartesian(ylim = c(0, 1)) +
+  theme_minimal(base_size = 14) +  # 可以保留，也可以省略
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black", size = 1),
+    axis.ticks = element_line(color = "black"),
+    
+    # 字体大小调整部分（均为原来的3倍）
+    plot.title = element_text(size = 28, face = "bold", hjust = 0.5),  # 标题
+    axis.title.x = element_text(size = 24),  # x轴标题
+    axis.title.y = element_text(size = 24),  # y轴标题
+    axis.text.x = element_text(size = 22),   # x轴刻度
+    axis.text.y = element_text(size = 22),   # y轴刻度
+    legend.title = element_text(size = 28),  # 图例标题
+    legend.text = element_text(size = 24)    # 图例内容
+  )
+
+
+bf_thresh_seq <- 1:10
+df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = 200)
+df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = 200)
+
+df_bf10 
+df_bf01
+
+# 合并数据
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+
+# 修改标签
+sim_results_df <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("Fei = 0.164", "Fei = 0")))
+
+# 绘图
+P2 <- ggplot(sim_results_df, aes(x = BF_thresh, y =  BF_10, color = Effect_Size)) +
+  geom_point(size = 4) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") + 
+  labs(
+    title = "Sample Size = 200",
+    x = "BF_10",
+    y = "The proportion of BF >= threshold",
+    color = "Effect Size"  # 如果需要自定义图例标题
+  ) +
+  coord_cartesian(ylim = c(0, 1)) +
+  theme_minimal(base_size = 14) +  # 可以保留，也可以省略
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black", size = 1),
+    axis.ticks = element_line(color = "black"),
+    
+    # 字体大小调整部分（均为原来的3倍）
+    plot.title = element_text(size = 28, face = "bold", hjust = 0.5),  # 标题
+    axis.title.x = element_text(size = 24),  # x轴标题
+    axis.title.y = element_text(size = 24),  # y轴标题
+    axis.text.x = element_text(size = 22),   # x轴刻度
+    axis.text.y = element_text(size = 22),   # y轴刻度
+    legend.title = element_text(size = 28),  # 图例标题
+    legend.text = element_text(size = 24)    # 图例内容
+  )
+
+bf_thresh_seq <- 1:10
+df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = 300)
+df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = 300)
+
+df_bf10 
+df_bf01
+
+# 合并数据
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+
+# 修改标签
+sim_results_df <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("Fei = 0.164", "Fei = 0")))
+
+# 绘图
+P3 <- ggplot(sim_results_df, aes(x = BF_thresh, y =  BF_10, color = Effect_Size)) +
+  geom_point(size = 4) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") + 
+  labs(
+    title = "Sample Size = 300",
+    x = "BF_10",
+    y = "The proportion of BF >= threshold",
+    color = "Effect Size"  # 如果需要自定义图例标题
+  ) +
+  coord_cartesian(ylim = c(0, 1)) +
+  theme_minimal(base_size = 14) +  # 可以保留，也可以省略
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black", size = 1),
+    axis.ticks = element_line(color = "black"),
+    
+    # 字体大小调整部分（均为原来的3倍）
+    plot.title = element_text(size = 28, face = "bold", hjust = 0.5),  # 标题
+    axis.title.x = element_text(size = 24),  # x轴标题
+    axis.title.y = element_text(size = 24),  # y轴标题
+    axis.text.x = element_text(size = 22),   # x轴刻度
+    axis.text.y = element_text(size = 22),   # y轴刻度
+    legend.title = element_text(size = 28),  # 图例标题
+    legend.text = element_text(size = 24)    # 图例内容
+  )
+
+bf_thresh_seq <- 1:10
+df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = 400)
+df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = 400)
+
+df_bf10 
+df_bf01
+
+# 合并数据
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+
+# 修改标签
+sim_results_df <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("Fei = 0.164", "Fei = 0")))
+
+# 绘图
+P4 <- ggplot(sim_results_df, aes(x = BF_thresh, y =  BF_10, color = Effect_Size)) +
+  geom_point(size = 4) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") + 
+  labs(
+    title = "Sample Size = 400",
+    x = "BF_10",
+    y = "The proportion of BF >= threshold",
+    color = "Effect Size"  # 如果需要自定义图例标题
+  ) +
+  coord_cartesian(ylim = c(0, 1)) +
+  theme_minimal(base_size = 14) +  # 可以保留，也可以省略
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black", size = 1),
+    axis.ticks = element_line(color = "black"),
+    
+    # 字体大小调整部分（均为原来的3倍）
+    plot.title = element_text(size = 28, face = "bold", hjust = 0.5),  # 标题
+    axis.title.x = element_text(size = 24),  # x轴标题
+    axis.title.y = element_text(size = 24),  # y轴标题
+    axis.text.x = element_text(size = 22),   # x轴刻度
+    axis.text.y = element_text(size = 22),   # y轴刻度
+    legend.title = element_text(size = 28),  # 图例标题
+    legend.text = element_text(size = 24)    # 图例内容
+  )
+combined_plot_people <-   P1 + P2+ P3 + P4+
+  plot_layout(ncol = 2) + 
+plot_annotation(tag_levels = list(c('A', 'B','C', 'D')), theme=theme(plot.tag = element_text(size = 28)))
+
+# Save the plot as a pdf image
+ggsave(filename = "Fig 1.pdf", plot = combined_plot_people, device = "pdf", width = 24, height = 14)
+```
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# --- 贝叶斯因子计算核心函数 ---
+froot_bf <- function(x, lambda, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df)
+}
+
+froot <- function(x, lambda, thresh, df) {
+  dchisq(x, df, ncp = lambda) / dchisq(x, df) - thresh
+}
+
+f1 <- function(lambda, thresh, df) {
+  uniroot(froot, lambda = lambda, thresh = thresh, df = df, interval = c(0.01, 1000))$root
+}
+
+vf1 <- Vectorize(f1)
+
+UMPBT <- function(df, thresh) {
+  optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
+}
+# ------------------------------
+# 参数设置
+# ------------------------------
+set.seed(123)
+n_seq <- seq(100, 1000, by = 100)
+n_seq
+sim_per_n <- 1000
+w_true <- fei_to_w(fei_ci_lb_sex,p = c(0.503, 0.497))   # 真效应（用于 BF10）
+df <- 1
+bf_thresh <- 5^(1:10)
+bf_thresh
+p0 <- c(0.503, 0.497)
+#lambda_crit <- UMPBT(df, bf_thresh)
+#lambda_crit <- sapply(bf_thresh, function(bf) UMPBT(df, bf))
+#lambda_crit
+w_true
+# ------------------------------
+# 定义模拟函数
+# ------------------------------
+simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N) {
+  results <- lapply(seq_along(bf_thresh_seq), function(i) {
+    bf_thresh_i <- bf_thresh_seq[i]
+    lambda_crit_i <- UMPBT(df, bf_thresh_i)
+
+    # 构造观察比例 p
+    p_obs <- p0 + c(w * sqrt(p0[1]), -w * sqrt(p0[2]))
+
+    # 模拟观察频数数据
+    set.seed(123)
+    obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)
+
+    # 卡方统计量
+    chisq_values <- apply(obs_counts, 2, function(x) {
+      sum((x - N * p0)^2 / (N * p0))
+    })
+
+    # 贝叶斯因子
+    BF <- froot_bf(chisq_values, lambda_crit_i, df)
+
+    if (all(w == 0)) {
+      category <- "BF01"
+      prop_BF10 <- mean(BF >= bf_thresh_i, na.rm = TRUE)
+    } else {
+      category <- "BF10"
+      prop_BF10 <- mean(BF >= bf_thresh_i, na.rm = TRUE)
+    }
+
+    data.frame(
+      Sample_Size = N,
+      BF_thresh = bf_thresh_i,
+      Category = category,
+      lambda_crit = lambda_crit_i,
+      BF_10 = prop_BF10,
+      BF_10_raw = BF[1],         # 可保留第一组原始 BF 值
+      chisq = chisq_values[1],
+      p_obs_1 = p_obs[1],
+      p_obs_2 = p_obs[2]
+    )
+  })
+
+  BF_power <- bind_rows(results)
+  return(BF_power)
+}
+
+# ------------------------------
+# 分别模拟 BF10（真效应） 和 BF01（无效应）
+# ------------------------------
+bf_thresh_seq <- 1:10
+df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 4, label = "BF10", N = 100)
+df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 4, label = "BF01", N = 100)
+
+# 合并数据
+sim_results_df <- bind_rows(df_bf10, df_bf01)
+
+# 修改标签
+sim_results_df1 <- sim_results_df %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("Fei = 0.164", "Fei = 0")))
+sim_results_df1
+
+bf_thresh_seq <- 1:10
+df_bf10_2 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = 200)
+df_bf01_2 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = 200)
+
+# 合并数据
+sim_results_df2 <- bind_rows(df_bf10_2, df_bf01_2)
+
+# 修改标签
+sim_results_df2 <- sim_results_df2 %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("Fei = 0.164", "Fei = 0")))
+
+bf_thresh_seq <- 1:10
+df_bf10_3 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = 300)
+df_bf01_3 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = 300)
+
+# 合并数据
+sim_results_df3 <- bind_rows(df_bf10_3, df_bf01_3)
+
+# 修改标签
+sim_results_df3 <- sim_results_df3 %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("Fei = 0.164", "Fei = 0")))
+
+bf_thresh_seq <- 1:10
+df_bf10_4 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = 400)
+df_bf01_4 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = 400)
+
+# 合并数据
+sim_results_df4 <- bind_rows(df_bf10_4, df_bf01_4)
+
+# 修改标签
+sim_results_df4 <- sim_results_df4 %>%
+  select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
+  mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
+                            labels = c("Fei = 0.164", "Fei = 0")))
+sim_results_df4
+
+
+sim_results_all <- bind_rows(sim_results_df1, sim_results_df2, sim_results_df3, sim_results_df4)
+
+sim_results_all
+sim_results_all$Sample_Size <- as.factor(sim_results_all$Sample_Size)
+sim_results_all
+P1 <- ggplot(sim_results_all, aes(x = BF_thresh, y = BF_10, 
+                                 color = Effect_Size, shape = Sample_Size)) +
+  geom_point(size = 4) +
+  geom_line(aes(group = interaction(Sample_Size, Effect_Size), color = Effect_Size), linewidth = 1) +
+ 
+  geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") +
+  
+  labs(
+    x = "BF_10 Threshold",
+    y = "Proportion of BF >= Threshold",
+    color = "Effect Size",
+    shape = "Sample Size"
+  ) +
+  scale_x_continuous(limits = c(0, 11), breaks = 0:10, expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 1.1), breaks = sort(c(seq(0, 1, 0.2), 0.05)), expand = c(0, 0)) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black", size = 1),
+    axis.ticks = element_line(color = "black"),
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 24),
+    axis.text.x = element_text(size = 22),
+    axis.text.y = element_text(size = 22),
+    legend.title = element_text(size = 28),
+    legend.text = element_text(size = 24)
+  )
+
+P1
+
+```
+
+
+
+
+
+
+
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
