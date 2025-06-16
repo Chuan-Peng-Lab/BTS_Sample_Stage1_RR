@@ -20,15 +20,22 @@ This repo is data, code, and related materials of "Assessing diversity and repre
 ├── 4_Analayses
 │   ├── 4_1_Hypotheses testing
 │   │   ├── Matching_algorithm.Rmd
-│   │   ├── Sensitivity_Analysis_for_Bayes_Factors.Rmd
+│   │   ├── Sensitivity_Analysis_for_Bayes_Factors.Rmd   
 │   │   ├── Hypotheses_testing_BTS_Sample_Stage1_RR.Rmd
+│   │   ├── Liu_2024_sex.csv
+│   │   ├── Liu_2024_age.csv
+│   │   ├── Liu_2024_edu.csv
+│   │   ├── Liu_2024_country.csv
 │   │   ├── ...
 │   │   
 │   ├── 4_2_Exploratory_analysis
 │   │   ├── Exploratory_analysis_BTS_Sample_Stage1_RR.Rmd
+│   │   ├── gdpdata
 │   │   ├── ...
-
 ├── 5_Reports
 │   └── stage2
 └── README.md
 ```
+
+
+
