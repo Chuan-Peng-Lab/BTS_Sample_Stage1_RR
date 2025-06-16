@@ -30,7 +30,7 @@ This repo is data, code, and related materials of "Assessing diversity and repre
 │   │   
 │   ├── 4_2_Exploratory_analysis
 │   │   ├── Exploratory_analysis_BTS_Sample_Stage1_RR.Rmd
-│   │   ├── gdpdata
+│   │   ├── gdpdata.csv
 │   │   ├── ...
 ├── 5_Reports
 │   └── stage2
