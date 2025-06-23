@@ -15,7 +15,7 @@ In this script, we will use data from PSA 001 project [Jones et al., 2021, *Natu
 rm(list = ls()) # clear the env
 
 if (!requireNamespace("pacman", quietly = TRUE)) {
-  install.packages("pacman") }   # 如果未安装，则安装包
+  install.packages("pacman") }   
 
 # import packages
 pacman::p_load("tidyverse", 
@@ -995,14 +995,11 @@ age_simulation
 
 ## Sex & Age visualisations
 ```{r}
-# 创建一个 Source 列 
 age_simulation$Source <- factor("Traditional psychological studies", levels = c("Traditional psychological studies", "Big team science", "World population data"))
 df_PSA001_Age$Source <- factor("Big team science", levels = c("Traditional psychological studies", "Big team science", "World population data"))
 wpp_age60$Source <- factor("World population data", levels = c("Traditional psychological studies", "Big team science", "World population data"))
 
-# 合并到主图
 fig3c <- ggplot() +
-  # Traditional 折线图
   geom_line(data = age_simulation,
             aes(x = ageBins_PS,
                 y = ifelse(sex == "male", -Proportion, Proportion),
@@ -1011,7 +1008,6 @@ fig3c <- ggplot() +
                 group = interaction(sex, Source)),
             size = 0.5) +
 
-  # BTS 折线图
   geom_line(data = df_PSA001_Age,
             aes(x = ageBins_pyr,
                 y = ifelse(sex == "male", -Proportion, Proportion),
@@ -1020,7 +1016,6 @@ fig3c <- ggplot() +
                 group = interaction(sex, Source)),
             size = 0.5) +
       
-  # 柱状图（世界数据）
   geom_col(data = wpp_age60,
            aes(x = ageBins,
                y = ifelse(sex == "male", -Proportion, Proportion),
@@ -1039,26 +1034,23 @@ fig3c <- ggplot() +
                         values = c("Traditional psychological studies" = "dashed", "Big team science" = "solid", "World population data" = "blank",
                         breaks = c("Traditional psychological studies", "Big team science", "World population data"))) +
 
-  # 设置图例显示为圆点
   guides(
-  color = guide_legend(order = 1, override.aes = list(shape = 1,    # 方框
+  color = guide_legend(order = 1, override.aes = list(shape = 1,    
                                                       size = 5, 
-                                                      fill = c("#00BFC4", "#F8766D"),  # 男蓝 女红
-                                                      color = c("#00BFC4", "#F8766D"),                # 方框边框颜色
-                                                      linetype = "solid",              # 中间一条横线
-                                                      stroke = 0)),                  # 边框粗细
-  fill = guide_legend(  # 原 fill = "none" 改为显示图例
+                                                      fill = c("#00BFC4", "#F8766D"),  
+                                                      color = c("#00BFC4", "#F8766D"),  
+                                                      linetype = "solid",    
+                                                      stroke = 0)),   
+  fill = guide_legend(  
       order = 1,
       override.aes = list(
-        color = c("#00BFC4", "#F8766D"),  # 边框颜色
-        size = 0.5  # 边框粗细
+        color = c("#00BFC4", "#F8766D"), 
+        size = 0.5  
       )
-    ),  # fill图例不要了，避免重复
+    ),  
   linetype = guide_legend(order = 2, override.aes = list(color = "black", size = 1.5))
 )+
 
-
-  # 其他主题保持不变
   coord_flip() +
   labs(y = "Proportion", x = "Age bins") +
   annotate("text", label = "italic(Male)", x = 13, y = -10.5, parse = TRUE, size = 8, family = "serif") +
@@ -1080,7 +1072,7 @@ fig3c <- ggplot() +
     limits = c("0~4", "5~9", "10~14", "15~19", "20~24", "25~29", "30~34", "35~39",
                "40~44", "45~49", "50~54", "55~59", ">=60")
   ) +
-  expand_limits(y = c(-39, 39))  # 更安全的替代 ylim()
+  expand_limits(y = c(-39, 39))  
 
 fig3c
 
@@ -1281,12 +1273,10 @@ ggsave(filename = "Figure 3.pdf", plot = combined_plot_people, device = "pdf", w
 
 
 
-#敏感性分析
-##sex
-###数据预处理
+# Sensitivity analysis 
+## Sex
 ```{r}
 Liu_2024_sex <- read_csv("Liu_2024_sex.csv") %>%
-  # 移除 study_n 为缺失值的行
   filter(!is.na(n)) %>%
   mutate(
     female_n = round(female * n / 100),
@@ -1313,10 +1303,9 @@ library(dplyr)
 library(effectsize)
 library(metafor)
 
-# 定义人口基准比例
-expected_ratio <- c(0.503, 0.497)  # 世界男性/女性人口比例
+expected_ratio <- c(0.503, 0.497)  # World male/female population ratio
 
-# 计算 fei 效应量并构建分析数据框
+# Calculate the effect size of fei
 Liu_2024_meta <- Liu_2024_sex %>%
   rowwise() %>%
   mutate(
@@ -1327,53 +1316,49 @@ Liu_2024_meta <- Liu_2024_sex %>%
   ) %>%
   ungroup()
 
-# 使用 Fisher’s Z 转换进行元分析
+# Perform meta-analysis using Fisher's Z-transform
 meta_data <- escalc(measure = "ZCOR", ri = Liu_2024_meta$fei, ni = Liu_2024_meta$n)
 
-# 随机效应模型
 res <- rma(yi, vi, data = meta_data, method = "REML")
 
-# 提取 Fisher's Z 合并估计及其置信区间
+# Extract Fisher's Z merged estimates and their confidence intervals
 z_est <- res$b[1]
 z_ci_lb <- res$ci.lb
 z_ci_ub <- res$ci.ub
 
-# 转换为 fei 效应量
+# Convert to Fei 
 fei_est_sex <- tanh(z_est)
 fei_ci_lb_sex <- tanh(z_ci_lb)
 fei_ci_ub_sex <- tanh(z_ci_ub)
 fei_ci_lb_sex 
-# 输出结果
-cat("合并后的平均 fei 效应量为：", round(fei_est_sex, 3), "\n")
-cat("95% 置信区间：(", round(fei_ci_lb_sex, 3), ", ", round(fei_ci_ub_sex, 3), ")\n")
 
-# 森林图
-forest(res, slab = Liu_2024_meta$paper, xlab = "fei (Frequency Effect Index)")
+cat("fei：", round(fei_est_sex, 3), "\n")
+cat("95% CI：(", round(fei_ci_lb_sex, 3), ", ", round(fei_ci_ub_sex, 3), ")\n")
 
-# 异质性信息
-text(
-  x = min(res$ci.lb) - 0.3,
-  y = nrow(Liu_2024_meta) + 2,
-  labels = paste(
-    "I² =", round(res$I2), "%",
-    "  Q =", round(res$QE, 2),
-    "  p =", round(res$QEp, 3)
-  )
-)
 
-# 合并总样本进行卡方拟合优度检验
+#forest(res, slab = Liu_2024_meta$paper, xlab = "fei (Frequency Effect Index)")
+
+#text(
+#  x = min(res$ci.lb) - 0.3,
+#  y = nrow(Liu_2024_meta) + 2,
+#  labels = paste(
+#    "I² =", round(res$I2), "%",
+#    "  Q =", round(res$QE, 2),
+#    "  p =", round(res$QEp, 3)
+#  )
+#)
+
 total_observed <- c(sum(Liu_2024_sex$male_n), sum(Liu_2024_sex$female_n))
 combined_chi2 <- chisq.test(x = total_observed, p = expected_ratio)
 
-# 输出总卡方结果
 cat("\nCombined Chi-square Test:\n")
 print(combined_chi2)
 
 ```
 
-###性别的敏感性分析
+### Sensitivity analysis of Sex
 ```{r}
-# --- 贝叶斯因子计算核心函数 ---
+# --- Function for converting chi square to BF ---
 froot_bf <- function(x, lambda, df) {
   dchisq(x, df, ncp = lambda) / dchisq(x, df)
 }
@@ -1392,13 +1377,13 @@ UMPBT <- function(df, thresh) {
   optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
 }
 # ------------------------------
-# 参数设置
+# Parameter settings
 # ------------------------------
 set.seed(123)
 n_seq <- seq(100, 1000, by = 100)
 n_seq
 sim_per_n <- 1000
-w_true <- fei_to_w(fei_ci_lb_sex,p = c(0.503, 0.497))   # 真效应（用于 BF10）
+w_true <- fei_to_w(fei_ci_lb_sex,p = c(0.503, 0.497))  
 df <- 1
 bf_thresh <- 5^(1:10)
 bf_thresh
@@ -1408,26 +1393,26 @@ p0 <- c(0.503, 0.497)
 #lambda_crit
 w_true
 # ------------------------------
-# 定义模拟函数
+# Define simulation function
 # ------------------------------
 simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N = 100) {
   results <- lapply(seq_along(bf_thresh_seq), function(i) {
     bf_thresh_i <- bf_thresh_seq[i]
     lambda_crit_i <- UMPBT(df, bf_thresh_i)
 
-    # 构造观察比例 p
+    # Construct observation ratio p
     p_obs <- p0 + c(w * sqrt(p0[1]), -w * sqrt(p0[2]))
 
-    # 模拟观察频数数据
+    # Simulated observation frequency data
     set.seed(123)
     obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)
 
-    # 卡方统计量
+    # Chi-square statistic
     chisq_values <- apply(obs_counts, 2, function(x) {
       sum((x - N * p0)^2 / (N * p0))
     })
 
-    # 贝叶斯因子
+    # BF
     BF <- froot_bf(chisq_values, lambda_crit_i, df)
 
     if (all(w == 0)) {
@@ -1444,7 +1429,7 @@ simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N = 100) {
       Category = category,
       lambda_crit = lambda_crit_i,
       BF_10 = prop_BF10,
-      BF_10_raw = BF,         # 可保留第一组原始 BF 值
+      BF_10_raw = BF,        
       chisq = chisq_values,
       p_obs_1 = p_obs[1],
       p_obs_2 = p_obs[2]
@@ -1455,21 +1440,16 @@ simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N = 100) {
   return(BF_power)
 }
 
-# 所有样本量
 sample_sizes <- c(50, 100, 200, 400)
 bf_thresh_seq <- 1:10
 
-# 模拟并合并数据
 all_results <- purrr::map_dfr(sample_sizes, function(N) {
   df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = N)
   df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = N)
   df <- bind_rows(df_bf10, df_bf01)
   df
 })
-library(dplyr)
-library(ggplot2)
 
-# 整理标签
 sim_results_df <- all_results %>%
   select(Sample_Size, BF_10, BF_thresh, Effect_Size = Category) %>%
   mutate(
@@ -1510,14 +1490,11 @@ P1 <- ggplot(sim_results_df, aes(x = BF_thresh, y = BF_10,
   )
 
 P1
-
-
 ```
 
 
 
 ```{r}
-# --- 贝叶斯因子计算核心函数 ---
 froot_bf <- function(x, lambda, df) {
   dchisq(x, df, ncp = lambda) / dchisq(x, df)
 }
@@ -1535,14 +1512,12 @@ vf1 <- Vectorize(f1)
 UMPBT <- function(df, thresh) {
   optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
 }
-# ------------------------------
-# 参数设置
-# ------------------------------
+
 set.seed(123)
 n_seq <- seq(200, 2000, by = 200)
 n_seq
 sim_per_n <- 1000
-w_true <- fei_to_w(fei_ci_lb_sex,p = c(0.503, 0.497))   # 真效应（用于 BF10）
+w_true <- fei_to_w(fei_ci_lb_sex,p = c(0.503, 0.497))  
 df <- 1
 
 p0 <- c(0.503, 0.497)
@@ -1550,30 +1525,24 @@ p0 <- c(0.503, 0.497)
 #lambda_crit <- sapply(bf_thresh, function(bf) UMPBT(df, bf))
 #lambda_crit
 w_true
-# ------------------------------
-# 定义模拟函数
-# ------------------------------
+
 simulate_BF <- function(n_seq, sim_per_n, w, df, label) {
   results <- lapply(seq_along(n_seq), function(i) {
     N <- n_seq[i]
     
-    # 对应第 i 个 bf_thresh 和 lambda_crit
+    
     bf_thresh_i <- 4^i
     lambda_crit_i <- UMPBT(df, bf_thresh_i)
-
-    # 构造观察比例 p
+    
     p_obs <- p0 + c(w * sqrt(p0[1]), -w * sqrt(p0[2]))
 
-    # 模拟观察频数数据
     set.seed(123)
     obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)  # 每列是一次模拟
 
-    # 卡方统计量
     chisq_values <- apply(obs_counts, 2, function(x) {
       sum((x - N * p0)^2 / (N * p0))
     })
 
-    # 计算贝叶斯因子
     BF <- froot_bf(chisq_values, lambda_crit_i, df)
 
     if (all(w == 0)) {
@@ -1590,8 +1559,8 @@ simulate_BF <- function(n_seq, sim_per_n, w, df, label) {
       lambda_crit = lambda_crit_i,
       BF_10 = prop_BF10,
       BF_10_ture = BF,
-      chisq = chisq_values[1],      # 可选择保留部分值
-      p_obs_1 = p_obs[1],           # 拆开方便整合
+      chisq = chisq_values[1],     
+      p_obs_1 = p_obs[1],       
       p_obs_2 = p_obs[2]
     )
   })
@@ -1599,52 +1568,44 @@ simulate_BF <- function(n_seq, sim_per_n, w, df, label) {
   BF_power <- bind_rows(results)
   return(BF_power)
 }
-# ------------------------------
-# 分别模拟 BF10（真效应） 和 BF01（无效应）
-# ------------------------------
+
 df_bf10 <- simulate_BF(n_seq, sim_per_n, w = w_true, df,  "BF10")
 df_bf01 <- simulate_BF(n_seq, sim_per_n, w = 0,       df, "BF01")
-df_bf10 
-df_bf01
 
-# 合并数据
 sim_results_df <- bind_rows(df_bf10, df_bf01)
-sim_results_df
+
 sim_results_df <- sim_results_df %>%
   select(Sample_Size, BF_10 = BF_10, Condition = Category) %>%
   mutate( Effect_Size = factor(Condition, levels = c("BF10", "BF01"),
                             labels = c("True positive rate", "False positive rate")))
-# ------------------------------
-# 绘图1：比例随样本量变化
-# ------------------------------
+
 P2 <- ggplot(sim_results_df, aes(x = Sample_Size, y =  BF_10, color = Effect_Size)) +
   geom_point(size = 4) +
-  geom_line(size = 1) +  # 添加线  
+  geom_line(size = 1) +   
   geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
   geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") + 
   labs(
     
     x = "Sample Size",
     y = "The proportion of BF >= threshold",
-    color = "Type of Simulation"  # 如果需要自定义图例标题
+    color = "Type of Simulation" 
   ) +
-  # 设置x轴和y轴的范围从0开始
+
   scale_x_continuous(limits = c(0, 2100), breaks = seq(0, 2000, by = 200), expand = c(0, 0)) +
-  # 设置y轴从0开始，最大为1
+
   scale_y_continuous(limits = c(-0.05, 1.1), breaks = sort(c(seq(0, 1, by = 0.2), 0.05)), expand = c(0, 0)) +
-  theme_minimal(base_size = 14) +  # 可以保留，也可以省略
+  theme_minimal(base_size = 14) +  
   theme(
     panel.grid = element_blank(),
     axis.line = element_line(color = "black", size = 1),
     axis.ticks = element_line(color = "black"),
     
-    # 字体大小调整部分（均为原来的3倍）
     plot.title = element_text(size = 28, face = "bold", hjust = 0.5),  # 标题
-    axis.title.x = element_text(size = 24),  # x轴标题
-    axis.title.y = element_text(size = 24),  # y轴标题
-    axis.text.x = element_text(size = 22),   # x轴刻度
-    axis.text.y = element_text(size = 22),   # y轴刻度
-    legend.title = element_text(size = 28),  # 图例标题
+    axis.title.x = element_text(size = 24),  
+    axis.title.y = element_text(size = 24), 
+    axis.text.x = element_text(size = 22),  
+    axis.text.y = element_text(size = 22), 
+    legend.title = element_text(size = 28), 
     legend.text = element_text(size = 24) ,
     legend.position = "bottom",
     legend.direction = "vertical"  
@@ -1652,29 +1613,25 @@ P2 <- ggplot(sim_results_df, aes(x = Sample_Size, y =  BF_10, color = Effect_Siz
 P2
 
 combined_plot_sex <-  P1+P2+
-
 plot_annotation(tag_levels = list(c('A', 'B')))
-
-
 
 ggsave(filename = "Fig S1.pdf", plot = combined_plot_sex, device = "pdf", width = 18, height = 11)
 ```
 
 
-
 ## Age simulation
-###数据预处理
+### Data preprocessing
 ```{r}
 Liu_2024_age <- read_csv("Liu_2024_age.csv") %>%
   filter(!is.na(n)) 
 Liu_2024_age
 
 WPP2022_age <- read_csv("WPP2022_age.csv")
-WPP2022_age
-# 确保列名是字符型
+
+
 age_cols <- c(as.character(0:99), "100+")
 
-# 按年龄段分组求和
+# Sum up by age group grouping
 age_summary <- WPP2022_age %>%
   filter(Type == "World", Year == 2021) %>%
   select(all_of(age_cols)) %>%
@@ -1688,15 +1645,13 @@ age_summary <- WPP2022_age %>%
   tidyr::pivot_longer(cols = everything(), names_to = "ageBins", values_to = "population")%>%
   mutate(population_ratio = population / sum(population))
 
-# 查看结果
 age_summary
-
 age_summary$population_ratio
 ```
 
-#年龄数据模拟与元分析
+### Age data simulation and meta-analysis
 ```{r}
-# 定义模拟函数
+# Define simulation function
 Sim_Sens_mult <- function(Mean1, diff_age, SD1, SD2, sampe_N) {
   
   Mean2 <- Mean1 + diff_age
@@ -1731,7 +1686,7 @@ Liu_2024_age <- read_csv("Liu_2024_age.csv") %>%
   filter(!is.na(n)) 
 Liu_2024_age
 
-# 执行模拟
+# Perform simulation
 results <- lapply(1:nrow(Liu_2024_age), function(i) {
   df <- Sim_Sens_mult(
     Mean1 = Liu_2024_age$age_mean[i], 
@@ -1740,99 +1695,80 @@ results <- lapply(1:nrow(Liu_2024_age), function(i) {
     SD2 = Liu_2024_age$sd[i], 
     sampe_N = Liu_2024_age$n[i]
   )
-  
   df$paper <- Liu_2024_age$paper[i]
   df$n <- Liu_2024_age$n[i]
   df
 })
 
-# 合并所有模拟结果
+# Merge all simulation results
 long_df <- bind_rows(results)
 
-# 转换为宽格式
+# Convert to Wide Format
 final_df <- long_df %>%
   select(paper, n, ageBins, obs) %>%
   pivot_wider(names_from = ageBins, values_from = obs)
 
-# 查看结果
 print(final_df)
 
-
-library(dplyr)
-
-# 提取世界人口比例（确保顺序为 <=17 到 >=60）
 expected_ratio <- age_summary$population_ratio
 
-# 计算卡方值并添加为列
+# Calculate the chi square value and add it as a column
 final_df <- final_df %>%
   rowwise() %>%
   mutate(
-    observed = list(c_across(`<=17`:`>=60`)),         # 提取观察频数向量
-    expected = list(expected_ratio * n),              # 计算期望频数向量
-    chi2 = sum((unlist(observed) - unlist(expected))^2 / unlist(expected)),  # 卡方统计量
-    df = length(unlist(observed)) - 1                 # 自由度 = 类别数 - 1
+    observed = list(c_across(`<=17`:`>=60`)),       
+    expected = list(expected_ratio * n),              
+    chi2 = sum((unlist(observed) - unlist(expected))^2 / unlist(expected)),  
+    df = length(unlist(observed)) - 1              
   ) %>%
   ungroup() %>%
-  select(-observed, -expected)  # 可选：移除中间变量
+  select(-observed, -expected)
 final_df
 
-library(effectsize)
-
-
-# 确保 age_summary$population_ratio 已准备好
 expected_ratio <- age_summary$population_ratio
 
-# 逐行计算 fei 和 w
 final_df <- final_df %>%
   rowwise() %>%
   mutate(
-    O = list(c_across(`<=17`:`>=60`)),               # 提取观察频数
-    p_E = list(expected_ratio),                      # 提取期望概率
-    fei = fei(O, p = p_E)[[1]],                      # 计算 FEI 值
-    w = fei_to_w(fei, p = expected_ratio)            # 转换为 Cohen's w
+    O = list(c_across(`<=17`:`>=60`)),              
+    p_E = list(expected_ratio),                      
+    fei = fei(O, p = p_E)[[1]],                      
+    w = fei_to_w(fei, p = expected_ratio)         
   ) %>%
   ungroup() %>%
-  select(-O, -p_E)  # 可选：删除中间变量列
+  select(-O, -p_E)  
 
 final_df
 ```
 
-### 年龄元分析
+### Age meta-analysis
 ```{r}
-library(metafor)
-
-# 使用 Fisher's Z 转换并计算效应量与方差
 meta_data <- escalc(measure = "ZCOR", ri = final_df$fei, ni = final_df$n)
 
-# 随机效应模型元分析
 res <- rma(yi, vi, data = meta_data, method = "REML")
 
-# 输出元分析结果
 summary(res)
 
-# 提取合并效应量及其置信区间（仍是 Fisher's Z）
 z_est <- res$b[1]
 z_ci_lb <- res$ci.lb
 z_ci_ub <- res$ci.ub
 
-# 反转为 fei 尺度
 fei_est_age <- tanh(z_est)
 fei_ci_lb_age <- tanh(z_ci_lb)
 fei_ci_ub_age <- tanh(z_ci_ub)
 w_true <- fei_to_w(fei_ci_lb_age,p = expected_ratio) 
 w_true
-# 输出结果
-cat("合并后的平均 fei 效应量为：", round(fei_est_age, 3), "\n")
-cat("95% 置信区间：(", round(fei_ci_lb_age, 3), ", ", round(fei_ci_ub_age, 3), ")\n")
+
+cat("fei：", round(fei_est_age, 3), "\n")
+cat("95% CI：(", round(fei_ci_lb_age, 3), ", ", round(fei_ci_ub_age, 3), ")\n")
 
 
 forest(res, slab = final_df$paper)
 ```
 
 
-###年龄敏感性分析
+### Age sensitivity analysis
 ```{r}
-# --- 贝叶斯因子计算核心函数 ---
 froot_bf <- function(x, lambda, df) {
   dchisq(x, df, ncp = lambda) / dchisq(x, df)
 }
@@ -1851,54 +1787,46 @@ UMPBT <- function(df, thresh) {
   optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
 }
 
-# ------------------------------
-# 参数设置
-# ------------------------------
+
 set.seed(123)
 n_seq <- seq(100, 2000, by = 100)
 sim_per_n <- 1000
 w_true <- fei_to_w(fei_ci_lb_age,p = expected_ratio) 
 #fei_to_w(fei_ci_lb,p = expected_ratio)
-# 真效应（用于 BF10）
+
 df <- 4
 bf_thresh <- 5^(1:10)
 p0 <- expected_ratio
 #lambda_crit <- UMPBT(df, bf_thresh)
 w_true
-# ------------------------------
-# 定义模拟函数
-# ------------------------------
+
 simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N ) {
   results <- lapply(seq_along(bf_thresh_seq), function(i){
     bf_thresh_i <- bf_thresh_seq[i]
    lambda_crit_i <- UMPBT(df, bf_thresh_i)
-        # 构造观察比例 p
+     
 if (all(w == 0)) {
       p_obs <- p0
     } else {
-      # 使用扰动向量构造具有期望w的分布
+     
       delta <- rnorm(length(p0))
-      delta <- delta - mean(delta)  # 保证扰动之和为 0
-      delta <- delta / sqrt(sum((delta^2) / p0))  # 标准化为 w 距离单位向量
-      p_obs <- p0 + sqrt(p0) * w[1] * delta  # 用 w 的第一个值控制扰动大小
-      p_obs[p_obs < 0] <- 0  # 剔除负值
-      p_obs <- p_obs / sum(p_obs)  # 重新归一化为合法分布
+      delta <- delta - mean(delta)  
+      delta <- delta / sqrt(sum((delta^2) / p0)) 
+      p_obs <- p0 + sqrt(p0) * w[1] * delta  
+      p_obs[p_obs < 0] <- 0  
+      p_obs <- p_obs / sum(p_obs)  
     }
 
-
-    # 模拟多项式观察数据（每列是一组模拟）
     set.seed(123)
     obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)
 obs_counts
-    # 卡方统计量
+   
     chisq_values <- apply(obs_counts, 2, function(x) {
       sum((x - N * expected_ratio)^2 / (N * expected_ratio))
     })
 
-    # 计算贝叶斯因子
     BF <- froot_bf(chisq_values, lambda_crit_i, df)
     
-
   if (all(w == 0)) {
             category <- "BF01"
             prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
@@ -1906,7 +1834,6 @@ obs_counts
             category <- "BF10"
             prop_BF10 <- mean(BF >= bf_thresh_i | is.na(BF))
         }
-        
         data.frame(
             Sample_Size = N,
             BF_thresh = bf_thresh_i,
@@ -1919,35 +1846,28 @@ obs_counts
             p_obs_2 = p_obs[2]
         )
     })
-    
     BF_power <- bind_rows(results)
     return(BF_power)
 }
-# ------------------------------
-# 分别模拟 BF10（真效应） 和 BF01（无效应）
-# ------------------------------
+
 bf_thresh_seq <- 1:10
 df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 4, label = "BF10", N = 50)
 df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 4, label = "BF01", N = 50)
 
-# 合并数据
 sim_results_df <- bind_rows(df_bf10, df_bf01)
 
-# 修改标签
 sim_results_df1 <- sim_results_df %>%
   select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
   mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
                             labels = c("True positive rate", "False positive rate")))
-sim_results_df1
+
 
 bf_thresh_seq <- 1:10
 df_bf10_2 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 4, label = "BF10", N = 100)
 df_bf01_2 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 4, label = "BF01", N = 100)
 
-# 合并数据
 sim_results_df2 <- bind_rows(df_bf10_2, df_bf01_2)
 
-# 修改标签
 sim_results_df2 <- sim_results_df2 %>%
   select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
   mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
@@ -1957,10 +1877,8 @@ bf_thresh_seq <- 1:10
 df_bf10_3 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 4, label = "BF10", N = 200)
 df_bf01_3 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 4, label = "BF01", N = 200)
 
-# 合并数据
 sim_results_df3 <- bind_rows(df_bf10_3, df_bf01_3)
 
-# 修改标签
 sim_results_df3 <- sim_results_df3 %>%
   select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
   mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
@@ -1970,22 +1888,18 @@ bf_thresh_seq <- 1:10
 df_bf10_4 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 4, label = "BF10", N = 400)
 df_bf01_4 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 4, label = "BF01", N = 400)
 
-# 合并数据
 sim_results_df4 <- bind_rows(df_bf10_4, df_bf01_4)
 
-# 修改标签
 sim_results_df4 <- sim_results_df4 %>%
   select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
   mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
                             labels = c("True positive rate", "False positive rate")))
-sim_results_df4
 
 
 sim_results_all <- bind_rows(sim_results_df1, sim_results_df2, sim_results_df3, sim_results_df4)
 
-sim_results_all
+
 sim_results_all$Sample_Size <- as.factor(sim_results_all$Sample_Size)
-sim_results_all
 
 
 P3 <- ggplot(sim_results_all, aes(x = BF_thresh, y = BF_10, 
@@ -2023,7 +1937,6 @@ ggsave(filename = "Fig 3.pdf", plot = P3, device = "pdf", width = 12, height = 7
 ```
 
 ```{r}
-# --- 贝叶斯因子计算核心函数 ---
 froot_bf <- function(x, lambda, df) {
   dchisq(x, df, ncp = lambda) / dchisq(x, df)
 }
@@ -2042,53 +1955,43 @@ UMPBT <- function(df, thresh) {
   optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
 }
 
-# ------------------------------
-# 参数设置
-# ------------------------------
 set.seed(123)
 n_seq <- seq(100, 1000, by = 100)
 sim_per_n <- 1000
 w_true <- fei_to_w(fei_ci_lb_age,p = expected_ratio) 
 #fei_to_w(fei_ci_lb,p = expected_ratio)
-# 真效应（用于 BF10）
+
 df <- 4
 p0 <- expected_ratio
 #lambda_crit <- UMPBT(df, bf_thresh)
 w_true
-# ------------------------------
-# 定义模拟函数
-# ------------------------------
+
 simulate_BF <- function(n_seq, sim_per_n, w, df, label) {
   results <- lapply(seq_along(n_seq), function(i) {
     N <- n_seq[i]
-    
-    # 对应第 i 个 bf_thresh 和 lambda_crit
+
     bf_thresh_i <- 4^i
     lambda_crit_i <- UMPBT(df, bf_thresh_i)
-        # 构造观察比例 p
 if (all(w == 0)) {
       p_obs <- p0
     } else {
-      # 使用扰动向量构造具有期望w的分布
+
       delta <- rnorm(length(p0))
-      delta <- delta - mean(delta)  # 保证扰动之和为 0
-      delta <- delta / sqrt(sum((delta^2) / p0))  # 标准化为 w 距离单位向量
-      p_obs <- p0 + sqrt(p0) * w[1] * delta  # 用 w 的第一个值控制扰动大小
-      p_obs[p_obs < 0] <- 0  # 剔除负值
-      p_obs <- p_obs / sum(p_obs)  # 重新归一化为合法分布
+      delta <- delta - mean(delta) 
+      delta <- delta / sqrt(sum((delta^2) / p0)) 
+      p_obs <- p0 + sqrt(p0) * w[1] * delta  
+      p_obs[p_obs < 0] <- 0  
+      p_obs <- p_obs / sum(p_obs)  
     }
 
-
-    # 模拟多项式观察数据（每列是一组模拟）
     set.seed(123)
     obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)
 obs_counts
-    # 卡方统计量
+
     chisq_values <- apply(obs_counts, 2, function(x) {
       sum((x - N * expected_ratio)^2 / (N * expected_ratio))
     })
 
-    # 计算贝叶斯因子
     BF <- froot_bf(chisq_values, lambda_crit_i, df)
     
   if (all(w == 0)) {
@@ -2105,7 +2008,7 @@ obs_counts
             Category = category,
             lambda_crit = lambda_crit_i,
             BF_10 = prop_BF10,
-            BF_10_raw = BF[1],         # 可保留第一组原始 BF 值
+            BF_10_raw = BF[1],        
             chisq = chisq_values[1],
             p_obs_1 = p_obs[1],
             p_obs_2 = p_obs[2]
@@ -2114,53 +2017,44 @@ obs_counts
     BF_power <- bind_rows(results)
     return(BF_power)
 }
-# ------------------------------
-# 分别模拟 BF10（真效应） 和 BF01（无效应）
-# ------------------------------
+
 df_bf10 <- simulate_BF(n_seq, sim_per_n, w = w_true, df,  "BF10")
 df_bf01 <- simulate_BF(n_seq, sim_per_n, w = 0,       df, "BF01")
-df_bf10 
-df_bf01
 
-# 合并数据
 sim_results_df <- bind_rows(df_bf10, df_bf01)
-sim_results_df
+
 sim_results_df <- sim_results_df %>%
   select(Sample_Size, BF_10 = BF_10, Condition = Category) %>%
   mutate( Effect_Size = factor(Condition, levels = c("BF10", "BF01"),
                             labels = c("True positive rate", "False positive rate")))
 
-
 P4 <- ggplot(sim_results_df, aes(x = Sample_Size, y =  BF_10, color = Effect_Size)) +
   geom_point(size = 4) +
-  geom_line(size = 1) +  # 添加线  
+  geom_line(size = 1) +    
   geom_hline(yintercept = 0.8, linetype = "dashed", color = "gray50") +
   geom_hline(yintercept = 0.05, linetype = "dashed", color = "gray50") + 
   labs(
     x = "Sample Size",
     y = "The proportion of BF >= threshold",
-    color = "Type of Simulation"  # 如果需要自定义图例标题
+    color = "Type of Simulation" 
   ) +
-  # 设置x轴和y轴的范围从0开始
   scale_x_continuous(limits = c(0, 1100), breaks = seq(0, 1000, by = 100), expand = c(0, 0)) +
-  # 设置y轴从0开始，最大为1
   scale_y_continuous(limits = c(-0.05, 1.1), breaks = sort(c(seq(0, 1, by = 0.2), 0.05)), expand = c(0, 0)) +
-  theme_minimal(base_size = 14) +  # 可以保留，也可以省略
+  theme_minimal(base_size = 14) + 
   theme(
     panel.grid = element_blank(),
     axis.line = element_line(color = "black", size = 1),
     axis.ticks = element_line(color = "black"),
-    
-    # 字体大小调整部分（均为原来的3倍）
-    plot.title = element_text(size = 28, face = "bold", hjust = 0.5),  # 标题
-    axis.title.x = element_text(size = 24),  # x轴标题
-    axis.title.y = element_text(size = 24),  # y轴标题
-    axis.text.x = element_text(size = 22),   # x轴刻度
-    axis.text.y = element_text(size = 22),   # y轴刻度
-    legend.title = element_text(size = 28),  # 图例标题
+
+    plot.title = element_text(size = 28, face = "bold", hjust = 0.5), 
+    axis.title.x = element_text(size = 24),  
+    axis.title.y = element_text(size = 24),  
+    axis.text.x = element_text(size = 22),   
+    axis.text.y = element_text(size = 22),   
+    legend.title = element_text(size = 28), 
     legend.text = element_text(size = 24), 
     legend.position = "bottom",
-    legend.direction = "vertical"   # 图例内容
+    legend.direction = "vertical"  
   )
 P4
 combined_plot_age <-  P3+P4+
@@ -2171,10 +2065,10 @@ ggsave(filename = "Fig S2.pdf", plot = combined_plot_age, device = "pdf", width 
 
 
 ## Education level
-### 数据预处理
+### Data preprocessing
 ```{r}
 Liu_2024_edu <- read_csv("Liu_2024_edu.csv") %>%
-  # 移除 study_n 为缺失值的行
+
   filter(!is.na(n)) %>%
   mutate(
     un_university_n = round(un_university * n / 100),
@@ -2197,14 +2091,8 @@ Liu_2024_edu
 
 ### Meta-analysis of edu 
 ```{r}
-library(dplyr)
-library(effectsize)
-library(metafor)
+expected_ratio <- c(0.158, 0.842)  
 
-# 定义人口基准比例
-expected_ratio <- c(0.158, 0.842)  # 世界男性/女性人口比例
-
-# 计算 fei 效应量并构建分析数据框
 Liu_2024_meta <- Liu_2024_edu %>%
   rowwise() %>%
   mutate(
@@ -2215,53 +2103,42 @@ Liu_2024_meta <- Liu_2024_edu %>%
   ) %>%
   ungroup()
 
-# 使用 Fisher’s Z 转换进行元分析
 meta_data <- escalc(measure = "ZCOR", ri = Liu_2024_meta$fei, ni = Liu_2024_meta$n)
 
-# 随机效应模型
 res <- rma(yi, vi, data = meta_data, method = "REML")
 
-# 提取 Fisher's Z 合并估计及其置信区间
 z_est <- res$b[1]
 z_ci_lb <- res$ci.lb
 z_ci_ub <- res$ci.ub
 
-# 转换为 fei 效应量
 fei_est_edu <- tanh(z_est)
 fei_ci_lb_edu <- tanh(z_ci_lb)
 fei_ci_ub_edu <- tanh(z_ci_ub)
 fei_ci_lb_edu 
-# 输出结果
+
 cat("pooled effect size fei ：", round(fei_est_edu, 3), "\n")
 cat("95% CI：(", round(fei_ci_lb_edu, 3), ", ", round(fei_ci_ub_edu, 3), ")\n")
 
-# 森林图
 forest(res, slab = Liu_2024_meta$paper, xlab = "fei (Frequency Effect Index)")
 
-# 异质性信息
-text(
-  x = min(res$ci.lb) - 0.3,
-  y = nrow(Liu_2024_meta) + 2,
-  labels = paste(
-    "I² =", round(res$I2), "%",
-    "  Q =", round(res$QE, 2),
-    "  p =", round(res$QEp, 3)
-  )
-)
+#text(
+#  x = min(res$ci.lb) - 0.3,
+#  y = nrow(Liu_2024_meta) + 2,
+#  labels = paste(
+ #   "I² =", round(res$I2), "%",
+#    "  Q =", round(res$QE, 2),
+#    "  p =", round(res$QEp, 3)
+#  ))
 
-# 合并总样本进行卡方拟合优度检验
 total_observed <- c(sum(Liu_2024_edu$university_n), sum(Liu_2024_edu$un_university_n))
 combined_chi2 <- chisq.test(x = total_observed, p = expected_ratio)
 
-# 输出总卡方结果
 cat("\nCombined Chi-square Test:\n")
 print(combined_chi2)
-
 ```
 
-###education的敏感性分析
+###Sensitivity analysis of education level
 ```{r}
-# --- 贝叶斯因子计算核心函数 ---
 froot_bf <- function(x, lambda, df) {
   dchisq(x, df, ncp = lambda) / dchisq(x, df)
 }
@@ -2279,9 +2156,7 @@ vf1 <- Vectorize(f1)
 UMPBT <- function(df, thresh) {
   optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
 }
-# ------------------------------
-# 参数设置
-# ------------------------------
+
 set.seed(123)
 n_seq <- seq(100, 1000, by = 100)
 n_seq
@@ -2296,27 +2171,21 @@ p0 <- c(0.158, 0.842)
 #lambda_crit <- sapply(bf_thresh, function(bf) UMPBT(df, bf))
 #lambda_crit
 w_true
-# ------------------------------
-# 定义模拟函数
-# ------------------------------
+
 simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N) {
   results <- lapply(seq_along(bf_thresh_seq), function(i) {
     bf_thresh_i <- bf_thresh_seq[i]
     lambda_crit_i <- UMPBT(df, bf_thresh_i)
 
-    # 构造观察比例 p
     p_obs <- p0 + c(w * sqrt(p0[1]), -w * sqrt(p0[2]))
 
-    # 模拟观察频数数据
     set.seed(123)
     obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)
 
-    # 卡方统计量
     chisq_values <- apply(obs_counts, 2, function(x) {
       sum((x - N * p0)^2 / (N * p0))
     })
 
-    # 贝叶斯因子
     BF <- froot_bf(chisq_values, lambda_crit_i, df)
 
     if (all(w == 0)) {
@@ -2333,7 +2202,7 @@ simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N) {
       Category = category,
       lambda_crit = lambda_crit_i,
       BF_10 = prop_BF10,
-      BF_10_raw = BF,         # 可保留第一组原始 BF 值
+      BF_10_raw = BF,       
       chisq = chisq_values,
       p_obs_1 = p_obs[1],
       p_obs_2 = p_obs[2]
@@ -2344,27 +2213,22 @@ simulate_BF <- function(bf_thresh_seq, sim_per_n, w, df, label, N) {
   return(BF_power)
 }
 
-# 所有样本量
 sample_sizes <- c(50, 100, 200,400)
 bf_thresh_seq <- 1:10
 
-# 模拟并合并数据
 all_results <- purrr::map_dfr(sample_sizes, function(N) {
   df_bf10 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 1, label = "BF10", N = N)
   df_bf01 <- simulate_BF(bf_thresh_seq, sim_per_n, w = 0,      df = 1, label = "BF01", N = N)
   df <- bind_rows(df_bf10, df_bf01)
   df
 })
-library(dplyr)
-library(ggplot2)
 
-# 整理标签
 sim_results_df <- all_results %>%
   select(Sample_Size, BF_10, BF_thresh, Effect_Size = Category) %>%
   mutate(
     Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
                          labels = c("True positive rate", "False positive rate")),
-    Sample_Size = as.factor(Sample_Size)  # 转为因子，便于映射颜色或形状
+    Sample_Size = as.factor(Sample_Size)  
   )
 
 P5 <- ggplot(sim_results_df, aes(x = BF_thresh, y = BF_10, 
@@ -2397,14 +2261,12 @@ P5 <- ggplot(sim_results_df, aes(x = BF_thresh, y = BF_10,
     legend.position = "bottom",
     legend.direction = "vertical"
   )
-
 P5
 ```
 
 
 
 ```{r}
-# --- 贝叶斯因子计算核心函数 ---
 froot_bf <- function(x, lambda, df) {
   dchisq(x, df, ncp = lambda) / dchisq(x, df)
 }
@@ -2422,14 +2284,12 @@ vf1 <- Vectorize(f1)
 UMPBT <- function(df, thresh) {
   optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
 }
-# ------------------------------
-# 参数设置
-# ------------------------------
+
 set.seed(123)
 n_seq <- seq(50, 500, by = 50)
 n_seq
 sim_per_n <- 1000
-w_true <- fei_to_w(fei_ci_lb_edu,p = c(0.158, 0.842))   # 真效应（用于 BF10）
+w_true <- fei_to_w(fei_ci_lb_edu,p = c(0.158, 0.842))   
 df <- 1
 
 p0 <- c(0.158, 0.842)
@@ -2437,30 +2297,23 @@ p0 <- c(0.158, 0.842)
 #lambda_crit <- sapply(bf_thresh, function(bf) UMPBT(df, bf))
 #lambda_crit
 w_true
-# ------------------------------
-# 定义模拟函数
-# ------------------------------
+
 simulate_BF <- function(n_seq, sim_per_n, w, df, label) {
   results <- lapply(seq_along(n_seq), function(i) {
     N <- n_seq[i]
     
-    # 对应第 i 个 bf_thresh 和 lambda_crit
     bf_thresh_i <- 4^i
     lambda_crit_i <- UMPBT(df, bf_thresh_i)
 
-    # 构造观察比例 p
     p_obs <- p0 + c(w * sqrt(p0[1]), -w * sqrt(p0[2]))
 
-    # 模拟观察频数数据
     set.seed(123)
     obs_counts <- rmultinom(n = sim_per_n, size = N, prob = p_obs)  # 每列是一次模拟
 
-    # 卡方统计量
     chisq_values <- apply(obs_counts, 2, function(x) {
       sum((x - N * p0)^2 / (N * p0))
     })
 
-    # 计算贝叶斯因子
     BF <- froot_bf(chisq_values, lambda_crit_i, df)
 
     if (all(w == 0)) {
@@ -2477,8 +2330,8 @@ simulate_BF <- function(n_seq, sim_per_n, w, df, label) {
       lambda_crit = lambda_crit_i,
       BF_10 = prop_BF10,
       BF_10_ture = BF,
-      chisq = chisq_values[1],      # 可选择保留部分值
-      p_obs_1 = p_obs[1],           # 拆开方便整合
+      chisq = chisq_values[1],      
+      p_obs_1 = p_obs[1],           
       p_obs_2 = p_obs[2]
     )
   })
@@ -2486,24 +2339,17 @@ simulate_BF <- function(n_seq, sim_per_n, w, df, label) {
   BF_power <- bind_rows(results)
   return(BF_power)
 }
-# ------------------------------
-# 分别模拟 BF10（真效应） 和 BF01（无效应）
-# ------------------------------
+
 df_bf10 <- simulate_BF(n_seq, sim_per_n, w = w_true, df,  "BF10")
 df_bf01 <- simulate_BF(n_seq, sim_per_n, w = 0,       df, "BF01")
-df_bf10 
-df_bf01
 
-# 合并数据
 sim_results_df <- bind_rows(df_bf10, df_bf01)
-sim_results_df
+
 sim_results_df <- sim_results_df %>%
   select(Sample_Size, BF_10 = BF_10, Condition = Category) %>%
   mutate( Effect_Size = factor(Condition, levels = c("BF10", "BF01"),
                             labels = c("True positive rate", "False positive rate")))
-# ------------------------------
-# 绘图1：比例随样本量变化
-# ------------------------------
+
 P6 <- ggplot(sim_results_df, aes(x = Sample_Size, y =  BF_10, color = Effect_Size)) +
   geom_point(size = 4) +
   geom_line(size = 1) +  # 添加线  
@@ -2513,25 +2359,24 @@ P6 <- ggplot(sim_results_df, aes(x = Sample_Size, y =  BF_10, color = Effect_Siz
     
     x = "Sample Size",
     y = "The proportion of BF >= threshold",
-    color = "Type of Simulation"  # 如果需要自定义图例标题
+    color = "Type of Simulation"  
   ) +
-  # 设置x轴和y轴的范围从0开始
+
   scale_x_continuous(limits = c(0, 550), breaks = seq(0, 500, by = 50), expand = c(0, 0)) +
-  # 设置y轴从0开始，最大为1
+
   scale_y_continuous(limits = c(-0.05, 1.1), breaks = sort(c(seq(0, 1, by = 0.2), 0.05)), expand = c(0, 0)) +
-  theme_minimal(base_size = 14) +  # 可以保留，也可以省略
+  theme_minimal(base_size = 14) +  
   theme(
     panel.grid = element_blank(),
     axis.line = element_line(color = "black", size = 1),
     axis.ticks = element_line(color = "black"),
-    
-    # 字体大小调整部分（均为原来的3倍）
+
     plot.title = element_text(size = 28, face = "bold", hjust = 0.5),  # 标题
-    axis.title.x = element_text(size = 24),  # x轴标题
-    axis.title.y = element_text(size = 24),  # y轴标题
-    axis.text.x = element_text(size = 22),   # x轴刻度
-    axis.text.y = element_text(size = 22),   # y轴刻度
-    legend.title = element_text(size = 28),  # 图例标题
+    axis.title.x = element_text(size = 24), 
+    axis.title.y = element_text(size = 24), 
+    axis.text.x = element_text(size = 22),   
+    axis.text.y = element_text(size = 22),   
+    legend.title = element_text(size = 28), 
     legend.text = element_text(size = 24) , 
     legend.position = "bottom",
     legend.direction = "vertical"
@@ -2546,28 +2391,24 @@ ggsave(filename = "Fig S3.pdf", plot = combined_plot_edu, device = "pdf", width 
 
 
 ## country simulation
-###数据预处理
+### Data preprocessing
 ```{r}
 Liu_2024_country <- read_csv("Liu_2024_country.csv") 
 Liu_2024_country[is.na(Liu_2024_country)] <- 1e-09
 Liu_2024_country
 library(dplyr)
 
-# 按 Country_groups 中的 4 个因子对 pop 进行加总
 WPP2022 <- read_csv("WPP2022.csv")
 library(dplyr)
 
-# 对缺失的 Country_groups 进行过滤后，按因子分组并加总
 summary_df <- WPP2022 %>%
-  filter(!is.na(Country_groups)) %>%             # 忽略 Country_groups 中的缺失值
+  filter(!is.na(Country_groups)) %>%            
   group_by(Country_groups) %>%
-  summarise(pop_sum = sum(pop, na.rm = TRUE)) %>%  # 对 pop 进行加总
+  summarise(pop_sum = sum(pop, na.rm = TRUE)) %>% 
   ungroup()
 
-# 计算总人口数
 total_pop <- sum(summary_df$pop_sum)
 
-# 计算每个因子的比例
 summary_df <- summary_df %>%
   mutate(prop = pop_sum / total_pop)
 summary_df <- summary_df %>%
@@ -2580,24 +2421,18 @@ summary_df <- summary_df %>%
 summary_df 
 ```
 
-#country数据模拟与元分析
+### Country data simulation and meta-analysis
 ```{r}
-
-# 计算卡方值并添加为列
-library(dplyr)
 library(purrr)
 library(broom)
 
-# 指定列顺序（必须与 summary_df$prop 顺序一致）
 group_cols <- c("High income countries", 
                 "Upper middle income country", 
                 "Lower middle income country", 
                 "Lower income country")
 
-# 提取期望比例
 expected_prop <- summary_df$prop
 
-# 对每一行进行卡方检验
 Liu_2024_country <- Liu_2024_country %>%
   mutate(n = `High income countries` + 
               `Upper middle income country` + 
@@ -2614,19 +2449,11 @@ Liu_2024_country <- Liu_2024_country %>%
   ungroup()
 Liu_2024_country 
 
-
-library(effectsize)
-
-library(dplyr)
-library(purrr)
-
-# 指定四列顺序，与 summary_df$prop 一致
 group_cols <- c("High income countries", 
                 "Upper middle income country", 
                 "Lower middle income country", 
                 "Lower income country")
 
-# 提取期望比例向量，并标准化
 expected_prop <- summary_df %>%
   arrange(factor(Country_groups, 
                  levels = c("High income countries", 
@@ -2652,7 +2479,6 @@ Liu_2024_country
 
 ### meta-analysis of country 
 ```{r}
-library(metafor)
 
 meta_data <- escalc(measure = "ZCOR", ri = Liu_2024_country$fei, ni = Liu_2024_country$n)
 
@@ -2676,7 +2502,6 @@ cat("95%CI：(", round(fei_ci_lb_country, 3), ", ", round(fei_ci_ub_country, 3),
 ```
 
 
-###年龄敏感性分析
 ```{r}
 froot_bf <- function(x, lambda, df) {
   dchisq(x, df, ncp = lambda) / dchisq(x, df)
@@ -2768,7 +2593,6 @@ sim_results_df1 <- sim_results_df %>%
   select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
   mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
                             labels = c("True positive rate", "False positive rate")))
-sim_results_df1
 
 bf_thresh_seq <- 1:10
 df_bf10_2 <- simulate_BF(bf_thresh_seq, sim_per_n, w = w_true, df = 3, label = "BF10", N = 100)
@@ -2802,14 +2626,14 @@ sim_results_df4 <- sim_results_df4 %>%
   select(Sample_Size, BF_10 = BF_10, BF_thresh = BF_thresh, Effect_Size = Category) %>%
   mutate( Effect_Size = factor(Effect_Size, levels = c("BF10", "BF01"),
                             labels = c("True positive rate", "False positive rate")))
-sim_results_df4
+
 
 
 sim_results_all <- bind_rows(sim_results_df1, sim_results_df2, sim_results_df3, sim_results_df4)
 
-sim_results_all
+
 sim_results_all$Sample_Size <- as.factor(sim_results_all$Sample_Size)
-sim_results_all
+
 
 
 P7 <- ggplot(sim_results_all, aes(x = BF_thresh, y = BF_10, 
@@ -2843,7 +2667,6 @@ P7 <- ggplot(sim_results_all, aes(x = BF_thresh, y = BF_10,
     legend.direction = "vertical"
   )
 P7
-
 ```
 
 ```{r}
@@ -2865,7 +2688,6 @@ vf1 <- Vectorize(f1)
 UMPBT <- function(df, thresh) {
   optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
 }
-
 
 set.seed(123)
 n_seq <- seq(50, 500, by = 50)
@@ -2932,17 +2754,13 @@ obs_counts
 
 df_bf10 <- simulate_BF(n_seq, sim_per_n, w = w_true, df,  "BF10")
 df_bf01 <- simulate_BF(n_seq, sim_per_n, w = 0,       df, "BF01")
-df_bf10 
-df_bf01
-
 
 sim_results_df <- bind_rows(df_bf10, df_bf01)
-sim_results_df
+
 sim_results_df <- sim_results_df %>%
   select(Sample_Size, BF_10 = BF_10, Condition = Category) %>%
   mutate( Effect_Size = factor(Condition, levels = c("BF10", "BF01"),
                             labels = c("True positive rate", "False positive rate")))
-
 
 P8 <- ggplot(sim_results_df, aes(x = Sample_Size, y =  BF_10, color = Effect_Size)) +
   geom_point(size = 4) +

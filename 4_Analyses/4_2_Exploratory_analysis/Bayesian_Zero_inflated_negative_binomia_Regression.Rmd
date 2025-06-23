@@ -26,6 +26,7 @@ library(ggthemes)
 library(wesanderson)
 library(gridExtra)        # Merge Graphs
 library(bayesplot)
+library(glue)
 ```
 
 
@@ -177,58 +178,60 @@ We have made a visual comparison between the intercept priors β₀ ~ Normal (6,
 x_zoom_range <- c(0, 5000)
 y_zoom_range <- c(0, 0.001)
 
+# 创建主数据，使用表达式格式的 group 标签
 main_data <- tibble(x = c(400, 600),
                     y = c(0.00062, 0.00054),
                     meanlog = c(0, 6),
                     sdlog = c(4.67, 2.67)) %>% 
   expand_grid(number = seq(from = 0, to = 1190000, length.out = 300000)) %>% 
-  mutate(density = dlnorm(number, meanlog, sdlog),
-         group = str_c("alpha%~%Normal(", meanlog, ", ", sdlog, ")"))
+  mutate(
+    density = dlnorm(number, meanlog, sdlog),
+    group_label = glue("beta[0] %~% Normal({meanlog}, {sdlog})"),
+    group = factor(group_label, levels = unique(group_label))
+  )
 
+# 主图
 main_plt <- main_data %>%
   ggplot(aes(fill = group, color = group)) +
   geom_area(aes(x = number, y = density),
             alpha = 3/4, linewidth = 0, position = "identity") +
-  geom_text(data = . %>% group_by(group) %>% slice(1),
-            aes(x = x, y = y, label = group),
-            family = "Times", parse = TRUE, hjust = 0) +
-  scale_fill_manual(values = wesanderson::wes_palette("Moonrise2")[1:2]) +
-  scale_color_manual(values = wesanderson::wes_palette("Moonrise2")[1:2]) +
-  scale_y_continuous(NULL, breaks = NULL) +
-  ylim(0, 0.0013) +
-  xlab("Sample size of big team science") +
-
-
+  scale_fill_manual(
+    values = wesanderson::wes_palette("Moonrise2")[1:2],
+    labels = parse_format()
+  ) +
+  scale_color_manual(
+    values = wesanderson::wes_palette("Moonrise2")[1:2],
+    labels = parse_format()
+  ) +
+  
+ 
+  xlab("Sample size of big team science")+ 
   annotate("rect",
-           xmin = x_zoom_range[1], xmax = x_zoom_range[2],
-           ymin = y_zoom_range[1], ymax = y_zoom_range[2],
-           color = "grey80", linetype = "dashed", fill = NA, size = 1) +
-
-   
-  annotate("segment", x = 0, y = 0.001, xend = 1190000 *0.34, yend = 0.0013 * 0.94,
+           xmin = -10000, xmax =20000,
+           ymin = -0.0003, ymax = 0.0013,
+           color = "red", linetype = "solid", fill = NA, size = 0.5) +
+  annotate("segment", x = 0, y = 0.0013, xend = 1190000 * 0.3, yend = 0.02 * 0.96,
            color = "grey80", linetype = "dashed", size = 1) +
-  annotate("segment", x = 3000, y = 0, xend = 1190000 * 0.86, yend = 0.0013 * 0.22,
-           color = "grey80", linetype = "dashed", size = 1)+ 
-
+  annotate("segment", x = 20000, y = 0, xend = 1190000 * 0.9, yend = 0.02 * 0.22,
+           color = "grey80", linetype = "dashed", size = 1) +
   theme(
-    legend.position = "none",
     panel.grid = element_blank(),
     panel.border = element_blank(),
     panel.background = element_blank(),
     axis.line.x = element_line(color = "black"),
-    axis.line.y = element_line(color = "black")
+    axis.line.y = element_line(color = "black"),
+    legend.title = element_blank(),
+    legend.text = element_text(family = "Times", size = 10)
   )
 
-
+# 缩放图数据
 zoom_data <- main_data %>% filter(number <= 5000)
 
+# 缩放图
 zoom_plt <- zoom_data %>%
   ggplot(aes(fill = group, color = group)) +
   geom_area(aes(x = number, y = density),
             alpha = 3/4, linewidth = 0, position = "identity") +
-  geom_text(data = . %>% group_by(group) %>% slice(1),
-            aes(x = x, y = y, label = group),
-            family = "Times", parse = TRUE, hjust = 0) +
   scale_fill_manual(values = wesanderson::wes_palette("Moonrise2")[1:2]) +
   scale_color_manual(values = wesanderson::wes_palette("Moonrise2")[1:2]) +
   scale_y_continuous(limits = y_zoom_range) +
@@ -248,13 +251,16 @@ zoom_plt <- zoom_data %>%
     axis.line.y = element_line(color = "black")
   )
 
+# 组合图
 combined_plot <- main_plt +
   inset_element(zoom_plt,
                 left = 0.2, bottom = 0.25,
                 right = 0.99, top = 0.9)
 
+# 显示图
 combined_plot
-ggsave(filename = "pp1.pdf", plot = combined_plot, device = "pdf", width = 6, height = 4)
+
+ggsave(filename = "pp1.pdf", plot = combined_plot, device = "pdf", width = 7, height = 4)
 ```
 
 
@@ -340,7 +346,7 @@ pp4 <- generate_data_and_plot(1, expression(paste(gamma[1] %~% Normal(0*', '*1))
 pp <- gridExtra::grid.arrange(pp1, pp2, pp3, pp4, ncol = 1)
 
 
-ggsave(filename = "ppp.pdf", plot = pp, device = "pdf", width = 8, height = 18)
+ggsave(filename = "pp2.pdf", plot = pp, device = "pdf", width = 8, height = 18)
 ```
 The prior selection can meet two criteria (as shown below): (1) it is within the possible range of values (there are values on the x-axis, and the sample size can take the larger value of 1,200,000); (2) the change in the data is not extreme.
 
@@ -382,7 +388,7 @@ pp1 <- generate_data_and_plot(0.1, expression(paste(gamma[1] %~% Normal(0*', '*0
 
 pp1
 
-ggsave(filename = "pp.pdf", plot = pp1, device = "pdf", width = 6, height = 6)
+ggsave(filename = "pp3.pdf", plot = pp1, device = "pdf", width = 6, height = 6)
 ```
 
 ### In summary, the priors we use are as follows:
@@ -417,13 +423,25 @@ gdp_zero_inflated_negbinomial_bts1 <- brms::brm(
 
 ```{r}
 color_scheme_set("brightblue")
-pp_check(gdp_zero_inflated_negbinomial_bts1,ndraws=2000)+
+main_plt<-  pp_check(gdp_zero_inflated_negbinomial_bts1,ndraws=2000)+
   theme_bw() +
-  xlim(0, 1240000) +
-  ylim(0, 0.0052) +
+  coord_cartesian()+
+ xlim(0, 1190000) +
+  ylim(-0.0003, 0.02) +
+  
   #labs(title = "sample") +
+  
+  annotate("rect",
+           xmin = 0, xmax =20000,
+           ymin = -0.0003, ymax = 0.0053,
+           color = "red", linetype = "solid", fill = NA, size = 0.5) +
+  annotate("segment", x = 0, y = 0.0053, xend = 1190000 * 0.275, yend = 0.02 * 0.99,
+           color = "grey80", linetype = "dashed", size = 1) +
+  annotate("segment", x = 20000, y = 0, xend = 1190000 * 0.999, yend = 0.02 * 0.31,
+           color = "grey80", linetype = "dashed", size = 1) +
+  
   theme(
-    text = element_text(size = 22),
+    text = element_text(size = 16),
     plot.title = element_text(hjust = .5),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
@@ -433,13 +451,15 @@ pp_check(gdp_zero_inflated_negbinomial_bts1,ndraws=2000)+
     axis.line.y.left   = element_line(color = 'black'),
     legend.position = "none")
 
-pp_check(gdp_zero_inflated_negbinomial_bts1,ndraws=200)+
+zoom_plt <- pp_check(gdp_zero_inflated_negbinomial_bts1,ndraws=200)+
   theme_bw() +
-  xlim(0, 5300) +
+  xlim(0, 5000) +
   ylim(0, 0.0052) +
+ coord_cartesian()+
+  #scale_x_continuous(breaks = seq(0, 5000, by = 1000)) + 
   #labs(title = "sample") +
-  theme(
-    text = element_text(size = 22),
+  theme(plot.background = element_rect(fill = NA, color = "grey80", size = 2),
+    text = element_text(size = 16),
     plot.title = element_text(hjust = .5),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
@@ -448,9 +468,19 @@ pp_check(gdp_zero_inflated_negbinomial_bts1,ndraws=200)+
     axis.line.x.bottom = element_line(color = 'black'),
     axis.line.y.left   = element_line(color = 'black'),
     legend.position = "none")
+# 组合图
+combined_plot <- main_plt +
+  inset_element(zoom_plt,
+                left = 0.3, bottom = 0.35,
+                right = 0.95, top = 0.95)
 
+# 显示图
+combined_plot
+
+ggsave(filename = "pp4.pdf", plot = combined_plot, device = "pdf", width = 6, height = 4)
 ```
-The visualization of the prior prediction check is shown below. In the left panel we can see that the sample size can accommodate values up to 1,200,000. As shown in the right-hand panel, the actual data are well encompassed by the prior distribution, indicating that the prior is appropriate.
+
+The visualization of the prior prediction check is shown below. We can see that the sample size can accommodate values up to 1,200,000. And, the actual data fall within the range of the prior distribution, demonstrating the appropriateness of the prior.
 
 # 5 Fit model
 ```{r}
