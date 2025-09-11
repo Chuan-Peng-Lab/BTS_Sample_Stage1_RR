@@ -1037,14 +1037,14 @@ fig3c <- ggplot() +
   guides(
   color = guide_legend(order = 1, override.aes = list(shape = 1,    
                                                       size = 5, 
-                                                      fill = c("#00BFC4", "#F8766D"),  
-                                                      color = c("#00BFC4", "#F8766D"),  
+                                                      fill = c("#F8766D","#00BFC4" ),  
+                                                      color = c("#F8766D","#00BFC4" ),  
                                                       linetype = "solid",    
                                                       stroke = 0)),   
   fill = guide_legend(  
       order = 1,
       override.aes = list(
-        color = c("#00BFC4", "#F8766D"), 
+        color = c("#F8766D","#00BFC4" ), 
         size = 0.5  
       )
     ),  
@@ -2689,6 +2689,7 @@ UMPBT <- function(df, thresh) {
   optimize(vf1, c(0, 100), thresh = thresh, df = df)$minimum
 }
 
+
 set.seed(123)
 n_seq <- seq(50, 500, by = 50)
 sim_per_n <- 1000
@@ -2890,4 +2891,39 @@ log_BF4 <- log(BF4/thresh)
 log_BF4
 ```
 
+```{r}
+# Define the function for converting chi square values and df to Bayesian factors
+## The purpose of subtracting thresh in the froot() function is to compute the optimal noncentral parameter lambda. To calculate the Bayes factor, use the front_bf() function.
+froot_bf <- function(x, lambda, df){
+ dchisq(x, df, ncp = lambda)/dchisq(x, df)
+}
 
+froot <- function(x, lambda, thresh, df){
+ dchisq(x, df, ncp = lambda)/dchisq(x, df) - thresh
+ }
+
+ f1 <- function(lambda, thresh, df){
+ r <- uniroot(froot, lambda = lambda, thresh = thresh, df = df, c(0.01, 1000))$root
+ }
+ vf1 <- Vectorize(f1)
+ 
+ UMPBT <- function(df, thresh){
+ optout <- optimize(vf1, c(0, 100),thresh = thresh, df = df)
+ z <- optout$minimum
+ return(z)
+ }
+
+# 01 All author: ps2014 vs bts
+observed1 <- c(1,1,1,1,1,90,5)
+expected1 <- c(0.5276,0.3182,0.0821,0.0473,0.0140,0.0101,0.0007)
+chi_square_result1 <- chisq.test(x = observed1, p = expected1)
+chi_square_result1
+thresh <- 4^2
+lambda<- UMPBT(df = chi_square_result1$parameter,thresh=thresh)
+lambda
+BF1 <- froot_bf(x = chi_square_result1$statistic, lambda=lambda, df = chi_square_result1$parameter)
+log_BF1 <- log(BF1/thresh)
+log_BF1
+
+
+```
