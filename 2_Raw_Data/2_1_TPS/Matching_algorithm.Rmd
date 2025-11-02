@@ -1,0 +1,115 @@
+---
+title: "Matching_algorithm"
+author: "liu_weibiao"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+#remotes::install_local("C:/Users/liuwe/Desktop/PsychWordVec_2023.8.tar.gz")
+library(PsychWordVec)
+PsychWordVec::text_model_download(c(
+  "bert-base-uncased",
+  "bert-base-cased",
+  "bert-base-multilingual-cased"
+))
+```
+
+```{r}
+
+# 读取数据
+bts <- read.csv("BTS_key_words_code_final.csv", stringsAsFactors = FALSE)
+
+
+# ---- 向量化 bts 和 tps 的 key_words ----
+bts$vecs <- lapply(bts$key_words, function(x) {
+  PsychWordVec::text_to_vec(
+    x,
+    model = "bert-base-cased",
+    layers = c(0, 12)
+  )$text.embed %>%
+    as_embed(normalize = TRUE) %>%
+    sum_wordvec()
+})
+
+```
+
+
+```{r}
+tps <- read.csv("TPS_key_words_code_final.csv", stringsAsFactors = FALSE)
+tps$vecs <- lapply(tps$key_words, function(x) {
+  PsychWordVec::text_to_vec(
+    x,
+    model = "bert-base-cased",
+    layers = c(0, 12)
+  )$text.embed %>%
+    as_embed(normalize = TRUE) %>%
+    sum_wordvec()
+})
+
+
+
+
+```
+
+
+
+```{r}
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 用于记录已选过的 tps 行 ----
+used_tps <- c()
+
+# ---- 逐个匹配 bts 的每一行 ----
+for (i in seq_len(nrow(bts))) {
+  vec_bts <- bts$vecs[[i]]
+  
+  # 剩余未被选过的 tps
+  available_idx <- setdiff(seq_len(nrow(tps)), used_tps)
+  available_tps <- tps[available_idx, ]
+  
+  # 计算当前 bts 与所有可用 tps 的相似度
+  similarities_df <- data.frame(
+    BTS_ID = bts$ID[i],
+    TPS_ID = available_tps$ID,
+    Similarity = sapply(available_tps$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选出相似度最高的 5 个
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(5)
+  
+  # 保存结果
+  results[[i]] <- top5
+  
+  # 标记已使用的 tps 行
+  used_tps <- c(used_tps, available_idx[match(top5$TPS_ID, available_tps$ID)])
+  
+  cat("✅ 已完成匹配:", bts$ID[i], " → ", paste(top5$TPS_ID, collapse = ", "), "\n")
+}
+
+# ---- 汇总为一个长格式数据框 ----
+final_results <- bind_rows(results)
+
+# ---- 输出结果 ----
+print(final_results)
+
+
+write.csv(final_results, "bts_tps_top5_matches.csv", row.names = FALSE)
+```
+
+
+
+
+
+
+
+
+
