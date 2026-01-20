@@ -8,10 +8,14 @@ This repo is data, code, and related materials of "Assessing diversity and repre
 ├── 1_Protocol
 │   └── Assess_BTS_Stage1_RR_manuscript.docx
 ├── 2_Raw_Data
-
 │   └── 2_1_BTS
-│       └── Collection of Big Team Science in Psych Sci.txt
+│       └── Original_Collection_of_Big_Team Science_in Psych_Sci.txt
+│       └── Filter_Collection_of_Big_Team Science_in Psych_Sci.txt
+│       └── BTS_target_population.txt
 │   └── 2_2_Traditional studies 
+│       └── Original_TPS.txt
+│       └── Filter_TPS.txt
+│       └── TPS_target_population.txt
 │   └── 2_2_World population census data
 ├── 3_Data extraction
 │   └── 3_1_Code_manual
@@ -25,13 +29,10 @@ This repo is data, code, and related materials of "Assessing diversity and repre
 │   │   ├── Liu_2024_sex.csv
 │   │   ├── Liu_2024_age.csv
 │   │   ├── Liu_2024_edu.csv
-│   │   ├── Liu_2024_country.csv
-│   │   ├── ...
-│   │   
+│   │   ├── Liu_2024_country.csv 
 │   ├── 4_2_Exploratory_analysis
 │   │   ├── Exploratory_analysis_BTS_Sample_Stage1_RR.Rmd
 │   │   ├── gdpdata.csv
-│   │   ├── ...
 ├── 5_Reports
 │   └── stage2
 └── README.md
