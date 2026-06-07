@@ -34,6 +34,13 @@ bts$vecs <- lapply(bts$key_words, function(x) {
 
 ```
 
+```{r}
+
+# 读取数据
+bts
+```
+
+
 
 ```{r}
 tps <- read.csv("TPS_key_words_code_final.csv", stringsAsFactors = FALSE)
@@ -51,6 +58,2146 @@ tps$vecs <- lapply(tps$key_words, function(x) {
 
 
 ```
+
+```{r}
+
+tps_R2 <- read.csv("R1_OUTPUT_bts_tps_target_population_matches.csv", stringsAsFactors = FALSE)
+library(dplyr)
+
+tps <- tps %>%
+  anti_join(tps_R2, by = "TPS_ID")
+tps
+
+
+```
+
+#BTS编号99000002匹配1个
+```{r}
+#剔除第一轮top5: 24030050,24030056,24030066,24030089
+
+library(dplyr)
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030050, 24030056, 24030066, 24030089))
+tps1
+
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000002)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(5)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+# ---- 查看结果 ----
+print(final_results)
+
+# ---- 保存 CSV ----
+write.csv(final_results,
+          "BTS_99000002_top6-10_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000003匹配1个
+```{r}
+#剔除先前匹配上的24030049
+#剔除第一轮top5: 24010018,24010112,24020044,24050119
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049, 24010018,24010112,24020044,24050119))
+tps1
+
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000003)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(10)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+# ---- 查看结果 ----
+print(final_results)
+
+# ---- 保存 CSV ----
+write.csv(final_results,
+          "BTS_99000003_top6-15_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000005匹配1个
+```{r}
+#剔除先前匹配上的24030049,24090054
+#剔除第一轮top5: 24010126,24020023,24050107,24070059
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24010126,24020023,24050107,24070059))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000005)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(10)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+# ---- 查看结果 ----
+print(final_results)
+
+# ---- 保存 CSV ----
+write.csv(final_results,
+          "BTS_99000005_top6-15_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000009匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016
+#剔除第一轮top5: 24090003,24090005,24090026,24090045,24090053
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24090003,24090005,24090026,24090045,24090053))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000009)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(90)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000009_top6-95_TPS.csv",
+          row.names = FALSE)
+
+```
+
+
+#BTS编号99000010匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125
+#剔除第一轮top5: 24030008,24030013,24030023,24030060,24030075
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24030008,24030013,24030023,24030060,24030075))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000010)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(190)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000010_top6-195_TPS.csv",
+          row.names = FALSE)
+
+```
+
+
+#BTS编号99000011匹配1个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079
+#剔除第一轮top5: 24010079,24040015,24040027,24040034,24050041
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24010079,24040015,24040027,24040034,24050041))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000011)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(20)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000011_top6-25_TPS.csv",
+          row.names = FALSE)
+
+```
+
+
+#BTS编号99000015匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083
+#剔除第一轮top5: 24010045,24040013, 24050116,24090016,24090063
+
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,
+                        24010045,24040013, 24050116,24090016,24090063))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000015)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(10)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000015_top6-15_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000017匹配1个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036
+#剔除第一轮top5: 24020013,24070009,24070019,24070034,24090001
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,
+                        24020013,24070009,24070019,24070034,24090001))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000017)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(10)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000017_top6-15_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000020匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022
+#剔除第一轮top5: 24010030,24010118, 24040028,24050118,24050152
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,
+                        24010030,24010118, 24040028,24050118,24050152
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000020)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(30)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000020_top6-35_TPS.csv",
+          row.names = FALSE)
+```
+
+#BTS编号99000021匹配1个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043
+
+#剔除第一轮top5: 24010031, 24050042, 24050141, 24050161, 24070040
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,
+                        24010031, 24050042, 24050141, 24050161, 24070040
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000021)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(10)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000021_top6-15_TPS.csv",
+          row.names = FALSE)
+```
+
+#BTS编号99000022匹配1个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069
+
+#剔除第一轮top5: 24010077,24020018,24070020,24070024,24090025
+
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,
+                        24010077,24020018,24070020,24070024,24090025
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000022)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(10)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000022_top6-15_TPS.csv",
+          row.names = FALSE)
+```
+
+#BTS编号99000023匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012
+
+#剔除第一轮top5:24090006,24090020,24090029,24090039,24090049
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,
+                        24090006,24090020,24090029,24090039,24090049
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000023)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(50)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000023_top6-55_TPS.csv",
+          row.names = FALSE)
+```
+
+
+#BTS编号99000024匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014
+
+#剔除第一轮top5:24050085, 24050094, 24050157, 24070051,24090073
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,
+                        24050085, 24050094, 24050157, 24070051,24090073
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000024)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(300)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000024_top6-305_TPS.csv",
+          row.names = FALSE)
+```
+
+#BTS编号99000026匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140
+
+#剔除第一轮top5:24030088,24030097,24050145,24080025,24080034
+
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,
+                        24030088,24030097,24050145,24080025,24080034
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000026)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(300)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000026_top6-305_TPS.csv",
+          row.names = FALSE)
+```
+
+
+#BTS编号99000029匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,
+
+#剔除第一轮top5:24030049,24080016,24080023,24080050,24080055
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,
+                        24030049,24080016,24080023,24080050,24080055
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000029)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(300)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000029_top6-305_TPS.csv",
+          row.names = FALSE)
+```
+
+
+#BTS编号99000031匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,
+
+
+#剔除第一轮top5:24010007,24010073,24010081,24040033,24050126
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,
+24030089,
+                        24010007,24010073,24010081,24040033,24050126
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000031)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(30)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000031_top6-35_TPS.csv",
+          row.names = FALSE)
+```
+
+#BTS编号99000033匹配1个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,
+
+
+#剔除第一轮top5: 24010037,24040004,24040036,24050100,24070081
+
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,
+24030089,24090043,24080022,
+                        24010037,24040004,24040036,24050100,24070081
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000033)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(30)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000033_top6-35_TPS.csv",
+          row.names = FALSE)
+```
+
+#BTS编号99000040匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,
+
+
+#剔除第一轮top5: 24030108,24050015,24060008,24070033,24090054
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,
+24030089,24090043,24080022,24090039,
+                        24030108,24050015,24060008,24070033,24090054
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000040)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(300)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000040_top6-305_TPS.csv",
+          row.names = FALSE)
+#最后只匹配到1个，缺1个
+```
+
+#BTS编号99000047匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013
+
+
+#剔除第一轮top5: 24010075, 24020011, 24020017, 24040003, 24080028,
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,
+24030089,24090043,24080022,24090039,24040013,
+                        24010075, 24020011, 24020017, 24040003, 24080028
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000047)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(400)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000047_top6-405_TPS.csv",
+          row.names = FALSE)
+
+```
+
+
+#BTS编号99000049匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060
+
+#剔除第一轮top5: 24020034,24040019,24050142,24080002,24080061
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,
+24030089,24090043,24080022,24090039,24040013,24010060,
+                        24020034,24040019,24050142,24080002,24080061
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000049)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(15)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000049_top6-20_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000052匹配1个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034
+
+
+#剔除第一轮top5: 24010057,24010108,24020007,24060018
+
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,
+24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,
+                        24010057,24010108,24020007,24060018
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000052)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(15)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000052_top6-20_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000053匹配1个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052
+
+#剔除第一轮top5: 24010004,24010046,24010115,24050046
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,
+24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,
+                        24010004,24010046,24010115,24050046
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000053)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(20)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000053_top6-25_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000054匹配1个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,
+
+#剔除第一轮top5: 24020032,24040020,24050114,24090072
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,
+24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24090014,24050136,
+                       24020032,24040020,24050114,24090072
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000054)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(10)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000054_top6-15_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000056匹配1个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039
+
+#剔除第一轮top5: 24010135,24020052,24050158,24060003
+
+
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,
+24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24090014,24050136,24060022,24070039,
+                       24010135,24020052,24050158,24060003
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000056)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(5)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000056_top6-10_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000058匹配1个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035
+
+#剔除第一轮top5: 24010039,24010084,24010131,24040057
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035,
+                       24010039,24010084,24010131,24040057
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000058)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(25)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000058_top6-30_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000059匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035,24080050
+
+#剔除第一轮top5: 24010085,24050064,24050111,24070050,24080022
+
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035,24080050,
+                       24010085,24050064,24050111,24070050,24080022
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000059)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(45)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000059_top6-50_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000062匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035,24080050,24010086,24010006
+
+#剔除第一轮top5: 24020030,24040037,24060006,24060024,24070007
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035,24080050,24010086,24010006,
+                       24020030,24040037,24060006,24060024,24070007
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000062)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(10)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000062_top6-15_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000063匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24070001,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035,24080050,24010086,24010006,24050044,24070051
+
+#剔除第一轮top5: 24020008,24020047,24040001,24040009,24050108,
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035,24080050,24010086,24010006,24050044,24070051,
+                       24020008,24020047,24040001,24040009,24050108
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000063)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(300)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000063_top6-305_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000064匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035,24080050,24010086,24010006,24050044,24070051,24040004,24030017
+
+#剔除第一轮top5: 24090022,24090037,24090050,24090065,24090069
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035,24080050,24010086,24010006,24050044,24070051,24040004,24030017,
+                       24090022,24090037,24090050,24090065,24090069
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000064)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(300)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000064_top6-305_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000066匹配2个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035,24080050,24010086,24010006,24050044,24070051,24040004,24030017,24050046,24050142
+
+
+#剔除第一轮top5: 24090022,24090037,24090050,24090065,24090069
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035,24080050,24010086,24010006,24050044,24070051,24040004,24030017,24050046,24050142,
+                       24090022,24090037,24090050,24090065,24090069
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000066)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(45)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000066_top6-50_TPS.csv",
+          row.names = FALSE)
+
+```
+
+#BTS编号99000072匹配1个
+```{r}
+#剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035,24080050,24010086,24010006,24050044,24070051,24040004,24030017,24050046,24050142,24090017,24090060
+
+#剔除第一轮top5: 24010125,24070025,24070068,24070093,24080062
+
+
+
+
+tps1 <- tps %>%
+  filter(!TPS_ID %in% c(24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013,24010060,24070001,24090020,24090034,24090029,24030052,24090014,24050136,24060022,24070039,24080024,24080035,24080050,24010086,24010006,24050044,24070051,24040004,24030017,24050046,24050142,24090017,24090060,
+                       24010125,24070025,24070068,24070093,24080062
+                        ))
+tps1
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000072)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = tps1$TPS_ID,
+    Similarity = sapply(tps1$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(5)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(tps1, by = "TPS_ID") %>%
+  select(-vecs)
+
+R1_target_population <- read.csv("R1_target_population.csv", stringsAsFactors = FALSE)
+final_results1 <- final_results %>%
+  left_join(R1_target_population, by = "TPS_ID")
+
+final_results1
+
+# ---- 保存 CSV ----
+write.csv(final_results1,
+          "00BTS_99000072_top6-10_TPS.csv",
+          row.names = FALSE)
+
+```
+
+```{r}
+library(dplyr)
+
+```
+
+```{r}
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 只保留 BTS_ID == 99000002 ----
+bts_target <- bts[bts$ID == 99000003, ]
+
+# 确保只剩一行
+stopifnot(nrow(bts_target) == 1)
+
+vec_bts <- bts_target$vecs[[1]]
+
+# ---- 计算该 BTS 与所有 TPS 的相似度 ----
+similarities_df <- data.frame(
+  BTS_ID = bts_target$ID,
+  TPS_ID = tps$TPS_ID,
+  Similarity = sapply(tps$vecs, function(v) cosine_similarity(vec_bts, v))
+)
+
+# ---- 选出相似度最高的 5 篇 TPS ----
+final_results <- similarities_df %>%
+  arrange(desc(Similarity)) %>%
+  head(5)
+
+# ---- 查看结果 ----
+print(final_results)
+
+# ---- 保存为 CSV ----
+write.csv(final_results, "BTS_99000002_top5_TPS.csv", row.names = FALSE)
+
+```
+
 
 
 
@@ -77,7 +2224,7 @@ for (i in seq_len(nrow(bts))) {
   # 计算当前 bts 与所有可用 tps 的相似度
   similarities_df <- data.frame(
     BTS_ID = bts$ID[i],
-    TPS_ID = available_tps$ID,
+    TPS_ID = available_tps$TPS_ID,
     Similarity = sapply(available_tps$vecs, function(v) cosine_similarity(vec_bts, v))
   )
   
@@ -104,9 +2251,6 @@ print(final_results)
 
 write.csv(final_results, "bts_tps_top5_matches.csv", row.names = FALSE)
 ```
-
-
-
 
 
 
