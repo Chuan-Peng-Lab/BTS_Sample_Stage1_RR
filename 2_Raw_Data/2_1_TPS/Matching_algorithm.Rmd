@@ -9,7 +9,7 @@ output: html_document
 #remotes::install_local("C:/Users/liuwe/Desktop/PsychWordVec_2023.8.tar.gz")
 library(PsychWordVec)
 PsychWordVec::text_model_download(c(
-  "bert-base-uncased",
+ "bert-base-uncased",
   "bert-base-cased",
   "bert-base-multilingual-cased"
 ))
@@ -34,17 +34,65 @@ bts$vecs <- lapply(bts$key_words, function(x) {
 
 ```
 
-```{r}
 
-# 读取数据
-bts
-```
 
 
 
 ```{r}
 tps <- read.csv("TPS_key_words_code_final.csv", stringsAsFactors = FALSE)
 tps$vecs <- lapply(tps$key_words, function(x) {
+  PsychWordVec::text_to_vec(
+    x,
+    model = "bert-base-cased",
+    layers = c(0, 12)
+  )$text.embed %>%
+    as_embed(normalize = TRUE) %>%
+    sum_wordvec()
+})
+
+
+
+
+```
+
+
+```{r}
+DP_2023 <- read.csv("DP_2023_key_words_final.csv", stringsAsFactors = FALSE)
+DP_2023$vecs <- lapply(DP_2023$key_words, function(x) {
+  PsychWordVec::text_to_vec(
+    x,
+    model = "bert-base-cased",
+    layers = c(0, 12)
+  )$text.embed %>%
+    as_embed(normalize = TRUE) %>%
+    sum_wordvec()
+})
+
+
+
+
+```
+
+```{r}
+JEP_2023 <- read.csv("JEP_2023_key_words_final.csv", stringsAsFactors = FALSE)
+JEP_2023$vecs <- lapply(JEP_2023$key_words, function(x) {
+  PsychWordVec::text_to_vec(
+    x,
+    model = "bert-base-cased",
+    layers = c(0, 12)
+  )$text.embed %>%
+    as_embed(normalize = TRUE) %>%
+    sum_wordvec()
+})
+
+
+
+
+```
+
+```{r}
+JEP_2022 <- read.csv("JEP_2022_key_words_final.csv", stringsAsFactors = FALSE)
+JEP_2022$vecs <- lapply(JEP_2022$key_words, function(x) {
   PsychWordVec::text_to_vec(
     x,
     model = "bert-base-cased",
@@ -1267,6 +1315,11 @@ write.csv(final_results1,
 #最后只匹配到1个，缺1个
 ```
 
+
+
+
+
+
 #BTS编号99000047匹配2个
 ```{r}
 #剔除先前匹配上的24030049,24090054,24050016,24010080, 24010125,24010103,24030079,24070083,24070033,24090036,24070022,24050094,24050043,24050069,24020012,24090016,24040014,24090077,24050140,24010084,24010112,24030043,24030089,24090043,24080022,24090039,24040013
@@ -2158,6 +2211,185 @@ write.csv(final_results1,
           row.names = FALSE)
 
 ```
+
+
+#R2_BTS编号99000040匹配1个
+```{r}
+
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000040)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = JEP_2023$TPS_ID,
+    Similarity = sapply(JEP_2023$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(40)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(JEP_2023, by = "TPS_ID") %>%
+  select(-vecs)
+
+
+# ---- 保存 CSV ----
+write.csv(final_results,
+          "02BTS_99000040_top1-40_TPS.csv",
+          row.names = FALSE)
+#最后只匹配到1个，缺1个
+```
+
+#R2_BTS编号99000040匹配1个JEP2022
+```{r}
+
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000040)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = JEP_2022$TPS_ID,
+    Similarity = sapply(JEP_2022$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(80)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(JEP_2022, by = "TPS_ID") %>%
+  select(-vecs)
+
+
+# ---- 保存 CSV ----
+write.csv(final_results,
+          "BTS_99000040_top1-80_TPS_JEP2022.csv",
+          row.names = FALSE)
+#最后只匹配到1个，缺1个
+```
+
+
+
+#R2_BTS编号99000047匹配1个
+```{r}
+
+# ---- 定义余弦相似度函数 ----
+cosine_similarity <- function(a, b) {
+  sum(a * b) / (sqrt(sum(a * a)) * sqrt(sum(b * b)))
+}
+
+# ---- 目标 BTS_ID ----
+target_bts_ids <- c(99000047)
+
+# ---- 初始化结果列表 ----
+results <- list()
+
+# ---- 逐个 BTS_ID 计算 Top 5 TPS ----
+for (bid in target_bts_ids) {
+  
+  bts_target <- bts[bts$ID == bid, ]
+  stopifnot(nrow(bts_target) == 1)
+  
+  vec_bts <- bts_target$vecs[[1]]
+  
+  # 计算相似度
+  similarities_df <- data.frame(
+    BTS_ID = bid,
+    TPS_ID = DP_2023$TPS_ID,
+    Similarity = sapply(DP_2023$vecs, function(v) cosine_similarity(vec_bts, v))
+  )
+  
+  # 选 Top 5
+  top5 <- similarities_df %>%
+    arrange(desc(Similarity)) %>%
+    head(160)
+  
+  results[[as.character(bid)]] <- top5
+}
+
+# ---- 合并两个 BTS 的结果 ----
+top5_similarity <- bind_rows(results)
+
+# ---- 合并 TPS 原始变量，并去掉 vecs ----
+final_results <- top5_similarity %>%
+  left_join(DP_2023, by = "TPS_ID") %>%
+  select(-vecs)
+
+
+# ---- 保存 CSV ----
+write.csv(final_results,
+          "02BTS_99000047_top1-160_TPS.csv",
+          row.names = FALSE)
+#最后只匹配到1个，缺1个
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```{r}
 library(dplyr)
