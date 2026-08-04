@@ -1,7 +1,19 @@
 # BTS_Sample_Stage1_RR
 This repo is data, code, and related materials of "Assessing diversity and representativeness of big team science in psychology [Stage 1 RR Protocol]". 
 
-- A description of the folder structure
+## Contributor
+
+- Weibiao Liu (School of Psychology, Nanjing Normal University)
+- Chunxiao Wang (School of Psychology, Nanjing Normal University)
+- Sakshi Ghai (Department  of  Psychological  and Behavioral Science, London School of Economics and Political Science)
+- Flavio Azevedo (Department of Interdisciplinary Social Science, Utrecht University)
+- Patrick S. Forscher (Busara Center for Behavioral Economics)
+- Hu Chuan-Peng (School of Psychology, Nanjing Normal University; [email](hcp4715@hotmail.com))
+
+## Status  
+- Stage 1 Accepted at PCI-RR (url: https://osf.io/su9wy)
+
+## Folder structure
 
 ```
 .
