@@ -79,7 +79,7 @@ BTS_ID,TPS_ID,Similarity,TPS_title,BTS_final,,final,
 99000039,24070055,0.862029395,00_Anticipated affect predicts moral praise and character judgments,2,,3,
 99000039,24070075,0.854701647,00_The zero-sum mindset,2,,3,
 99000040,24040013,0.802297621,00_A longitudinal study of student hand raising: Stability and reciprocal dynamics with cognitive elaboration and academic self-concept,1,student,1,student
-99000040,22040057,0.804914838,Students' Motivational Trajectories and Academic Success in Math-Intensive Study Programs: Why Short-Term Motivational Assessments Matter,1,student,1,student
+99000040,,,,,,,
 99000041,24050011,0.860765732,00_Premature predictions: Accurate forecasters are not viewed as more competent for earlier predictions,3,,3,
 99000041,24070023,0.859538656,00_Dual-promotion: Bragging better by promoting peers,3,,3,
 99000042,24080049,0.849403873,00_The neural network RTNet exhibits the signatures of human perceptual decision-making,3,,2,
@@ -93,7 +93,7 @@ BTS_ID,TPS_ID,Similarity,TPS_title,BTS_final,,final,
 99000046,24050153,0.92349561,00_Eliciting cognitive consistency increases acceptance of implicit bias,3,,3,
 99000046,24050074,0.879637787,00_Judging robot ability: How people form implicit and explicit impressions of robot competence,3,,3,
 99000047,24010060,0.843841159,00_A process model of parental executive functioning as a spillover mechanism linking interparental conflict and parenting difficulties across parenting domains,1,parents,1,parents
-99000047,23010097,0.810045014,"Minor changes, big differences? Effects of manipulating play materials on parental math talk",1,parents,1,parents
+99000047,,,,,,,
 99000048,24080044,0.856072501,00_Prominent misinformation interventions reduce misperceptions but increase scepticism,3,,2,
 99000048,24070031,0.849672155,00_Golden gazes: Gaze direction and emotional context promote prosocial behavior by increasing attributions of empathy and perspective-taking,3,,3,
 99000049,24090020,0.855323541,00_A Practical Significance Bias in Laypeople’s Evaluation of Scientific Findings,3,,3,
